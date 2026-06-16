@@ -1,0 +1,385 @@
+[
+  {
+    "name": "110/20 kV Power Transformer",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E1",
+    "type": "Power Transformer",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Power Transformer (Closed)",
+    "procore_qc": "QCHV-Power Transformer (Closed)",
+    "tests": [
+      {
+        "name": "DGA (Dissolved Gas Analysis)",
+        "standard": "IEC 60599",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Oil Quality (moisture, BDV, acidity)",
+        "standard": "IEC 60422",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance (Megger)",
+        "standard": "IEC 60076-3",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Winding Resistance (all phases)",
+        "standard": "IEC 60076-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Turns Ratio Test",
+        "standard": "IEC 60076-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "SFRA (Sweep Frequency Response)",
+        "standard": "IEC 60076-18",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Tap Changer Operation",
+        "standard": "IEC 60214",
+        "level": 4,
+        "status": "Pass"
+      },
+      {
+        "name": "Cooling System Verification",
+        "standard": "IEC 60076-2",
+        "level": 4,
+        "status": "Pass"
+      },
+      {
+        "name": "Protection Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pass"
+      },
+      {
+        "name": "First Energisation",
+        "standard": "Cx-HV v1.0 Sec 7",
+        "level": 5,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Circuit Breaker",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E2",
+    "type": "Circuit Breaker",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Circuit Breaker (Closed)",
+    "procore_qc": "QCHV-Circuit Breaker (Closed)",
+    "tests": [
+      {
+        "name": "Timing Test (open/close)",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "SF6 Gas Pressure Check",
+        "standard": "IEC 62271-100",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Trip/Close Coil Test",
+        "standard": "IEC 62271-100",
+        "level": 4,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Current Transformer (CT)",
+    "qty": 3,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E3",
+    "type": "Current Transformer",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Current Transformer (Closed)",
+    "procore_qc": "QCHV-Current Transformer (Closed)",
+    "tests": [
+      {
+        "name": "Ratio Test",
+        "standard": "IEC 61869-2",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 61869-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Secondary Injection Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Voltage Transformer (VT)",
+    "qty": 2,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E4",
+    "type": "Voltage Transformer",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Voltage Transformer (Closed)",
+    "procore_qc": "QCHV-Voltage Transformer (Closed)",
+    "tests": [
+      {
+        "name": "Ratio Test",
+        "standard": "IEC 61869-3",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 61869-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Burden Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "HV & MV Cable",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E5",
+    "type": "HV Cable",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-HV & MV Cable (Closed)",
+    "procore_qc": "QCHV-HV & MV Cable (Closed)",
+    "tests": [
+      {
+        "name": "Insulation Resistance (Megger)",
+        "standard": "IEC 60840",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Hi-Pot / VLF Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Partial Discharge Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Sheath Integrity Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "Neutral Earthing Transformer/Resistor",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E6",
+    "type": "Neutral Earthing Resistor",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Neutral Earthing Transformer/Resistor (Closed)",
+    "procore_qc": "QCHV-Neutral Earthing Transformer/Resistor (Closed)",
+    "tests": [
+      {
+        "name": "Resistance Measurement",
+        "standard": "IEEE C57.32",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEEE C57.32",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Temperature Sensor Verification",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Protection Trip Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "AIS Main Busbar",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E7",
+    "type": "Busbar",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-AIS Main Busbar (Closed)",
+    "procore_qc": "QCHV-AIS Main Busbar (Closed)",
+    "tests": [
+      {
+        "name": "Continuity Test",
+        "standard": "IEC 62271-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Clearance Verification",
+        "standard": "IEC 60071-1",
+        "level": 2,
+        "status": "Pass"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 62271-1",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Connection Torque Verification",
+        "standard": "Manufacturer spec",
+        "level": 2,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "Protection Relay Panels",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "E8",
+    "type": "Relay Panel",
+    "manufacturer": "TBC",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-Relay Panels (Closed)",
+    "procore_qc": "QCHV-Relay Panels (Closed)",
+    "tests": [
+      {
+        "name": "Settings Verification",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass"
+      },
+      {
+        "name": "Injection Test (trip levels)",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pass"
+      },
+      {
+        "name": "Communication Test (SCADA)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pass"
+      },
+      {
+        "name": "Logic/Interlock Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pass"
+      }
+    ]
+  },
+  {
+    "name": "HV Substation (overall system)",
+    "qty": 1,
+    "drawing": "DUB058HV SLD",
+    "item_ref": "SYS",
+    "type": "System Level",
+    "manufacturer": "\u2014",
+    "level": 5,
+    "status": "Complete",
+    "procore_cx": "CxHV-HV Substation (Closed)",
+    "tests": [
+      {
+        "name": "System Functional Performance Test",
+        "standard": "Amazon Cx Spec",
+        "level": 5,
+        "status": "Pass"
+      },
+      {
+        "name": "Full Load Test",
+        "standard": "Amazon Cx Spec",
+        "level": 5,
+        "status": "Pass"
+      },
+      {
+        "name": "Protection Coordination Verification",
+        "standard": "IEC 60255",
+        "level": 5,
+        "status": "Pass"
+      }
+    ]
+  }
+]

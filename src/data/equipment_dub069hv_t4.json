@@ -1,0 +1,644 @@
+[
+  {
+    "name": "110/20 kV; 50/63 MVA ABB Power Transformer (T123)",
+    "qty": 1,
+    "drawing": "DR-E-3018",
+    "item_ref": "E5",
+    "type": "Power Transformer",
+    "manufacturer": "ABB",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "DGA (Dissolved Gas Analysis)",
+        "standard": "IEC 60599 / IEEE C57.104",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Oil Quality (moisture, BDV, acidity)",
+        "standard": "IEC 60422",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance (Megger)",
+        "standard": "IEC 60076-3",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Winding Resistance (all phases)",
+        "standard": "IEC 60076-1",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Turns Ratio Test",
+        "standard": "IEC 60076-1",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "SFRA (Sweep Frequency Response)",
+        "standard": "IEC 60076-18",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Tap Changer Operation",
+        "standard": "IEC 60214",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Cooling System Verification",
+        "standard": "IEC 60076-2",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Protection Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "First Energisation",
+        "standard": "Cx-HV v1.0 Sec 7",
+        "level": 5,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Surge Arrester - Siemens 3EQ1-108",
+    "qty": 3,
+    "drawing": "DR-E-3018",
+    "item_ref": "E2",
+    "type": "Surge Arrester",
+    "manufacturer": "Siemens",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Visual Inspection",
+        "standard": "IEC 60099-4",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Leakage Current Test",
+        "standard": "IEC 60099-4",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 60099-4",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Surge Counter Verification",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Earthing Connection Check",
+        "standard": "IEC 62305",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Combined CT/VT - Arteche KA-123",
+    "qty": 3,
+    "drawing": "DR-E-3018",
+    "item_ref": "E3",
+    "type": "Combined Instrument Transformer",
+    "manufacturer": "Arteche",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Ratio Test (CT & VT)",
+        "standard": "IEC 61869-2/3",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Polarity Test",
+        "standard": "IEC 61869-2/3",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 61869-1",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Secondary Injection Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Cable Sealing End - Pfisterer DOC123-C39",
+    "qty": 3,
+    "drawing": "DR-E-3018",
+    "item_ref": "E1",
+    "type": "HV Cable Termination",
+    "manufacturer": "Pfisterer",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Visual Inspection",
+        "standard": "IEC 60840",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Partial Discharge Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Sheath Bonding Verification",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Hi-Pot Test",
+        "standard": "IEC 60840",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Post Insulator - Lapp WU20K0002",
+    "qty": 3,
+    "drawing": "DR-E-3018",
+    "item_ref": "E4",
+    "type": "Post Insulator",
+    "manufacturer": "Lapp",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Visual Inspection (cracks, chips)",
+        "standard": "IEC 60168",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 60168",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Torque Verification (mounting bolts)",
+        "standard": "Manufacturer spec",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "20 kV Neutral Earthing Resistor - Cressal",
+    "qty": 1,
+    "drawing": "DR-E-3018",
+    "item_ref": "E6",
+    "type": "Neutral Earthing Resistor",
+    "manufacturer": "Cressal",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Resistance Measurement",
+        "standard": "IEEE C57.32",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEEE C57.32",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Temperature Sensor Verification",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Protection Trip Test (NER overcurrent)",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV XLPE Cable (T123 to GIS)",
+    "qty": 3,
+    "drawing": "DR-E-3029",
+    "item_ref": "CB1",
+    "type": "HV Cable",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Insulation Resistance (Megger)",
+        "standard": "IEC 60840",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Hi-Pot / VLF Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Partial Discharge Test",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Sheath Integrity Test (jacket)",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "Three Phase Link Box - NKT LB.W.3SA.3.1 (with SVL)",
+    "qty": 1,
+    "drawing": "DR-E-3029",
+    "item_ref": "CB2",
+    "type": "Cable Accessory",
+    "manufacturer": "NKT",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "SVL Test (Sheath Voltage Limiter) - Politek PMSP-10/9-DD",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Bonding Resistance Measurement",
+        "standard": "IEC 60840",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance (jacket)",
+        "standard": "IEC 60840",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "Earth Continuity Conductor (ECC) - 240mm\u00b2 Cu",
+    "qty": 3,
+    "drawing": "DR-E-3029",
+    "item_ref": "CB3",
+    "type": "Earthing Cable",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Continuity Test",
+        "standard": "ENA ER C55",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Bonding Resistance",
+        "standard": "ENA ER C55",
+        "level": 3,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "MV Sub 3 Switchgear - ABB 24kV UniGear ZS1 (25kA/3s)",
+    "qty": 5,
+    "drawing": "DR-E-3040",
+    "item_ref": "MV1",
+    "type": "MV Switchgear",
+    "manufacturer": "ABB",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 62271-200",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Contact Resistance",
+        "standard": "IEC 62271-200",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Circuit Breaker Timing Test",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Castell Interlock Verification",
+        "standard": "Amazon spec",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Protection Relay Settings",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Trip Test (overcurrent)",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "SCADA/EPMS Communication Test",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "20 kV MV Cable (T123 to MV Sub 3) - 4x1x630mm\u00b2 Al XLPE",
+    "qty": 4,
+    "drawing": "DR-E-3017",
+    "item_ref": "MV2",
+    "type": "MV Cable",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Insulation Resistance (Megger)",
+        "standard": "IEC 60502-2",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Hi-Pot / VLF Test",
+        "standard": "IEC 60502-2",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Partial Discharge Test",
+        "standard": "IEC 60502-2",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "CBCT Verification",
+        "standard": "IEC 61869",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Termination Inspection (Raychem IXSU)",
+        "standard": "IEC 60502-2",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "EPMS / SCADA System (ABB COM600 + Power Meters)",
+    "qty": 1,
+    "drawing": "DR-E-3041",
+    "item_ref": "EP1",
+    "type": "EPMS/SCADA",
+    "manufacturer": "ABB",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Point-to-Point Signal Verification",
+        "standard": "IEC 61850",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Alarm Annunciation Test",
+        "standard": "Amazon Cx spec",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Remote Control Test (CB open/close)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Data Logging Verification",
+        "standard": "Amazon Cx spec",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Communication Redundancy Test",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "110 kV Substation Earth Grid (95mm\u00b2 bare Cu)",
+    "qty": 1,
+    "drawing": "DR-E-3012",
+    "item_ref": "EG1",
+    "type": "Earthing System",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Earth Resistance Test",
+        "standard": "IEC 60364 / EirGrid XDS-GFS-12-001",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Step & Touch Potential Measurement",
+        "standard": "IEC 60364 / EirGrid XDS-DGA-00-004",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Continuity Test (all grid connections)",
+        "standard": "IEC 60364",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Soil Resistivity Verification",
+        "standard": "IEC 60364",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "430mm\u00b2 Bison AL Busbar Conductor",
+    "qty": 1,
+    "drawing": "DR-E-3018",
+    "item_ref": "W1",
+    "type": "HV Busbar",
+    "manufacturer": "FPE S.A.Bedzin",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Continuity Test",
+        "standard": "IEC 62271-1",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Clearance Verification (phase-phase, phase-ground)",
+        "standard": "IEC 60071-1",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Connection Torque Verification",
+        "standard": "Manufacturer spec",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Insulation Resistance",
+        "standard": "IEC 62271-1",
+        "level": 3,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "Protection Relay Panels (Client Control Building)",
+    "qty": 1,
+    "drawing": "DR-E-3037",
+    "item_ref": "CC1",
+    "type": "Relay Panel",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Settings Verification (all relays)",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pending"
+      },
+      {
+        "name": "Injection Test (trip levels)",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Communication Test (IEC 61850)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Logic/Interlock Test",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending"
+      },
+      {
+        "name": "Tripping Matrix Verification",
+        "standard": "Amazon Cx spec",
+        "level": 4,
+        "status": "Pending"
+      }
+    ]
+  },
+  {
+    "name": "Lightning Protection (Rods on T123/T122 Blast Walls)",
+    "qty": 2,
+    "drawing": "DR-E-3018 / DR-E-3012",
+    "item_ref": "LP1",
+    "type": "Lightning Protection",
+    "manufacturer": "TBC",
+    "level": 0,
+    "status": "Not Started",
+    "tests": [
+      {
+        "name": "Earth Resistance Test",
+        "standard": "IEC 62305-3",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Continuity (rod to earth grid)",
+        "standard": "IEC 62305-3",
+        "level": 2,
+        "status": "Pending"
+      },
+      {
+        "name": "Visual Inspection",
+        "standard": "IEC 62305-3",
+        "level": 2,
+        "status": "Pending"
+      }
+    ]
+  }
+]

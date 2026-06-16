@@ -1,0 +1,5 @@
+[
+  {"name": "Equipment data not yet extracted", "qty": 0, "drawing": "—", "item_ref": "—", "type": "—", "manufacturer": "—", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
+  {"name": "110 kV Power Transformer (TBC)", "qty": 1, "drawing": "TBC", "item_ref": "E1", "type": "Power Transformer", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
+  {"name": "Protection Relay Panel (TBC)", "qty": 2, "drawing": "TBC", "item_ref": "E2", "type": "Protection Panel", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []}
+]

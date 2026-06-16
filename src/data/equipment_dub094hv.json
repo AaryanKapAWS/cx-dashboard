@@ -1,0 +1,5 @@
+[
+  {"name": "Equipment data not yet extracted", "qty": 0, "drawing": "—", "item_ref": "—", "type": "—", "manufacturer": "—", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
+  {"name": "20 kV Switchgear Panel (TBC)", "qty": 1, "drawing": "TBC", "item_ref": "E1", "type": "Switchgear", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
+  {"name": "Earthing System (TBC)", "qty": 1, "drawing": "TBC", "item_ref": "E2", "type": "Earthing", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []}
+]

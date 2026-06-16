@@ -1,0 +1,50 @@
+[
+  {
+    "id": "dub069hv-t4",
+    "name": "DUB069HV - 4th Transformer",
+    "region": "EMEA",
+    "cluster": "DUB",
+    "status": "Construction",
+    "equipmentFile": "equipment_dub069hv_t4.json"
+  },
+  {
+    "id": "dub069hv-t3",
+    "name": "DUB069HV - 3rd Transformer",
+    "region": "EMEA",
+    "cluster": "DUB",
+    "status": "Construction",
+    "equipmentFile": "equipment_dub069hv_t3.json"
+  },
+  {
+    "id": "dub058hv-t4",
+    "name": "DUB058HV - 4th Transformer",
+    "region": "EMEA",
+    "cluster": "DUB",
+    "status": "Construction",
+    "equipmentFile": "equipment_dub058hv_t4.json"
+  },
+  {
+    "id": "dub094hv",
+    "name": "DUB094HV - Substation Construction",
+    "region": "EMEA",
+    "cluster": "DUB",
+    "status": "Design",
+    "equipmentFile": "equipment_dub094hv.json"
+  },
+  {
+    "id": "zaz062hv",
+    "name": "ZAZ062HV - 45kV HV Substation",
+    "region": "EMEA",
+    "cluster": "ZAZ",
+    "status": "Construction",
+    "equipmentFile": "equipment_zaz062hv.json"
+  },
+  {
+    "id": "arn060hv",
+    "name": "ARN060HV - Substation Construction",
+    "region": "EMEA",
+    "cluster": "ARN",
+    "status": "Design",
+    "equipmentFile": "equipment_arn060hv.json"
+  }
+]
