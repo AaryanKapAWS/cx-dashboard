@@ -51,7 +51,7 @@ export default function TestDetail({ equipment }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              {['Test', 'Standard', 'Cx Level', 'Status'].map(h => (
+              {['Test', 'Standard', 'Date', 'Cx Level', 'Status'].map(h => (
                 <th key={h} style={{
                   padding: '9px 24px', textAlign: 'left',
                   fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
@@ -68,6 +68,13 @@ export default function TestDetail({ equipment }) {
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '11px 24px', fontSize: 13, fontWeight: 500 }}>{t.name}</td>
                   <td style={{ padding: '11px 24px', fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{t.standard}</td>
+                  <td style={{ padding: '11px 24px', fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    {t.startDate ? (
+                      t.startDate === t.endDate 
+                        ? new Date(t.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+                        : `${new Date(t.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${new Date(t.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+                    ) : '—'}
+                  </td>
                   <td style={{ padding: '11px 24px' }}>
                     <span style={{
                       background: LEVEL_COLORS[t.level] + '22',

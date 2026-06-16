@@ -69,7 +69,9 @@
         "level": 5,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-07-01",
+    "plannedEnd": "2026-07-31"
   },
   {
     "name": "110 kV Surge Arrester - Siemens 3EQ1-108",
@@ -111,7 +113,9 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-07-08",
+    "plannedEnd": "2026-07-23"
   },
   {
     "name": "110 kV Combined CT/VT - Arteche KA-123",
@@ -159,7 +163,9 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-07-15",
+    "plannedEnd": "2026-08-02"
   },
   {
     "name": "110 kV Cable Sealing End - Pfisterer DOC123-C39",
@@ -201,7 +207,9 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-07-22",
+    "plannedEnd": "2026-08-06"
   },
   {
     "name": "110 kV Post Insulator - Lapp WU20K0002",
@@ -231,7 +239,9 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-07-29",
+    "plannedEnd": "2026-08-07"
   },
   {
     "name": "20 kV Neutral Earthing Resistor - Cressal",
@@ -267,7 +277,9 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-08-05",
+    "plannedEnd": "2026-08-17"
   },
   {
     "name": "110 kV XLPE Cable (T123 to GIS)",
@@ -303,7 +315,9 @@
         "level": 3,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-08-12",
+    "plannedEnd": "2026-08-24"
   },
   {
     "name": "Three Phase Link Box - NKT LB.W.3SA.3.1 (with SVL)",
@@ -333,7 +347,9 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-08-19",
+    "plannedEnd": "2026-08-28"
   },
   {
     "name": "Earth Continuity Conductor (ECC) - 240mm\u00b2 Cu",
@@ -357,7 +373,9 @@
         "level": 3,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-08-26",
+    "plannedEnd": "2026-09-01"
   },
   {
     "name": "MV Sub 3 Switchgear - ABB 24kV UniGear ZS1 (25kA/3s)",
@@ -411,7 +429,9 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-09-02",
+    "plannedEnd": "2026-09-23"
   },
   {
     "name": "20 kV MV Cable (T123 to MV Sub 3) - 4x1x630mm\u00b2 Al XLPE",
@@ -453,7 +473,9 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-09-09",
+    "plannedEnd": "2026-09-24"
   },
   {
     "name": "EPMS / SCADA System (ABB COM600 + Power Meters)",
@@ -495,7 +517,9 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-09-16",
+    "plannedEnd": "2026-10-01"
   },
   {
     "name": "110 kV Substation Earth Grid (95mm\u00b2 bare Cu)",
@@ -531,7 +555,9 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-09-23",
+    "plannedEnd": "2026-10-05"
   },
   {
     "name": "430mm\u00b2 Bison AL Busbar Conductor",
@@ -567,7 +593,9 @@
         "level": 3,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-09-30",
+    "plannedEnd": "2026-10-12"
   },
   {
     "name": "Protection Relay Panels (Client Control Building)",
@@ -609,12 +637,14 @@
         "level": 4,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-10-07",
+    "plannedEnd": "2026-10-22"
   },
   {
     "name": "Lightning Protection (Rods on T123/T122 Blast Walls)",
     "qty": 2,
-    "drawing": "DR-E-3018 / DR-E-3012",
+    "drawing": "DR-E-3018",
     "item_ref": "LP1",
     "type": "Lightning Protection",
     "manufacturer": "TBC",
@@ -639,6 +669,8 @@
         "level": 2,
         "status": "Pending"
       }
-    ]
+    ],
+    "plannedStart": "2026-10-14",
+    "plannedEnd": "2026-10-23"
   }
 ]

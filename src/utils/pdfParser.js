@@ -181,8 +181,152 @@ function extractDrawingRef(filename) {
   return filename.substring(0, 15);
 }
 
+// === LOOKAHEAD PARSER ===
+const LOOKAHEAD_TEST_TEMPLATES = {
+  'CT': { type: 'Current Transformer', standard: 'IEC 61869-2' },
+  'VT': { type: 'Voltage Transformer', standard: 'IEC 61869-3' },
+  'Circuit Breaker': { type: 'Circuit Breaker', standard: 'IEC 62271-100' },
+  'Manual Earth': { type: 'Earth Switch', standard: 'IEC 62271-102' },
+  'Relay': { type: 'Protection Relay', standard: 'IEC 60255' },
+  'EPMS': { type: 'EPMS/SCADA', standard: 'IEC 61850' },
+  'Busbar': { type: 'MV Busbar', standard: 'IEC 62271-200' },
+  'Cubicle': { type: 'MV Switchgear Cubicle', standard: 'IEC 62271-200' },
+  'PM': { type: 'Power Meter', standard: 'Manufacturer spec' },
+}
+
+function parseLookahead(text, fileName) {
+  const lines = text.split('\n')
+  const equipmentMap = {}
+  
+  // Extract header info
+  const cxMatch = text.match(/Cx\.\s*Completion.*?(\d+)%/i)
+  const energMatch = text.match(/Planned Energisation.*?(\d+\/\d+\/\d+)/i)
+  
+  for (const line of lines) {
+    // Match lines with L3/L4 and percentage
+    const testMatch = line.match(/L([2-5])\s+(.+?)(?:\s{2,}|\d{2}\/\d{2}\/\d{2})/)
+    const pctMatch = line.match(/(\d+)%/)
+    
+    if (!testMatch) continue
+    
+    const level = parseInt(testMatch[1])
+    let testName = testMatch[2].trim()
+    const pct = pctMatch ? parseInt(pctMatch[1]) : 0
+    
+    // Clean test name
+    testName = testName.replace(/\s{2,}/g, ' ').trim()
+    if (testName.length < 4 || testName.length > 80) continue
+    
+    // Determine equipment type from context
+    let equipType = 'General'
+    if (/CT\s*-\s*T/i.test(line)) equipType = 'CT'
+    else if (/\bVT\b/i.test(line) && !/SVL/.test(line)) equipType = 'VT'
+    else if (/Circuit\s*Breaker/i.test(line)) equipType = 'Circuit Breaker'
+    else if (/Manual\s*Earth/i.test(line)) equipType = 'Manual Earth'
+    else if (/Relay\s*testing/i.test(line)) equipType = 'Relay'
+    else if (/EPMS/i.test(line)) equipType = 'EPMS'
+    else if (/Busbar/i.test(line)) equipType = 'Busbar'
+    else if (/Cubicle/i.test(line)) equipType = 'Cubicle'
+    else if (/PM\s+L[34]/i.test(line) || /PQM/i.test(line)) equipType = 'PM'
+    
+    if (!equipmentMap[equipType]) {
+      equipmentMap[equipType] = { tests: new Map(), maxLevel: 0 }
+    }
+    
+    // Deduplicate tests by name
+    if (!equipmentMap[equipType].tests.has(testName)) {
+      equipmentMap[equipType].tests.set(testName, { level, pct })
+    }
+    if (level > equipmentMap[equipType].maxLevel) {
+      equipmentMap[equipType].maxLevel = level
+    }
+  }
+  
+  // Convert to equipment array
+  const drawingRef = extractDrawingRef(fileName)
+  const found = []
+  
+  for (const [eqType, data] of Object.entries(equipmentMap)) {
+    if (eqType === 'General' || data.tests.size === 0) continue
+    
+    const template = LOOKAHEAD_TEST_TEMPLATES[eqType] || { type: eqType, standard: 'Site Test Script' }
+    const tests = []
+    let passCount = 0
+    
+    for (const [tName, tData] of data.tests) {
+      const status = tData.pct >= 100 ? 'Pass' : tData.pct > 0 ? 'In Progress' : 'Pending'
+      if (tData.pct >= 100) passCount++
+      tests.push({
+        name: tName,
+        standard: template.standard,
+        level: tData.level,
+        status: status,
+      })
+    }
+    
+    const allDone = passCount === tests.length
+    const someDone = passCount > 0
+    const equipLevel = allDone ? data.maxLevel : someDone ? data.maxLevel - 1 : 0
+    const equipStatus = allDone ? 'Complete' : someDone ? 'In Progress' : 'Not Started'
+    
+    found.push({
+      name: template.type,
+      qty: 1,
+      drawing: drawingRef,
+      item_ref: eqType.substring(0, 4).toUpperCase(),
+      type: template.type,
+      manufacturer: 'TBC',
+      level: equipLevel,
+      status: equipStatus,
+      tests: tests,
+    })
+  }
+  
+  return {
+    type: 'lookahead',
+    equipment: found,
+    meta: {
+      cxCompletion: cxMatch ? parseInt(cxMatch[1]) : null,
+      plannedEnergisation: energMatch ? energMatch[1] : null,
+    }
+  }
+}
+
+function detectDocType(text) {
+  // Lookahead indicators
+  const lookaheadScore = (
+    (text.match(/L[34]\s+/g) || []).length +
+    (text.match(/\d+%/g) || []).length +
+    (text.includes('Cx. Completion') ? 10 : 0) +
+    (text.includes('Planned Energisation') ? 10 : 0) +
+    (text.includes('lookahead') ? 10 : 0) +
+    (text.match(/Mon|Tue|Wed|Thu|Fri/g) || []).length
+  )
+  
+  // SLD indicators
+  const sldScore = (
+    (text.includes('SCHEDULE OF EQUIPMENT') ? 20 : 0) +
+    (text.match(/kV/g) || []).length +
+    (text.match(/POWER TRANSFORMER|SURGE ARRESTER|SWITCHGEAR|CABLE SEALING/gi) || []).length * 5 +
+    (text.includes('ELEVATION') ? 5 : 0) +
+    (text.includes('PLAN VIEW') ? 5 : 0)
+  )
+  
+  return lookaheadScore > sldScore ? 'lookahead' : 'sld'
+}
+
 export async function parsePdf(file) {
   const { text, pageCount } = await extractTextFromPdf(file)
+  
+  // Auto-detect document type
+  const docType = detectDocType(text)
+  
+  if (docType === 'lookahead') {
+    const result = parseLookahead(text, file.name)
+    return { ...result, pageCount }
+  }
+  
+  // SLD parsing (existing logic)
   const lines = text.split(/\n/)
   const found = []
   const seenTypes = new Set()
@@ -208,5 +352,5 @@ export async function parsePdf(file) {
     }
   }
 
-  return { equipment: found, pageCount }
+  return { type: 'sld', equipment: found, pageCount }
 }

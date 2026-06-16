@@ -7,9 +7,14 @@ HighchartsMore(Highcharts)
 SolidGauge(Highcharts)
 
 export default function Charts({ equipment }) {
-  const completion = equipment.length === 0 ? 0 : Math.round(
-    equipment.reduce((sum, item) => sum + item.level / 5, 0) / equipment.length * 100
-  )
+  // Calculate completion based on tests passed / total tests
+  const totalTests = equipment.reduce((sum, item) => sum + (item.tests ? item.tests.length : 0), 0)
+  const passedTests = equipment.reduce((sum, item) => {
+    if (!item.tests) return sum
+    return sum + item.tests.filter(t => t.status === 'Pass').length
+  }, 0)
+  const completion = totalTests === 0 ? 0 : Math.round(passedTests / totalTests * 100)
+
   const levelCounts = [1, 2, 3, 4, 5].map(l => equipment.filter(e => e.level === l).length)
 
   const gaugeOptions = {

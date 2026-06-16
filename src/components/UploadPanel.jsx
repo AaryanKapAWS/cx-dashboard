@@ -6,7 +6,7 @@ const IDLE = 'idle', PARSING = 'parsing', DONE = 'done', ERROR = 'error'
 export default function UploadPanel({ onAdd }) {
   const [state, setState] = useState(IDLE)
   const [dragOver, setDragOver] = useState(false)
-  const [result, setResult] = useState(null) // { equipment, pageCount, filename }
+  const [result, setResult] = useState(null)
   const [errorMsg, setErrorMsg] = useState('')
   const inputRef = useRef()
 
@@ -19,8 +19,8 @@ export default function UploadPanel({ onAdd }) {
     setState(PARSING)
     setResult(null)
     try {
-      const { equipment, pageCount } = await parsePdf(file)
-      setResult({ equipment, pageCount, filename: file.name })
+      const parsed = await parsePdf(file)
+      setResult({ ...parsed, filename: file.name })
       setState(DONE)
     } catch (e) {
       setErrorMsg(`Failed to parse PDF: ${e.message}`)
@@ -59,7 +59,7 @@ export default function UploadPanel({ onAdd }) {
       <div
         style={{
           border, background: bg, borderRadius: 10,
-          padding: '28px 32px', textAlign: 'center',
+          padding: '24px 32px', textAlign: 'center',
           transition: 'all 0.15s', cursor: state === PARSING ? 'wait' : 'pointer',
         }}
         onClick={() => state !== PARSING && inputRef.current.click()}
@@ -71,53 +71,68 @@ export default function UploadPanel({ onAdd }) {
 
         {state === IDLE && (
           <>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" style={{ marginBottom: 10 }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" style={{ marginBottom: 8 }}>
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#475569' }}>
-              Drop SLD drawings here or click to browse
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>
+              Upload SLD Drawings or Commissioning Lookaheads
             </div>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
-              Accepts PDF — text-based SLD schedules only
+            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3 }}>
+              PDF — auto-detects document type and extracts equipment + test progress
             </div>
           </>
         )}
 
         {state === PARSING && (
-          <div style={{ color: 'var(--orange)', fontWeight: 600, fontSize: 14 }}>
-            <div style={{ marginBottom: 8, fontSize: 22 }}>⏳</div>
-            Parsing PDF…
+          <div style={{ color: 'var(--orange)', fontWeight: 600, fontSize: 13 }}>
+            <div style={{ marginBottom: 6, fontSize: 20 }}>⏳</div>
+            Analysing PDF…
           </div>
         )}
 
         {state === DONE && result && (
           <div onClick={e => e.stopPropagation()} style={{ textAlign: 'left' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div>
-                <span style={{ fontWeight: 700, fontSize: 14, color: '#1e293b' }}>{result.filename}</span>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 10 }}>
-                  {result.pageCount} pages scanned
+                <span style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{result.filename}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 600, marginLeft: 8,
+                  padding: '2px 8px', borderRadius: 10,
+                  background: result.type === 'lookahead' ? '#e0f2fe' : '#f0fdf4',
+                  color: result.type === 'lookahead' ? '#0369a1' : '#166534',
+                }}>
+                  {result.type === 'lookahead' ? '📅 Lookahead' : '📐 SLD Drawing'}
                 </span>
               </div>
-              <button onClick={reset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 18 }}>✕</button>
+              <button onClick={reset} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 16 }}>✕</button>
             </div>
 
             {result.equipment.length === 0 ? (
-              <div style={{ color: 'var(--text-muted)', fontSize: 13, padding: '8px 0' }}>
-                No equipment detected — this drawing may require manual review.
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, padding: '6px 0' }}>
+                No equipment detected — this document may require manual review.
               </div>
             ) : (
               <>
-                <div style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600, marginBottom: 10 }}>
+                <div style={{ fontSize: 12, color: 'var(--green)', fontWeight: 600, marginBottom: 6 }}>
                   ✓ Found {result.equipment.length} equipment item{result.equipment.length !== 1 ? 's' : ''}
+                  {result.type === 'lookahead' && ` with ${result.equipment.reduce((sum, e) => sum + e.tests.length, 0)} tests`}
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+
+                {result.meta && result.meta.cxCompletion && (
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>
+                    Cx Completion: {result.meta.cxCompletion}%
+                    {result.meta.plannedEnergisation && ` · Planned Energisation: ${result.meta.plannedEnergisation}`}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
                   {result.equipment.map((e, i) => (
                     <span key={i} style={{
-                      background: 'var(--blue-light)', color: 'var(--blue)',
-                      fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 12,
+                      background: e.status === 'Complete' ? '#dcfce7' : e.status === 'In Progress' ? '#fff7ed' : '#f1f5f9',
+                      color: e.status === 'Complete' ? '#166534' : e.status === 'In Progress' ? '#9a3412' : '#64748b',
+                      fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
                     }}>{e.type}</span>
                   ))}
                 </div>
@@ -125,8 +140,8 @@ export default function UploadPanel({ onAdd }) {
                   onClick={handleAdd}
                   style={{
                     background: 'var(--orange)', color: '#fff',
-                    border: 'none', borderRadius: 6, padding: '8px 20px',
-                    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                    border: 'none', borderRadius: 6, padding: '7px 18px',
+                    fontWeight: 700, fontSize: 12, cursor: 'pointer',
                   }}
                 >
                   Add {result.equipment.length} items to project
@@ -138,12 +153,12 @@ export default function UploadPanel({ onAdd }) {
 
         {state === ERROR && (
           <div onClick={e => e.stopPropagation()}>
-            <div style={{ color: 'var(--red)', fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+            <div style={{ color: 'var(--red)', fontWeight: 600, fontSize: 13, marginBottom: 6 }}>
               ⚠ {errorMsg}
             </div>
             <button onClick={reset} style={{
               background: 'none', border: '1px solid var(--border)', borderRadius: 6,
-              padding: '6px 16px', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)',
+              padding: '5px 14px', cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)',
             }}>Try again</button>
           </div>
         )}

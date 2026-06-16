@@ -3,6 +3,7 @@ import TopBar from './components/TopBar'
 import Pipeline from './components/Pipeline'
 import StatsRow from './components/StatsRow'
 import Charts from './components/Charts'
+import Timeline from './components/Timeline'
 import EquipmentTable from './components/EquipmentTable'
 import TestDetail from './components/TestDetail'
 import UploadPanel from './components/UploadPanel'
@@ -44,6 +45,7 @@ export default function App() {
       <UploadPanel onAdd={handleAdd} />
       <StatsRow equipment={equipment} />
       <Charts equipment={equipment} />
+      <Timeline equipment={equipment} />
       <EquipmentTable equipment={equipment} selectedIndex={selectedRow} onSelect={setSelectedRow} />
       {selectedRow !== null && <TestDetail equipment={equipment[selectedRow]} />}
       <div style={{ height: 40 }} />

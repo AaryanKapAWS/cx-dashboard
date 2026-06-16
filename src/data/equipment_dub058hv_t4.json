@@ -8,8 +8,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Power Transformer (Closed)",
-    "procore_qc": "QCHV-Power Transformer (Closed)",
     "tests": [
       {
         "name": "DGA (Dissolved Gas Analysis)",
@@ -71,7 +69,11 @@
         "level": 5,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Power Transformer (Closed)",
+    "procore_qc": "QCHV-Power Transformer (Closed)",
+    "plannedStart": "2025-03-01",
+    "plannedEnd": "2025-04-10"
   },
   {
     "name": "110 kV Circuit Breaker",
@@ -82,8 +84,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Circuit Breaker (Closed)",
-    "procore_qc": "QCHV-Circuit Breaker (Closed)",
     "tests": [
       {
         "name": "Timing Test (open/close)",
@@ -115,7 +115,11 @@
         "level": 4,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Circuit Breaker (Closed)",
+    "procore_qc": "QCHV-Circuit Breaker (Closed)",
+    "plannedStart": "2025-03-15",
+    "plannedEnd": "2025-04-04"
   },
   {
     "name": "110 kV Current Transformer (CT)",
@@ -126,8 +130,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Current Transformer (Closed)",
-    "procore_qc": "QCHV-Current Transformer (Closed)",
     "tests": [
       {
         "name": "Ratio Test",
@@ -159,7 +161,11 @@
         "level": 4,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Current Transformer (Closed)",
+    "procore_qc": "QCHV-Current Transformer (Closed)",
+    "plannedStart": "2025-03-29",
+    "plannedEnd": "2025-04-18"
   },
   {
     "name": "110 kV Voltage Transformer (VT)",
@@ -170,8 +176,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Voltage Transformer (Closed)",
-    "procore_qc": "QCHV-Voltage Transformer (Closed)",
     "tests": [
       {
         "name": "Ratio Test",
@@ -197,7 +201,11 @@
         "level": 3,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Voltage Transformer (Closed)",
+    "procore_qc": "QCHV-Voltage Transformer (Closed)",
+    "plannedStart": "2025-04-12",
+    "plannedEnd": "2025-04-28"
   },
   {
     "name": "HV & MV Cable",
@@ -208,8 +216,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-HV & MV Cable (Closed)",
-    "procore_qc": "QCHV-HV & MV Cable (Closed)",
     "tests": [
       {
         "name": "Insulation Resistance (Megger)",
@@ -235,7 +241,11 @@
         "level": 3,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-HV & MV Cable (Closed)",
+    "procore_qc": "QCHV-HV & MV Cable (Closed)",
+    "plannedStart": "2025-04-26",
+    "plannedEnd": "2025-05-12"
   },
   {
     "name": "Neutral Earthing Transformer/Resistor",
@@ -246,8 +256,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Neutral Earthing Transformer/Resistor (Closed)",
-    "procore_qc": "QCHV-Neutral Earthing Transformer/Resistor (Closed)",
     "tests": [
       {
         "name": "Resistance Measurement",
@@ -273,7 +281,11 @@
         "level": 4,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Neutral Earthing Transformer/Resistor (Closed)",
+    "procore_qc": "QCHV-Neutral Earthing Transformer/Resistor (Closed)",
+    "plannedStart": "2025-05-10",
+    "plannedEnd": "2025-05-26"
   },
   {
     "name": "AIS Main Busbar",
@@ -284,8 +296,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-AIS Main Busbar (Closed)",
-    "procore_qc": "QCHV-AIS Main Busbar (Closed)",
     "tests": [
       {
         "name": "Continuity Test",
@@ -311,7 +321,11 @@
         "level": 2,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-AIS Main Busbar (Closed)",
+    "procore_qc": "QCHV-AIS Main Busbar (Closed)",
+    "plannedStart": "2025-05-24",
+    "plannedEnd": "2025-06-09"
   },
   {
     "name": "Protection Relay Panels",
@@ -322,8 +336,6 @@
     "manufacturer": "TBC",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-Relay Panels (Closed)",
-    "procore_qc": "QCHV-Relay Panels (Closed)",
     "tests": [
       {
         "name": "Settings Verification",
@@ -349,7 +361,11 @@
         "level": 4,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-Relay Panels (Closed)",
+    "procore_qc": "QCHV-Relay Panels (Closed)",
+    "plannedStart": "2025-06-07",
+    "plannedEnd": "2025-06-23"
   },
   {
     "name": "HV Substation (overall system)",
@@ -360,7 +376,6 @@
     "manufacturer": "\u2014",
     "level": 5,
     "status": "Complete",
-    "procore_cx": "CxHV-HV Substation (Closed)",
     "tests": [
       {
         "name": "System Functional Performance Test",
@@ -380,6 +395,9 @@
         "level": 5,
         "status": "Pass"
       }
-    ]
+    ],
+    "procore_cx": "CxHV-HV Substation (Closed)",
+    "plannedStart": "2025-06-21",
+    "plannedEnd": "2025-07-03"
   }
 ]

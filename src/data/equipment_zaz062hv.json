@@ -1,5 +1,3292 @@
 [
-  {"name": "Equipment data not yet extracted", "qty": 0, "drawing": "—", "item_ref": "—", "type": "—", "manufacturer": "—", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
-  {"name": "45 kV Power Transformer (TBC)", "qty": 1, "drawing": "TBC", "item_ref": "E1", "type": "Power Transformer", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []},
-  {"name": "45 kV Circuit Breaker (TBC)", "qty": 2, "drawing": "TBC", "item_ref": "E2", "type": "Circuit Breaker", "manufacturer": "TBC", "level": 0, "status": "Awaiting SLD Upload", "tests": []}
+  {
+    "name": "MV Switchgear C - Busbar System",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "0",
+    "type": "MV Busbar",
+    "manufacturer": "ABB (UniGear ZS1)",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-12",
+    "plannedEnd": "2026-06-26",
+    "tests": [
+      {
+        "name": "Busbar Insulation Resistance Test",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-03",
+        "endDate": "2026-03-03"
+      },
+      {
+        "name": "Busbar Contact Resistance",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-03",
+        "endDate": "2026-03-03"
+      },
+      {
+        "name": "Main AC Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Main DC Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Switchgear Castell Key Interlock Test Sheet",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pending",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-27"
+      },
+      {
+        "name": "Trapped handle of CB door (C02) fix",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-18"
+      },
+      {
+        "name": "Installation of 2x RJ45-to-FO converters (EPMS/SAITEL)",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 01 - B-C Coupler",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "1",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-12",
+    "plannedEnd": "2026-07-08",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CT-T1 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T1 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T1 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "CT-T90 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T90 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "CB Visual Inspection",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Timing Check",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Minimum Voltage Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Coil Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Motor Charging Current",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Manual/Electrical Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Castell Key Interlock Checks",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "ES Contact Resistance",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Manual Operation Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Castell Key Interlock Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-23",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 02 - Incomer",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "2",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-12",
+    "plannedEnd": "2026-07-08",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CT-T1 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T1 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T1 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "CT-T90 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T90 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "CT-T2 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T2 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T2 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "VT Visual Inspection",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "VT Insulation Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Winding Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Ratio Check",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Secondary Injection",
+        "standard": "IEC 61869-3",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Visual Inspection",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Timing Check",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Minimum Voltage Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Coil Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Motor Charging Current",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Manual/Electrical Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Castell Key Interlock Checks",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "ES Contact Resistance",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Manual Operation Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Castell Key Interlock Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-23",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 03 - Feeder MV-3C (8POD)",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "3",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-12",
+    "plannedEnd": "2026-07-08",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CT-T1 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T1 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T1 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "CT-T90 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T90 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "CT-T2 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T2 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T2 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "VT Visual Inspection",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "VT Insulation Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Winding Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Ratio Check",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Secondary Injection",
+        "standard": "IEC 61869-3",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Visual Inspection",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Timing Check",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Minimum Voltage Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Coil Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Motor Charging Current",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Manual/Electrical Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Castell Key Interlock Checks",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "ES Contact Resistance",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Manual Operation Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Castell Key Interlock Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-23",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "Relay (Block 2) Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 04 - 220kV SS Aux Tx - 2",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "4",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-16",
+    "plannedEnd": "2026-07-08",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CT-T1 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T1 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T1 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "CT-T90 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T90 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "CT-T2 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T2 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T2 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "VT Visual Inspection",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "VT Insulation Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Winding Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Ratio Check",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Secondary Injection",
+        "standard": "IEC 61869-3",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Visual Inspection",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Timing Check",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Minimum Voltage Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Coil Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Motor Charging Current",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Manual/Electrical Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Castell Key Interlock Checks",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "ES Contact Resistance",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Manual Operation Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Castell Key Interlock Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-23",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "Relay (Block 2) Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 05 - Metering",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "5",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-16",
+    "plannedEnd": "2026-06-26",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "VT Visual Inspection",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "VT Insulation Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Winding Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Ratio Check",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Secondary Injection",
+        "standard": "IEC 61869-3",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  },
+  {
+    "name": "Cubicle 06 - Spare",
+    "qty": 1,
+    "drawing": "MV SWGR C Lookahead",
+    "item_ref": "6",
+    "type": "MV Switchgear Cubicle",
+    "manufacturer": "ABB",
+    "level": 3,
+    "status": "In Progress",
+    "plannedStart": "2026-02-16",
+    "plannedEnd": "2026-07-08",
+    "tests": [
+      {
+        "name": "Cubicle AC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-12",
+        "endDate": "2026-02-12"
+      },
+      {
+        "name": "Cubicle DC Power Up and Scheme Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-13",
+        "endDate": "2026-02-13"
+      },
+      {
+        "name": "Internal Wiring Checks and Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-02",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Panel Wiring Functional Checks",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "High Voltage Test & Voltage Detector Operation",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-25"
+      },
+      {
+        "name": "All Spare Contact Healthiness Check",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "Wiring Modifications",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Wiring Modifications Functional Testing",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "Heater Current Measurement",
+        "standard": "Site Test Script",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CT-T1 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T1 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T1 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T1 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T1 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T1 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "CT-T90 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T90 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-29",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-26",
+        "endDate": "2026-05-29"
+      },
+      {
+        "name": "CT-T90 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "CT-T2 Visual Inspection",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Insulation Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CT-T2 Polarity Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Saturation Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Winding Resistance",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "CT-T2 Contact Resistance & Torque",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-12",
+        "endDate": "2026-03-12"
+      },
+      {
+        "name": "CT-T2 Ratio Check",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-06",
+        "endDate": "2026-03-06"
+      },
+      {
+        "name": "CT-T2 Burden Test",
+        "standard": "IEC 61869-2",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-10",
+        "endDate": "2026-03-10"
+      },
+      {
+        "name": "CT-T2 Primary Injection",
+        "standard": "IEC 61869-2",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "VT Visual Inspection",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-04"
+      },
+      {
+        "name": "VT Insulation Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Winding Resistance",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Polarity Test",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Ratio Check",
+        "standard": "IEC 61869-3",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-13",
+        "endDate": "2026-03-13"
+      },
+      {
+        "name": "VT Secondary Injection",
+        "standard": "IEC 61869-3",
+        "level": 4,
+        "status": "Pass",
+        "startDate": "2026-05-22",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Visual Inspection",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Insulation Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-04",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "CB Contact Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Timing Check",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-05-18",
+        "endDate": "2026-05-22"
+      },
+      {
+        "name": "CB Minimum Voltage Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Coil Resistance",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-18",
+        "endDate": "2026-03-18"
+      },
+      {
+        "name": "CB Motor Charging Current",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Manual/Electrical Operation",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "CB Castell Key Interlock Checks",
+        "standard": "IEC 62271-100",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-09",
+        "endDate": "2026-03-09"
+      },
+      {
+        "name": "ES Contact Resistance",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Manual Operation Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-02-16",
+        "endDate": "2026-02-16"
+      },
+      {
+        "name": "ES Castell Key Interlock Checks",
+        "standard": "IEC 62271-102",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-23",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-05",
+        "endDate": "2026-03-05"
+      },
+      {
+        "name": "Relay Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Relay Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-25",
+        "endDate": "2026-03-25"
+      },
+      {
+        "name": "Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "Relay (Block 2) Equipment Details Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) DC Supply Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Measurement Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Function Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) LED Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Input",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Digital Output",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Trip Test",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Disturbance Recorder",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Time Sync Check",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Configuration File Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Lock Out Validation",
+        "standard": "IEC 60255",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-04-01",
+        "endDate": "2026-04-01"
+      },
+      {
+        "name": "Relay (Block 2) Protection Relay Settings Record",
+        "standard": "IEC 60255",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-22",
+        "endDate": "2026-06-26"
+      },
+      {
+        "name": "EPMS/SAITEL Validation (Measurements & Status)",
+        "standard": "IEC 61850",
+        "level": 4,
+        "status": "Pending",
+        "startDate": "2026-06-29",
+        "endDate": "2026-07-08"
+      },
+      {
+        "name": "PM Settings Changed",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      },
+      {
+        "name": "PM Validation",
+        "standard": "Manufacturer spec",
+        "level": 3,
+        "status": "Pass",
+        "startDate": "2026-03-11",
+        "endDate": "2026-03-11"
+      }
+    ]
+  }
 ]
