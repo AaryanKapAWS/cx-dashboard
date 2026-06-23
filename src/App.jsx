@@ -287,12 +287,16 @@ export default function App() {
           </div>
 
           {/* Feeder Builder */}
-          <SectionBuilder onSubmit={(items) => { setV3Equipment(prev => [...prev, ...items]); setToast({ message: `Added ${items.length} equipment items` }); setTimeout(() => setToast(null), 4000) }} />
+          <SectionBuilder onSubmit={(items) => { setV3Equipment(items); setV3SelectedRow(null); setToast({ message: `Added ${items.length} equipment items` }); setTimeout(() => setToast(null), 4000) }} />
 
           {/* Equipment Table */}
           {v3Equipment.length > 0 && (
             <>
-              <EquipmentTable equipment={v3Equipment} selectedIndex={v3SelectedRow} onSelect={setV3SelectedRow} />
+              <EquipmentTable equipment={v3Equipment} selectedIndex={v3SelectedRow} onSelect={setV3SelectedRow}
+                onRemove={(idx) => {
+                  if (idx === 'all') { setV3Equipment([]); setV3SelectedRow(null) }
+                  else { setV3Equipment(prev => prev.filter((_, i) => i !== idx)); setV3SelectedRow(null) }
+                }} />
               {v3SelectedRow !== null && v3Equipment[v3SelectedRow] && <TestDetail equipment={v3Equipment[v3SelectedRow]} />}
             </>
           )}

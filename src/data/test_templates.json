@@ -1,4 +1,11 @@
 {
+  "SWITCHGEAR_OVERALL": [
+    ["L3", "Busbar Ductor Test"],
+    ["L3", "Busbar Megger Test (Insulation Resistance)"],
+    ["L3", "Switchgear High Voltage Withstand Test"],
+    ["L3", "Castel Key Interlock Test"],
+    ["L3", "Protection Trip Matrix Test"]
+  ],
   "VT": [
     ["L1", "FAT report available on Procore"],
     ["L1", "FAT Observation"],
