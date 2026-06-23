@@ -1,3 +1,5 @@
+import testTemplates from '../data/test_templates.json'
+
 const STATUS_STYLES = {
   'Complete':    { color: 'var(--green)' },
   'In Progress': { color: 'var(--orange)' },
@@ -6,7 +8,14 @@ const STATUS_STYLES = {
   'Pending': { color: 'var(--orange)' },
 }
 
+function getTestCount(item) {
+  if (item.tests && item.tests.length > 0) return item.tests.length
+  const tmpl = testTemplates[item.type]
+  return tmpl ? tmpl.length : 0
+}
+
 function LevelDots({ level }) {
+  if (!level && level !== 0) return <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>—</span>
   return (
     <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
       {[1, 2, 3, 4, 5].map(l => (
@@ -27,7 +36,6 @@ function StatusDot({ status }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
       <div style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-      <span style={{ fontSize: 11, fontWeight: 500, color: s.color, whiteSpace: 'nowrap' }}>{status}</span>
     </div>
   )
 }
@@ -55,45 +63,53 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect }) {
       <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
         <thead>
           <tr style={{ background: '#f8fafc' }}>
-            <TH width="50px">Ref</TH>
+            <TH width="180px">Feeder</TH>
             <TH>Equipment</TH>
             <TH width="50px">Qty</TH>
-            <TH width="80px">Tests</TH>
-            <TH width="140px">Type</TH>
-            <TH width="110px">Level</TH>
+            <TH width="70px">Tests</TH>
+            <TH width="130px">Type</TH>
             <TH width="100px">Status</TH>
           </tr>
         </thead>
         <tbody>
-          {equipment.map((item, i) => (
-            <tr
-              key={i}
-              onClick={() => onSelect(i === selectedIndex ? null : i)}
-              style={{
-                borderBottom: '1px solid var(--border)',
-                cursor: 'pointer',
-                background: i === selectedIndex ? '#FFF8F0' : (i % 2 === 1 ? '#FAFBFC' : 'transparent'),
-                borderLeft: i === selectedIndex ? '4px solid var(--orange)' : '4px solid transparent',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => { if (i !== selectedIndex) e.currentTarget.style.background = '#f1f5f9' }}
-              onMouseLeave={e => { if (i !== selectedIndex) e.currentTarget.style.background = i % 2 === 1 ? '#FAFBFC' : 'transparent' }}
-            >
-              <td style={{ padding: '8px 10px', fontSize: 11, fontFamily: 'monospace', color: 'var(--text-muted)', overflow: 'hidden' }}>{item.item_ref}</td>
-              <td style={{ padding: '8px 10px', fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</td>
-              <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>{item.qty}</td>
-              <td style={{ padding: '8px 10px', fontSize: 11, textAlign: 'center' }}>
-                {item.tests && item.tests.length > 0 ? (
-                  <span style={{ color: item.tests.filter(t => t.status === 'Pass').length === item.tests.length ? 'var(--green)' : 'var(--text-muted)', fontWeight: 600 }}>
-                    {item.tests.filter(t => t.status === 'Pass').length}/{item.tests.length}
-                  </span>
-                ) : '—'}
-              </td>
-              <td style={{ padding: '8px 10px', fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.type}</td>
-              <td style={{ padding: '8px 10px' }}><LevelDots level={item.level} /></td>
-              <td style={{ padding: '8px 10px' }}><StatusDot status={item.status} /></td>
-            </tr>
-          ))}
+          {equipment.map((item, i) => {
+            const testCount = getTestCount(item)
+            return (
+              <tr
+                key={i}
+                onClick={() => onSelect(i === selectedIndex ? null : i)}
+                style={{
+                  borderBottom: '1px solid var(--border)',
+                  cursor: 'pointer',
+                  background: i === selectedIndex ? '#FFF8F0' : (i % 2 === 1 ? '#FAFBFC' : 'transparent'),
+                  borderLeft: i === selectedIndex ? '4px solid var(--orange)' : '4px solid transparent',
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => { if (i !== selectedIndex) e.currentTarget.style.background = '#f1f5f9' }}
+                onMouseLeave={e => { if (i !== selectedIndex) e.currentTarget.style.background = i % 2 === 1 ? '#FAFBFC' : 'transparent' }}
+              >
+                <td style={{ padding: '8px 10px', fontSize: 11, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.feeder_ref || item.item_ref || '—'}
+                </td>
+                <td style={{ padding: '8px 10px', fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {item.name}
+                </td>
+                <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
+                  {item.qty}
+                </td>
+                <td style={{ padding: '8px 10px', fontSize: 11, textAlign: 'center', fontWeight: 600, color: testCount > 0 ? '#475569' : 'var(--text-muted)' }}>
+                  {testCount > 0 ? testCount : '—'}
+                </td>
+                <td style={{ padding: '8px 10px' }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
+                    background: '#f1f5f9', color: '#475569'
+                  }}>{item.type}</span>
+                </td>
+                <td style={{ padding: '8px 10px' }}><StatusDot status={item.status || 'Not Started'} /></td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

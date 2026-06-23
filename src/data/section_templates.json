@@ -1,0 +1,66 @@
+{
+  "transformer_bay": {
+    "label": "Transformer Bay",
+    "description": "Power transformer and associated HV equipment",
+    "equipment": [
+      { "id": "TRANSFORMER", "label": "Power Transformer", "default": true, "qty": 1 },
+      { "id": "VT", "label": "Voltage Transformer (VT)", "default": true, "qty": 2 },
+      { "id": "CT", "label": "Current Transformer (CT)", "default": true, "qty": 2 },
+      { "id": "SURGE_ARRESTER", "label": "Surge Arrester", "default": true, "qty": 1 },
+      { "id": "NER_CT", "label": "NER CT", "default": true, "qty": 1 },
+      { "id": "BUSBAR", "label": "Busbar", "default": true, "qty": 1 },
+      { "id": "NER", "label": "Neutral Earthing Resistor (NER)", "default": true, "qty": 1 }
+    ]
+  },
+  "switchgear": {
+    "label": "Switchgear",
+    "description": "Switchgear feeders — select type per feeder to auto-populate equipment",
+    "feeder_types": [
+      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "VT", "PQM", "EPMS", "RELAY", "BUSBAR", "ENERGIZATION"] },
+      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "VT", "RELAY", "BUSBAR"] },
+      { "id": "ner_feeder", "label": "NER", "defaults": ["CT", "RELAY"] },
+      { "id": "vt_panel", "label": "VT Panel / Metering", "defaults": ["VT", "PQM"] },
+      { "id": "outgoing", "label": "Outgoing Feeder", "defaults": ["CT", "PQM", "EPMS", "RELAY", "BUSBAR", "ENERGIZATION"] },
+      { "id": "xfmr", "label": "Transformer Feeder", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "spare", "label": "Spare", "defaults": ["CT", "RELAY"] },
+      { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
+    ],
+    "equipment_types": ["CT", "VT", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"]
+  },
+  "panel_board": {
+    "label": "Panel Board",
+    "description": "Distribution panel board — feeders to downstream loads",
+    "feeder_types": [
+      { "id": "metering", "label": "Metering Panel", "defaults": ["VT"] },
+      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "feeder", "label": "Feeder", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
+    ],
+    "equipment_types": ["CT", "CT2", "VT", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"]
+  },
+  "protection": {
+    "label": "Protection & Stability",
+    "description": "Protection relay panels and stability/differential tests",
+    "equipment": [
+      { "id": "PROTECTION_PANEL", "label": "Protection Panel", "default": true, "qty": 1 },
+      { "id": "STABILITY_TEST", "label": "Stability Test", "default": true, "qty": 1 }
+    ]
+  },
+  "cables": {
+    "label": "Cable Testing",
+    "description": "Power cable testing between equipment",
+    "equipment": [
+      { "id": "HV_CABLE", "label": "HV Cable", "default": false, "qty": 0 },
+      { "id": "MV_CABLE", "label": "MV Cable", "default": true, "qty": 1 }
+    ]
+  },
+  "substation_checks": {
+    "label": "Substation Checks",
+    "description": "Pre-energization checks, DOF, and grid interface",
+    "equipment": [
+      { "id": "SUBSTATION_CHECKS", "label": "Substation Check Sheets", "default": true, "qty": 1 },
+      { "id": "ESB_INTERFACE", "label": "Grid Interface Kiosk", "default": true, "qty": 1 }
+    ]
+  }
+}
