@@ -5,6 +5,67 @@ const SECTION_TYPES = Object.entries(sectionTemplates).map(([id, config]) => ({
   id, ...config
 }))
 
+// All available test types for custom equipment
+const ALL_TEST_TYPES = [
+  { id: 'CT', label: 'CT Tests' },
+  { id: 'VT', label: 'VT Tests' },
+  { id: 'TRANSFORMER', label: 'Transformer Tests' },
+  { id: 'RELAY', label: 'Relay Tests' },
+  { id: 'BUSBAR', label: 'Busbar Tests' },
+  { id: 'PQM', label: 'PQM Tests' },
+  { id: 'EPMS', label: 'EPMS Tests' },
+  { id: 'ENERGIZATION', label: 'Energization Tests' },
+  { id: 'SURGE_ARRESTER', label: 'Surge Arrester Tests' },
+  { id: 'NER', label: 'NER Tests' },
+  { id: 'NER_CT', label: 'NER CT Tests' },
+  { id: 'PROTECTION_PANEL', label: 'Protection Panel Tests' },
+  { id: 'STABILITY_TEST', label: 'Stability Tests' },
+  { id: 'MV_CABLE', label: 'MV Cable Tests' },
+  { id: 'HV_CABLE', label: 'HV Cable Tests' },
+  { id: 'SUBSTATION_CHECKS', label: 'Substation Checks' },
+  { id: 'ESB_INTERFACE', label: 'Grid Interface Tests' },
+]
+
+function CustomEquipmentAdder({ section, onUpdate }) {
+  const [name, setName] = useState('')
+  const [testType, setTestType] = useState('RELAY')
+
+  function handleAdd() {
+    if (!name.trim()) return
+    const newItem = { id: `custom_${Date.now()}`, label: name.trim(), qty: 1, name: name.trim(), testType }
+    onUpdate({ ...section, items: [...section.items, newItem] })
+    setName('')
+  }
+
+  return (
+    <div style={{
+      marginTop: 12, padding: '10px 12px', borderRadius: 6,
+      border: '1px dashed #cbd5e1', background: '#f8fafc',
+      display: 'flex', alignItems: 'center', gap: 8
+    }}>
+      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add:</span>
+      <input
+        value={name}
+        onChange={e => setName(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && handleAdd()}
+        placeholder="Equipment name (e.g. NER Relay)"
+        style={{ flex: 1, padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 12 }}
+      />
+      <select value={testType} onChange={e => setTestType(e.target.value)}
+        style={{ padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 11 }}
+      >
+        {ALL_TEST_TYPES.map(t => (
+          <option key={t.id} value={t.id}>{t.label}</option>
+        ))}
+      </select>
+      <button onClick={handleAdd} style={{
+        padding: '6px 12px', background: '#FF9900', color: '#fff', border: 'none',
+        borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
+      }}>Add</button>
+    </div>
+  )
+}
+
 // Equipment-list section (Transformer Bay, Protection, Cables, Substation Checks)
 function EquipmentSection({ section, onUpdate, onRemove }) {
   const template = sectionTemplates[section.type]
@@ -77,6 +138,9 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
           )
         })}
       </div>
+
+      {/* Custom equipment adder */}
+      <CustomEquipmentAdder section={section} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -232,11 +296,12 @@ export default function SectionBuilder({ onSubmit }) {
       if (section.items) {
         // Equipment-list section
         for (const item of section.items) {
+          const typeId = item.testType || item.id  // custom items use testType
           for (let q = 0; q < (item.qty || 1); q++) {
             const suffix = item.qty > 1 ? ` ${q + 1}` : ''
             allItems.push({
               feeder_ref: `${sectionName} \u2014 ${item.name || item.label}${suffix}`,
-              type: item.id,
+              type: typeId,
               name: item.name || `${item.label}${suffix}`,
               qty: 1,
               drawing: 'SLD (Manual)',
@@ -338,18 +403,25 @@ export default function SectionBuilder({ onSubmit }) {
             + ADD SECTION
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {SECTION_TYPES.map(st => (
-              <button key={st.id} onClick={() => addSection(st.id)} style={{
+            {SECTION_TYPES.map(st => {
+              const alreadyAdded = st.id !== 'custom' && sections.some(s => s.type === st.id)
+              return (
+              <button key={st.id} onClick={() => !alreadyAdded && addSection(st.id)} style={{
                 padding: '8px 14px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer',
-                color: '#475569', transition: 'all 0.15s'
+                border: alreadyAdded ? '1px solid #e2e8f0' : '1px solid #d1d5db',
+                background: alreadyAdded ? '#f1f5f9' : '#fff',
+                cursor: alreadyAdded ? 'not-allowed' : 'pointer',
+                color: alreadyAdded ? '#cbd5e1' : '#475569',
+                transition: 'all 0.15s',
+                opacity: alreadyAdded ? 0.5 : 1,
               }}
-                onMouseEnter={e => { e.target.style.borderColor = '#FF9900'; e.target.style.background = '#fffbeb' }}
-                onMouseLeave={e => { e.target.style.borderColor = '#d1d5db'; e.target.style.background = '#fff' }}
+                onMouseEnter={e => { if (!alreadyAdded) { e.target.style.borderColor = '#FF9900'; e.target.style.background = '#fffbeb' } }}
+                onMouseLeave={e => { if (!alreadyAdded) { e.target.style.borderColor = '#d1d5db'; e.target.style.background = '#fff' } }}
               >
-                {st.label}
+                {alreadyAdded ? `✓ ${st.label}` : st.label}
               </button>
-            ))}
+              )
+            })}
           </div>
         </div>
 

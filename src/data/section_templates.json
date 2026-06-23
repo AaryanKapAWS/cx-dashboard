@@ -4,8 +4,8 @@
     "description": "Power transformer and associated HV equipment",
     "equipment": [
       { "id": "TRANSFORMER", "label": "Power Transformer", "default": true, "qty": 1 },
-      { "id": "VT", "label": "Voltage Transformer (VT)", "default": true, "qty": 2 },
-      { "id": "CT", "label": "Current Transformer (CT)", "default": true, "qty": 2 },
+      { "id": "VT", "label": "Voltage Transformer (VT)", "default": true, "qty": 1 },
+      { "id": "CT", "label": "Current Transformer (CT)", "default": true, "qty": 1 },
       { "id": "SURGE_ARRESTER", "label": "Surge Arrester", "default": true, "qty": 1 },
       { "id": "NER_CT", "label": "NER CT", "default": true, "qty": 1 },
       { "id": "BUSBAR", "label": "Busbar", "default": true, "qty": 1 },
@@ -62,5 +62,13 @@
       { "id": "SUBSTATION_CHECKS", "label": "Substation Check Sheets", "default": true, "qty": 1 },
       { "id": "ESB_INTERFACE", "label": "Grid Interface Kiosk", "default": true, "qty": 1 }
     ]
+  },
+  "custom": {
+    "label": "Custom",
+    "description": "Add any equipment not covered by standard sections",
+    "feeder_types": [
+      { "id": "custom", "label": "Custom", "defaults": [] }
+    ],
+    "equipment_types": ["CT", "CT2", "VT", "TRANSFORMER", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION", "SURGE_ARRESTER", "NER", "NER_CT"]
   }
 }

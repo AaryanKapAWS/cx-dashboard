@@ -1,11 +1,23 @@
 import testTemplates from '../data/test_templates.json'
 
-const STATUS_STYLES = {
-  'Complete':    { color: 'var(--green)' },
-  'In Progress': { color: 'var(--orange)' },
-  'Not Started': { color: 'var(--red)' },
-  'Awaiting SLD Upload': { color: 'var(--text-muted)' },
-  'Pending': { color: 'var(--orange)' },
+const TYPE_LABELS = {
+  CT: 'CT', CT2: 'CT', VT: 'VT', TRANSFORMER: 'Transformer',
+  BUSBAR: 'Busbar', PQM: 'PQM', EPMS: 'EPMS', RELAY: 'Relay',
+  ENERGIZATION: 'Energization', SURGE_ARRESTER: 'Surge Arrester',
+  NER: 'NER', NER_CT: 'NER CT', NER_CT_SBEF: 'NER CT',
+  PROTECTION_PANEL: 'Protection Panel', STABILITY_TEST: 'Stability Test',
+  MV_CABLE: 'MV Cable', HV_CABLE: 'HV Cable',
+  SUBSTATION_CHECKS: 'Sub. Checks', ESB_INTERFACE: 'Grid Interface',
+}
+
+const TYPE_COLORS = {
+  CT: '#3b82f6', VT: '#8b5cf6', TRANSFORMER: '#dc2626',
+  BUSBAR: '#64748b', PQM: '#06b6d4', EPMS: '#0891b2',
+  RELAY: '#f59e0b', ENERGIZATION: '#16a34a', SURGE_ARRESTER: '#ea580c',
+  NER: '#7c3aed', NER_CT: '#6d28d9', PROTECTION_PANEL: '#be185d',
+  STABILITY_TEST: '#be185d', MV_CABLE: '#475569', HV_CABLE: '#334155',
+  SUBSTATION_CHECKS: '#059669', ESB_INTERFACE: '#059669',
+  CT2: '#3b82f6', NER_CT_SBEF: '#6d28d9',
 }
 
 function getTestCount(item) {
@@ -14,104 +26,138 @@ function getTestCount(item) {
   return tmpl ? tmpl.length : 0
 }
 
-function LevelDots({ level }) {
-  if (!level && level !== 0) return <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>—</span>
-  return (
-    <div style={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-      {[1, 2, 3, 4, 5].map(l => (
-        <div key={l} style={{
-          width: 8, height: 6, borderRadius: 3,
-          background: l <= level
-            ? (level >= 5 ? 'var(--green)' : level >= 4 ? 'var(--blue)' : 'var(--orange)')
-            : '#e2e8f0',
-        }} />
-      ))}
-      <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 3 }}>L{level}</span>
-    </div>
-  )
+function getSection(feederRef) {
+  if (!feederRef) return 'Unassigned'
+  const parts = feederRef.split(' \u2014 ')
+  return parts[0] || 'Unassigned'
 }
 
-function StatusDot({ status }) {
-  const s = STATUS_STYLES[status] || STATUS_STYLES['Not Started']
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-      <div style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-    </div>
-  )
+function getEquipmentName(feederRef) {
+  if (!feederRef) return ''
+  const parts = feederRef.split(' \u2014 ')
+  return parts[1] || ''
 }
-
-const TH = ({ children, width }) => (
-  <th style={{
-    padding: '8px 10px', textAlign: 'left',
-    fontSize: 10, fontWeight: 600, color: 'var(--text-muted)',
-    textTransform: 'uppercase', letterSpacing: '0.5px',
-    borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap',
-    width: width || 'auto',
-  }}>{children}</th>
-)
 
 export default function EquipmentTable({ equipment, selectedIndex, onSelect }) {
+  // Group by section
+  const sections = {}
+  equipment.forEach((item, idx) => {
+    const section = getSection(item.feeder_ref)
+    if (!sections[section]) sections[section] = []
+    sections[section].push({ ...item, _idx: idx })
+  })
+
+  const totalTests = equipment.reduce((sum, item) => sum + getTestCount(item), 0)
+
   return (
     <div style={{
-      background: 'var(--card-bg)', border: '1px solid var(--border)',
+      background: '#fff', border: '1px solid #e2e8f0',
       borderRadius: 10, margin: '16px 32px 0', overflow: 'hidden',
     }}>
-      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 14, fontWeight: 600 }}>Equipment Register</span>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>Click a row to view test details</span>
+      {/* Header */}
+      <div style={{
+        padding: '14px 20px', borderBottom: '1px solid #e2e8f0',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>Equipment Register</span>
+          <span style={{ fontSize: 11, color: '#94a3b8' }}>Click a row to view test details</span>
+        </div>
+        <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+          <span style={{ color: '#64748b' }}>
+            <strong style={{ color: '#1e293b' }}>{equipment.length}</strong> items
+          </span>
+          <span style={{ color: '#64748b' }}>
+            <strong style={{ color: '#1e293b' }}>{totalTests}</strong> tests
+          </span>
+        </div>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-        <thead>
-          <tr style={{ background: '#f8fafc' }}>
-            <TH width="180px">Feeder</TH>
-            <TH>Equipment</TH>
-            <TH width="50px">Qty</TH>
-            <TH width="70px">Tests</TH>
-            <TH width="130px">Type</TH>
-            <TH width="100px">Status</TH>
-          </tr>
-        </thead>
-        <tbody>
-          {equipment.map((item, i) => {
+
+      {/* Grouped content */}
+      {Object.entries(sections).map(([sectionName, items]) => (
+        <div key={sectionName}>
+          {/* Section header */}
+          <div style={{
+            padding: '10px 20px', background: '#1e293b',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+          }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sectionName}</span>
+            <span style={{ fontSize: 10, color: '#94a3b8' }}>
+              {items.length} items · {items.reduce((s, i) => s + getTestCount(i), 0)} tests
+            </span>
+          </div>
+
+          {/* Equipment rows */}
+          {items.map((item, i) => {
             const testCount = getTestCount(item)
+            const typeLabel = TYPE_LABELS[item.type] || item.type
+            const typeColor = TYPE_COLORS[item.type] || '#64748b'
+            const isSelected = item._idx === selectedIndex
+
             return (
-              <tr
-                key={i}
-                onClick={() => onSelect(i === selectedIndex ? null : i)}
+              <div
+                key={item._idx}
+                onClick={() => onSelect(item._idx === selectedIndex ? null : item._idx)}
                 style={{
-                  borderBottom: '1px solid var(--border)',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 80px 60px',
+                  alignItems: 'center',
+                  padding: '10px 20px',
+                  borderBottom: '1px solid #f1f5f9',
                   cursor: 'pointer',
-                  background: i === selectedIndex ? '#FFF8F0' : (i % 2 === 1 ? '#FAFBFC' : 'transparent'),
-                  borderLeft: i === selectedIndex ? '4px solid var(--orange)' : '4px solid transparent',
-                  transition: 'background 0.15s',
+                  background: isSelected ? '#FFF8F0' : (i % 2 === 0 ? '#fff' : '#fafbfc'),
+                  borderLeft: isSelected ? '4px solid #FF9900' : '4px solid transparent',
+                  transition: 'background 0.1s',
                 }}
-                onMouseEnter={e => { if (i !== selectedIndex) e.currentTarget.style.background = '#f1f5f9' }}
-                onMouseLeave={e => { if (i !== selectedIndex) e.currentTarget.style.background = i % 2 === 1 ? '#FAFBFC' : 'transparent' }}
+                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f8fafc' }}
+                onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = i % 2 === 0 ? '#fff' : '#fafbfc' }}
               >
-                <td style={{ padding: '8px 10px', fontSize: 11, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.feeder_ref || item.item_ref || '—'}
-                </td>
-                <td style={{ padding: '8px 10px', fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {item.name}
-                </td>
-                <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
-                  {item.qty}
-                </td>
-                <td style={{ padding: '8px 10px', fontSize: 11, textAlign: 'center', fontWeight: 600, color: testCount > 0 ? '#475569' : 'var(--text-muted)' }}>
-                  {testCount > 0 ? testCount : '—'}
-                </td>
-                <td style={{ padding: '8px 10px' }}>
+                {/* Name + type badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
-                    background: '#f1f5f9', color: '#475569'
-                  }}>{item.type}</span>
-                </td>
-                <td style={{ padding: '8px 10px' }}><StatusDot status={item.status || 'Not Started'} /></td>
-              </tr>
+                    fontSize: 9, fontWeight: 700, color: typeColor,
+                    background: typeColor + '15', padding: '2px 7px',
+                    borderRadius: 3, whiteSpace: 'nowrap', minWidth: 50, textAlign: 'center'
+                  }}>
+                    {typeLabel}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: '#1e293b' }}>
+                    {item.name}
+                  </span>
+                </div>
+
+                {/* Test count */}
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{
+                    fontSize: 12, fontWeight: 600,
+                    color: testCount > 0 ? '#475569' : '#cbd5e1'
+                  }}>
+                    {testCount} tests
+                  </span>
+                </div>
+
+                {/* Status indicator */}
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <div style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: item.status === 'Complete' ? '#16a34a' :
+                               item.status === 'In Progress' ? '#FF9900' : '#e2e8f0'
+                  }} />
+                </div>
+              </div>
             )
           })}
-        </tbody>
-      </table>
+        </div>
+      ))}
+
+      {/* Empty state */}
+      {equipment.length === 0 && (
+        <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
+          <div style={{ fontSize: 13, fontWeight: 500 }}>No equipment added yet</div>
+          <div style={{ fontSize: 11, marginTop: 4 }}>Use the Section Builder above to add equipment</div>
+        </div>
+      )}
     </div>
   )
 }
