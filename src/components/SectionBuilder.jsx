@@ -194,24 +194,8 @@ function FeederSection({ section, onUpdate }) {
 
   return (
     <div style={{ padding: '12px 16px' }}>
-      <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 8px' }}>{template.description}</p>
-      
-      {/* Overall tests indicator */}
-      {section.hasOverallTests && (
-        <div style={{
-          padding: '10px 14px', marginBottom: 10, borderRadius: 6,
-          background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 11, color: '#166534'
-        }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>✓ Switchgear Overall Tests (applied once to entire switchgear)</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px', color: '#15803d' }}>
-            <span>• Busbar Ductor Test</span>
-            <span>• Busbar Megger Test (IR)</span>
-            <span>• HV Withstand Test</span>
-            <span>• Castel Key Interlock Test</span>
-            <span>• Protection Trip Matrix</span>
-          </div>
-        </div>
-      )}
+      <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 8px' }}>{template.feeder_description || template.description}</p>
+
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>FEEDERS ({section.feeders.length})</span>
@@ -296,12 +280,8 @@ export default function SectionBuilder({ onSubmit }) {
     // Feeder-grid types
     if (template.feeder_types) {
       newSection.feeders = []
-      // Auto-add overall tests for switchgear
-      if (template.overall_tests) {
-        newSection.hasOverallTests = true
-      }
     }
-
+    
     setSections(prev => [...prev, newSection])
   }
 
@@ -339,15 +319,6 @@ export default function SectionBuilder({ onSubmit }) {
       if (section.feeders) {
         // Feeder-grid section
         // Add overall switchgear tests first
-        if (section.hasOverallTests) {
-          allItems.push({
-            feeder_ref: `${sectionName} \u2014 Switchgear Overall`,
-            type: 'SWITCHGEAR_OVERALL',
-            name: 'Switchgear Overall Tests',
-            qty: 1,
-            drawing: 'N/A',
-          })
-        }
         for (const feeder of section.feeders) {
           if (!feeder.ref.trim()) continue
           const feederRef = `${sectionName} \u2014 ${feeder.ref}`

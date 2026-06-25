@@ -1,27 +1,23 @@
 {
   "SWITCHGEAR_OVERALL": [
+    ["L3", "Substation Check Sheet"],
     ["L3", "Busbar Ductor Test"],
     ["L3", "Busbar Megger Test (Insulation Resistance)"],
     ["L3", "Switchgear High Voltage Withstand Test"],
     ["L3", "Castel Key Interlock Test"],
-    ["L3", "Protection Trip Matrix Test"]
+    ["L3", "Protection Trip Matrix Test"],
+    ["L5", "Pre Energisation Check"],
+    ["L5", "Post Energisation Check"],
+    ["L5", "Declaration of Fitness (DOF)"]
   ],
-  "VT": [
-    ["L1", "FAT report available on Procore"],
-    ["L1", "FAT Observation"],
-    ["L2", "RIF"],
-    ["L2", "IVF"],
-    ["L3", "Visual Inspection"],
-    ["L3", "Insulation Resistance"],
-    ["L3", "Polarity Test"],
-    ["L3", "Tan Delta and Capacitance measurement"],
-    ["L3", "Winding Resistance"],
-    ["L3", "Ratio Check"],
-    ["L3", "Burden Test"],
-    ["L4", "Primary Injection"],
-    ["L5", "Pre Energization Check"],
-    ["L5", "Post Energization Check"]
+  "AC_DC_CHECKS": [
+    ["L3", "AC MCB Test Report"],
+    ["L3", "DC MCB Test Report"]
   ],
+  "SCADA": [
+    ["L3", "SCADA SAT Check Sheet"]
+  ],
+
   "CT": [
     ["L1", "FAT report available on Procore"],
     ["L1", "FAT Observation"],
@@ -39,7 +35,7 @@
     ["L5", "Pre Energization Check"],
     ["L5", "Post Energization Check"]
   ],
-  "CT2": [
+  "VT": [
     ["L1", "FAT report available on Procore"],
     ["L1", "FAT Observation"],
     ["L2", "RIF"],
@@ -47,19 +43,13 @@
     ["L3", "Visual Inspection"],
     ["L3", "Insulation Resistance"],
     ["L3", "Polarity Test"],
-    ["L3", "Saturation Test"],
+    ["L3", "Tan Delta and Capacitance Measurement"],
     ["L3", "Winding Resistance"],
-    ["L3", "Contact Resistance & Torque Test"],
     ["L3", "Ratio Check"],
     ["L3", "Burden Test"],
     ["L4", "Primary Injection"],
     ["L5", "Pre Energization Check"],
     ["L5", "Post Energization Check"]
-  ],
-  "BUSBAR": [
-    ["L3", "Insulation Resistance Test"],
-    ["L3", "Torque Check"],
-    ["L3", "Contact Resistance"]
   ],
   "PQM": [
     ["L3", "Settings Verification"],
@@ -82,6 +72,16 @@
     ["L5", "Pre Energization Check"],
     ["L5", "Post Energization Check"]
   ],
+  "SYNCH_CHECK": [
+    ["L3", "Synch Check Relay Test"],
+    ["L3", "Functional Checks"]
+  ],
+  "CABLE_DIFF": [
+    ["L3", "Cable Differential Protection Test"],
+    ["L3", "Protection Relay Settings Record"],
+    ["L4", "Line Differential Protection Stability"]
+  ],
+
   "TRANSFORMER": [
     ["L1", "FAT report available on Procore"],
     ["L1", "FAT Observation"],
@@ -132,6 +132,39 @@
     ["L5", "Pre Energization Check"],
     ["L5", "Post Energization Check"]
   ],
+  "VT_HV": [
+    ["L1", "FAT report available on Procore"],
+    ["L1", "FAT Observation"],
+    ["L2", "RIF"],
+    ["L2", "IVF"],
+    ["L3", "Visual Inspection"],
+    ["L3", "Insulation Resistance"],
+    ["L3", "Polarity Test"],
+    ["L3", "Tan Delta and Capacitance Measurement"],
+    ["L3", "Winding Resistance"],
+    ["L3", "Ratio Check"],
+    ["L3", "Burden Test"],
+    ["L4", "Primary Injection"],
+    ["L5", "Pre Energization Check"],
+    ["L5", "Post Energization Check"]
+  ],
+  "CT_HV": [
+    ["L1", "FAT report available on Procore"],
+    ["L1", "FAT Observation"],
+    ["L2", "RIF"],
+    ["L2", "IVF"],
+    ["L3", "Visual Inspection"],
+    ["L3", "Insulation Resistance"],
+    ["L3", "Polarity Test"],
+    ["L3", "Saturation Test"],
+    ["L3", "Winding Resistance"],
+    ["L3", "Contact Resistance & Torque Test"],
+    ["L3", "Ratio Check"],
+    ["L3", "Burden Test"],
+    ["L4", "Primary Injection"],
+    ["L5", "Pre Energization Check"],
+    ["L5", "Post Energization Check"]
+  ],
   "SURGE_ARRESTER": [
     ["L1", "FAT report available on Procore"],
     ["L1", "FAT Observation"],
@@ -164,39 +197,27 @@
     ["L5", "Pre Energization Check"],
     ["L5", "Post Energization Check"]
   ],
-  "NER_CT_SBEF": [
-    ["L3", "Visual Inspection"],
-    ["L3", "Insulation Resistance"],
-    ["L3", "Polarity Test"],
-    ["L3", "Saturation Test"],
-    ["L3", "Winding Resistance"],
-    ["L3", "Ratio Check"],
-    ["L3", "Burden Test"],
-    ["L4", "Primary Injection"],
-    ["L5", "Pre Energization Check"],
-    ["L5", "Post Energization Check"]
+  "BUSBAR": [
+    ["L3", "Insulation Resistance Test"],
+    ["L3", "Torque Check"],
+    ["L3", "Contact Resistance"]
   ],
   "PROTECTION_PANEL": [
-    ["L1", "FAT report available on Procore"],
-    ["L1", "FAT Observation"],
-    ["L2", "RIF"],
-    ["L2", "IVF"],
-    ["L3", "Equipment Details Validation"],
-    ["L3", "DC Supply Check"],
-    ["L3", "Measurement Validation"],
-    ["L3", "Protection Function Check"],
-    ["L3", "LED Indication Test"],
-    ["L3", "Digital Output Test"],
-    ["L3", "Trip Test"],
-    ["L3", "Scheme Check"],
-    ["L3", "Disturbance Recorder Check"],
-    ["L4", "End-to-End Trip Test"],
-    ["L5", "Pre Energization Check"],
-    ["L5", "Post Energization Check"]
+    ["L3", "Protection Panel Inspection & Test"],
+    ["L3", "Protection Relay Report (Transformer)"],
+    ["L3", "Protection Relay Report (Transformer) - 2"],
+    ["L3", "AVR Test"],
+    ["L3", "Power Meter Test (DME 442)"],
+    ["L3", "Power Meter Test (UMG512-Pro)"],
+    ["L3", "Functional Checks"],
+    ["L3", "Signal Interface Testing Schedule"],
+    ["L3", "Protection Trip Matrix"],
+    ["L3", "Protection Relay Settings Record"],
+    ["L3", "Protection Relay Settings Record - 2"]
   ],
   "STABILITY_TEST": [
-    ["L4", "Transformer Stability Test 87T"],
-    ["L4", "Transformer Stability Test 64 REF"]
+    ["L4", "Transformer Differential Stability Test (87T)"],
+    ["L4", "Transformer REF Stability Test (64)"]
   ],
   "MV_CABLE": [
     ["L1", "FAT report available on Procore"],

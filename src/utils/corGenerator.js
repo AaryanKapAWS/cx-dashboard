@@ -26,10 +26,11 @@ const THIN_BORDER = {
   right: { style: 'thin', color: { argb: 'CCCCCC' } },
 }
 
-const COL_WIDTHS = [24, 20, 12, 40, 14, 14, 14, 14, 14, 14, 18, 14, 20, 14, 22]
+const COL_WIDTHS = [24, 18, 20, 12, 40, 14, 14, 14, 14, 14, 14, 18, 14, 20, 14, 22]
 
 const HEADERS = [
   'Feeder Reference',
+  'Test Sheet No.',
   'Equipment',
   'Level Of Testing',
   'Test',
@@ -211,11 +212,11 @@ export async function generateCOR(equipmentData, projectName = 'HV Substation') 
     styleHeaderRow(headerRow)
 
     // Sub-header row
-    const subData = Array(15).fill('')
-    subData[4] = 'Start Date'
-    subData[5] = 'Finish Date'
-    subData[6] = 'Start Date'
-    subData[7] = 'Finish Date'
+    const subData = Array(16).fill('')
+    subData[5] = 'Start Date'
+    subData[6] = 'Finish Date'
+    subData[7] = 'Start Date'
+    subData[8] = 'Finish Date'
     const subRow = ws.addRow(subData)
     styleSubHeaderRow(subRow)
 
@@ -223,27 +224,32 @@ export async function generateCOR(equipmentData, projectName = 'HV Substation') 
     ws.views = [{ state: 'frozen', ySplit: 5 }]
 
     // Data rows
+    let feederSeq = 0
     for (const [feederRef, items] of Object.entries(feeders)) {
+      feederSeq++
       // Feeder separator
-      const feederData = Array(15).fill('')
+      const feederData = Array(16).fill('')
       feederData[0] = feederRef
       const fRow = ws.addRow(feederData)
       styleFeederRow(fRow)
 
+      let eqSeqNum = 1
       for (const item of items) {
         const tests = TEST_TEMPLATES[item.type] || [['L3', `${item.type} Test`]]
         const eqName = item.name || item.type
+        const sheetNum = `CR-${String(feederSeq).padStart(2,'0')}-${String(eqSeqNum).padStart(2,'0')}`
         let isFirst = true
 
         for (const [level, testName] of tests) {
-          const rowData = Array(15).fill('')
+          const rowData = Array(16).fill('')
           if (isFirst) {
-            rowData[1] = eqName
+            rowData[1] = sheetNum
+            rowData[2] = eqName
             isFirst = false
           }
-          rowData[2] = level
-          rowData[3] = testName
-          rowData[13] = 'Open'
+          rowData[3] = level
+          rowData[4] = testName
+          rowData[15] = 'Open'
 
           const testRow = ws.addRow(rowData)
 
@@ -255,6 +261,7 @@ export async function generateCOR(equipmentData, projectName = 'HV Substation') 
             styleTestRow(testRow, level)
           }
         }
+        eqSeqNum++
       }
 
       // Blank separator

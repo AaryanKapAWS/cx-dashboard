@@ -9,6 +9,7 @@ import TestDetail from './components/TestDetail'
 import UploadPanel from './components/UploadPanel'
 import FeederBuilder from './components/FeederBuilder'
 import SectionBuilder from './components/SectionBuilder'
+import DocsReference from './components/DocsReference'
 import projects from './data/projects.json'
 import { generateCOR } from './utils/corGenerator'
 
@@ -120,6 +121,19 @@ export default function App() {
           }}
         >
           v3 — Manual Entry → COR
+        </button>
+        <span style={{ color: '#475569', fontSize: 18, margin: '0 8px' }}>|</span>
+        <button
+          onClick={() => setVersion('docs')}
+          style={{
+            padding: '6px 18px', borderRadius: 6, fontSize: 12, fontWeight: 700,
+            border: version === 'docs' ? '2px solid #38bdf8' : '1px solid #475569',
+            background: version === 'docs' ? '#38bdf8' : 'transparent',
+            color: version === 'docs' ? '#000' : '#94a3b8',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}
+        >
+          📖 Docs / Reference
         </button>
       </div>
 
@@ -326,6 +340,11 @@ export default function App() {
             </div>
           )}
         </>
+      )}
+
+      {/* ============ DOCS: REFERENCE ============ */}
+      {version === 'docs' && (
+        <DocsReference />
       )}
 
       <div style={{ height: 40 }} />
