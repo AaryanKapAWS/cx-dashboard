@@ -22,16 +22,16 @@
       { "id": "SCADA", "label": "SAS / SCADA Panel", "default": true, "qty": 1 }
     ],
     "feeder_types": [
-      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "VT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
-      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "VT", "RELAY", "SYNCH_CHECK"] },
+      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "NCT", "VT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION"] },
+      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "VT", "RELAY", "CUBICLE", "SYNCH_CHECK"] },
       { "id": "ner_feeder", "label": "NER", "defaults": ["CT", "RELAY"] },
       { "id": "vt_panel", "label": "VT Panel / Metering", "defaults": ["VT", "PQM"] },
-      { "id": "outgoing", "label": "Outgoing Feeder", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION", "CABLE_DIFF"] },
-      { "id": "xfmr", "label": "Transformer Feeder", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "outgoing", "label": "Outgoing Feeder", "defaults": ["CT", "NCT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION", "CABLE_DIFF"] },
+      { "id": "xfmr", "label": "Transformer Feeder", "defaults": ["CT", "NCT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION"] },
       { "id": "spare", "label": "Spare", "defaults": ["CT", "RELAY"] },
       { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
     ],
-    "equipment_types": ["CT", "VT", "PQM", "EPMS", "RELAY", "ENERGIZATION", "SYNCH_CHECK", "CABLE_DIFF"]
+    "equipment_types": ["CT", "NCT", "VT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION", "SYNCH_CHECK", "CABLE_DIFF"]
   },
   "panel_board": {
     "label": "Panel Board",

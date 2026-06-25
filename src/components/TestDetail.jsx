@@ -23,8 +23,8 @@ function getTests(equipment) {
   const tmpl = testTemplates[equipment.type]
   if (!tmpl) return []
   return tmpl.map(t => {
-    const [level, name] = Array.isArray(t) ? t : [t.level, t.test]
-    return { name, level, standard: '—', status: 'Not Started' }
+    const [level, name, testSheet] = Array.isArray(t) ? t : [t.level, t.test, '']
+    return { name, level, testSheet: testSheet || '—', status: 'Not Started' }
   })
 }
 
@@ -75,7 +75,7 @@ export default function TestDetail({ equipment }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#f8fafc' }}>
-              {['#', 'Test', 'Level', 'Category', 'Status'].map(h => (
+            {['#', 'Test', 'Level', 'Test Sheet'].map(h => (
                 <th key={h} style={{
                   padding: '9px 16px', textAlign: 'left',
                   fontSize: 11, fontWeight: 600, color: 'var(--text-muted)',
@@ -90,25 +90,16 @@ export default function TestDetail({ equipment }) {
               const levelInfo = LEVEL_COLORS[t.level] || LEVEL_COLORS['L3']
               return (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '9px 16px', fontSize: 11, color: 'var(--text-muted)', width: 40 }}>{i + 1}</td>
-                  <td style={{ padding: '9px 16px', fontSize: 13, fontWeight: 500 }}>{t.name}</td>
-                  <td style={{ padding: '9px 16px', width: 100 }}>
+                  <td style={{ padding: '9px 12px', fontSize: 11, color: 'var(--text-muted)', width: 30 }}>{i + 1}</td>
+                  <td style={{ padding: '9px 12px', fontSize: 13, fontWeight: 500 }}>{t.name}</td>
+                  <td style={{ padding: '9px 12px', width: 40, textAlign: 'center' }}>
                     <span style={{
                       background: levelInfo.bg, color: levelInfo.color,
                       fontWeight: 700, fontSize: 11,
                       padding: '3px 10px', borderRadius: 4, whiteSpace: 'nowrap'
                     }}>{t.level}</span>
                   </td>
-                  <td style={{ padding: '9px 16px', fontSize: 11, color: '#64748b', width: 100 }}>
-                    {levelInfo.label}
-                  </td>
-                  <td style={{ padding: '9px 16px', width: 100 }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 12,
-                      background: t.status === 'Pass' ? '#dcfce7' : '#f1f5f9',
-                      color: t.status === 'Pass' ? '#16a34a' : '#64748b',
-                    }}>{t.status}</span>
-                  </td>
+                  <td style={{ padding: '9px 12px', fontSize: 10, color: '#64748b', whiteSpace: 'nowrap', width: 280 }}>{t.testSheet}</td>
                 </tr>
               )
             })}

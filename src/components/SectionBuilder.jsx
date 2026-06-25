@@ -183,8 +183,7 @@ function FeederSection({ section, onUpdate }) {
   function handleQuickAdd() {
     const count = parseInt(prompt('How many feeders?') || '0')
     if (!count) return
-    const typeId = prompt(`Type? (${feederTypes.map(f => f.id).join(' / ')})`) || 'outgoing'
-    const type = feederTypes.find(f => f.id === typeId) || feederTypes.find(f => f.id === 'outgoing') || feederTypes[0]
+    const type = feederTypes.find(f => f.id === 'outgoing') || feederTypes[0]
     const newFeeders = []
     for (let i = 1; i <= count; i++) {
       newFeeders.push({ ref: `${String(i).padStart(2, '0')}A`, type: type.id, equipment: [...type.defaults] })
