@@ -20,7 +20,7 @@ const THIN_BORDER = {
   right: { style: 'thin', color: { argb: 'CCCCCC' } },
 }
 
-const COL_WIDTHS = [24, 20, 12, 40, 14, 14, 14, 14, 14, 14, 18, 14, 20, 14, 22, 30]
+const COL_WIDTHS = [24, 20, 12, 40, 14, 14, 14, 14, 14, 14, 18, 14, 20, 14, 22, 45]
 
 const HEADERS = [
   'Feeder Reference',

@@ -4,10 +4,10 @@
     "description": "Power transformer and associated HV equipment",
     "equipment": [
       { "id": "TRANSFORMER", "label": "Power Transformer", "default": true, "qty": 1 },
-      { "id": "VT", "label": "Voltage Transformer (VT)", "default": true, "qty": 1 },
-      { "id": "CT", "label": "Current Transformer (CT)", "default": true, "qty": 1 },
+      { "id": "VT", "label": "Voltage Transformer (VT)", "default": true, "qty": 2 },
+      { "id": "CT", "label": "Current Transformer (CT)", "default": true, "qty": 2 },
       { "id": "SURGE_ARRESTER", "label": "Surge Arrester", "default": true, "qty": 1 },
-      { "id": "NER_CT", "label": "NER CT", "default": true, "qty": 1 },
+      { "id": "NER_CT", "label": "NER CT", "default": true, "qty": 2 },
       { "id": "BUSBAR", "label": "Busbar", "default": true, "qty": 1 },
       { "id": "NER", "label": "Neutral Earthing Resistor (NER)", "default": true, "qty": 1 }
     ]
@@ -23,7 +23,7 @@
     ],
     "feeder_types": [
       { "id": "incomer", "label": "Incomer", "defaults": ["CT", "NCT", "VT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION"] },
-      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "VT", "RELAY", "CUBICLE", "SYNCH_CHECK"] },
+      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "VT", "PQM", "RELAY", "CUBICLE", "SYNCH_CHECK"] },
       { "id": "ner_feeder", "label": "NER", "defaults": ["CT", "RELAY"] },
       { "id": "vt_panel", "label": "VT Panel / Metering", "defaults": ["VT", "PQM"] },
       { "id": "outgoing", "label": "Outgoing Feeder", "defaults": ["CT", "NCT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION", "CABLE_DIFF"] },
@@ -32,18 +32,6 @@
       { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
     ],
     "equipment_types": ["CT", "NCT", "VT", "PQM", "EPMS", "RELAY", "CUBICLE", "ENERGIZATION", "SYNCH_CHECK", "CABLE_DIFF"]
-  },
-  "panel_board": {
-    "label": "Panel Board",
-    "description": "Distribution panel board — feeders to downstream loads",
-    "feeder_types": [
-      { "id": "metering", "label": "Metering Panel", "defaults": ["VT"] },
-      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
-      { "id": "feeder", "label": "Feeder", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
-      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
-      { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
-    ],
-    "equipment_types": ["CT", "CT2", "VT", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"]
   },
   "protection": {
     "label": "Protection & Stability",
@@ -68,6 +56,18 @@
       { "id": "SUBSTATION_CHECKS", "label": "Substation Check Sheets", "default": true, "qty": 1 },
       { "id": "ESB_INTERFACE", "label": "Grid Interface Kiosk", "default": true, "qty": 1 }
     ]
+  },
+  "panel_board": {
+    "label": "Panel Board",
+    "description": "Distribution panel board — feeders to downstream loads",
+    "feeder_types": [
+      { "id": "metering", "label": "Metering Panel", "defaults": ["VT"] },
+      { "id": "incomer", "label": "Incomer", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "feeder", "label": "Feeder", "defaults": ["CT", "CT2", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "bus_coupler", "label": "Bus Coupler", "defaults": ["CT", "PQM", "EPMS", "RELAY", "ENERGIZATION"] },
+      { "id": "custom", "label": "Custom", "defaults": ["CT", "RELAY"] }
+    ],
+    "equipment_types": ["CT", "CT2", "VT", "BUSBAR", "PQM", "EPMS", "RELAY", "ENERGIZATION"]
   },
   "custom": {
     "label": "Custom",
