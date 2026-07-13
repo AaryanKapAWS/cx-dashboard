@@ -15,6 +15,7 @@ export default function App() {
   const [projectFbnId, setProjectFbnId] = useState('')
   const [projectName, setProjectName] = useState('')
   const [projectRegion, setProjectRegion] = useState('EMEA')
+  const [uploadMode, setUploadMode] = useState('section') // 'section' or 'retro'
 
   async function handleGenerateCOR() {
     if (equipment.length === 0) {
@@ -38,6 +39,7 @@ export default function App() {
       location: projectLocation,
       fbnBuildId: projectFbnId,
       region: projectRegion,
+      mode: uploadMode,
     }
     const result = await generateInspectionUpload(equipment, projectConfig)
     setToast({ message: `✓ Upload file exported — ${result.inspections} inspections` })
@@ -214,6 +216,25 @@ export default function App() {
             }}>
               📤 Generate Upload File
             </button>
+
+            {/* Upload Mode Toggle */}
+            <div style={{
+              marginLeft: 8, display: 'flex', alignItems: 'center', gap: 8,
+              background: '#f1f5f9', padding: '8px 14px', borderRadius: 8,
+              border: '1px solid #e2e8f0'
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#64748b' }}>Mode:</span>
+              <button onClick={() => setUploadMode('section')} style={{
+                padding: '5px 12px', borderRadius: 5, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+                background: uploadMode === 'section' ? '#2563eb' : '#e2e8f0',
+                color: uploadMode === 'section' ? '#fff' : '#64748b',
+              }}>Section</button>
+              <button onClick={() => setUploadMode('retro')} style={{
+                padding: '5px 12px', borderRadius: 5, fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+                background: uploadMode === 'retro' ? '#f59e0b' : '#e2e8f0',
+                color: uploadMode === 'retro' ? '#fff' : '#64748b',
+              }}>Per Equipment</button>
+            </div>
           </div>
 
           {/* Empty State */}

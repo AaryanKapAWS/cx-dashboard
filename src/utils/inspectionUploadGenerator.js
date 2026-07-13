@@ -132,7 +132,7 @@ function buildRowXml(rowNum, dataArray) {
  * Result: EXACT formatting from the template, with only data rows changed.
  */
 export async function generateInspectionUpload(equipmentData, projectConfig) {
-  const { name, location, fbnBuildId, region = 'EMEA' } = projectConfig
+  const { name, location, fbnBuildId, region = 'EMEA', mode = 'section' } = projectConfig
   const revision = '210906'
 
   // 1. Fetch and open the template as a ZIP
@@ -146,45 +146,64 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
   // 3. Build the new data rows
   const sections = {}
   const standalone = []
-  for (const item of equipmentData) {
-    const section = item.section || ''
-    if (section && section !== 'custom') {
-      if (!sections[section]) sections[section] = []
-      sections[section].push(item)
-    } else {
-      standalone.push(item)
-    }
-  }
 
   const dataRows = []
 
-  // Section-level rows
-  for (const [sectionKey, items] of Object.entries(sections)) {
-    const templateName = SECTION_TEMPLATE[sectionKey] || 'CxHV-Blank'
-    const trade = TRADE_MAP[templateName] || 'Electrical'
-    const assetTag = SECTION_LABEL[sectionKey] || sectionKey
-    const description = `${assetTag}-${templateName}-${fbnBuildId}`
+  if (mode === 'retro') {
+    // RETRO MODE: One row per equipment item, using individual CxHV templates
+    for (const item of equipmentData) {
+      const equipType = item.type || item.equipmentType || ''
+      const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
+      const trade = TRADE_MAP[templateName] || 'Electrical'
+      const assetTag = item.name || item.displayName || item.feeder_ref || `${equipType}-${dataRows.length + 1}`
+      const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
-    dataRows.push([
-      revision, 'Commissioning', templateName, 'Open', trade, location,
-      '', '', '', description, assetTag, '', fbnBuildId,
-      '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
-    ])
-  }
+      dataRows.push([
+        revision, 'Commissioning', templateName, 'Open', trade, location,
+        '', '', '', description, assetTag, '', fbnBuildId,
+        '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ])
+    }
+  } else {
+    // SECTION MODE: One row per section (grouped)
+    for (const item of equipmentData) {
+      const section = item.section || ''
+      if (section && section !== 'custom') {
+        if (!sections[section]) sections[section] = []
+        sections[section].push(item)
+      } else {
+        standalone.push(item)
+      }
+    }
 
-  // Standalone items
-  for (const item of standalone) {
-    const equipType = item.type || item.equipmentType || ''
-    const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
-    const trade = TRADE_MAP[templateName] || 'Electrical'
-    const assetTag = item.name || item.displayName || `${equipType}-${dataRows.length + 1}`
-    const description = `${assetTag}-${templateName}-${fbnBuildId}`
+    // Section-level rows
+    for (const [sectionKey, items] of Object.entries(sections)) {
+      const templateName = SECTION_TEMPLATE[sectionKey] || 'CxHV-Blank'
+      const trade = TRADE_MAP[templateName] || 'Electrical'
+      const assetTag = SECTION_LABEL[sectionKey] || sectionKey
+      const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
-    dataRows.push([
-      revision, 'Commissioning', templateName, 'Open', trade, location,
-      '', '', '', description, assetTag, '', fbnBuildId,
-      '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
-    ])
+      dataRows.push([
+        revision, 'Commissioning', templateName, 'Open', trade, location,
+        '', '', '', description, assetTag, '', fbnBuildId,
+        '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ])
+    }
+
+    // Standalone items
+    for (const item of standalone) {
+      const equipType = item.type || item.equipmentType || ''
+      const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
+      const trade = TRADE_MAP[templateName] || 'Electrical'
+      const assetTag = item.name || item.displayName || `${equipType}-${dataRows.length + 1}`
+      const description = `${assetTag}-${templateName}-${fbnBuildId}`
+
+      dataRows.push([
+        revision, 'Commissioning', templateName, 'Open', trade, location,
+        '', '', '', description, assetTag, '', fbnBuildId,
+        '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
+      ])
+    }
   }
 
   // 4. Build XML for all new data rows (starting at row 6)
