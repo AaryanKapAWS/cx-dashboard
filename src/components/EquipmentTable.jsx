@@ -71,12 +71,6 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect, onR
         <div style={{ display: 'flex', gap: 16, fontSize: 12, alignItems: 'center' }}>
           <span><strong>{equipment.length}</strong> items</span>
           <span><strong>{totalTests}</strong> tests</span>
-          {onRemove && equipment.length > 0 && (
-            <button onClick={() => { if (confirm('Clear all equipment?')) onRemove('all') }} style={{
-              background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 4,
-              padding: '2px 8px', fontSize: 10, color: '#dc2626', cursor: 'pointer', fontWeight: 600
-            }}>Clear All</button>
-          )}
         </div>
       </div>
 

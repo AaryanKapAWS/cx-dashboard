@@ -310,6 +310,7 @@ export default function SectionBuilder({ onSubmit }) {
               name: item.name || `${item.label}${suffix}`,
               qty: 1,
               drawing: 'SLD (Manual)',
+              section: section.type,
             })
           }
         }
@@ -329,6 +330,7 @@ export default function SectionBuilder({ onSubmit }) {
               qty: 1,
               drawing: 'SLD (Manual)',
               feeder_type: feeder.type,
+              section: section.type,
             })
           }
         }
