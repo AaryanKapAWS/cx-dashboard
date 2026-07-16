@@ -5,6 +5,7 @@ import { saveAs } from 'file-saver'
 const TEMPLATE_MAP = {
   TRANSFORMER: 'CxHV-Power Transformer',
   CT: 'CxHV-Current Transformer',
+  CT2: 'CxHV-Current Transformer',
   CT_HV: 'CxHV-Current Transformer',
   NCT: 'CxHV-Current Transformer',
   NER_CT: 'CxHV-Current Transformer',
@@ -155,7 +156,19 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
       const equipType = item.type || item.equipmentType || ''
       const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
       const trade = TRADE_MAP[templateName] || 'Electrical'
-      const assetTag = item.name || item.displayName || item.feeder_ref || `${equipType}-${dataRows.length + 1}`
+
+      // Build a meaningful asset tag:
+      // - Feeder items: use "FeederRef-Type" (e.g. "01A-CT", "03A-RELAY")
+      // - Equipment items with custom name: use the name
+      // - Fallback: type + index
+      let assetTag
+      if (item.feeder_ref && item.feeder_ref.includes('—')) {
+        // Feeder item: extract the feeder ref part and append the type
+        const feederPart = item.feeder_ref.split('—').pop().trim()
+        assetTag = `${feederPart}-${equipType}`
+      } else {
+        assetTag = item.name || item.displayName || `${equipType}-${dataRows.length + 1}`
+      }
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
       dataRows.push([
@@ -166,21 +179,26 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
     }
   } else {
     // SECTION MODE: One row per section (grouped)
+    // Group by section type — but track unique instances via a counter
+    // so duplicate section types (e.g. two Switchgear sections) each get their own row
+    const sectionCounts = {}
     for (const item of equipmentData) {
       const section = item.section || ''
       if (section && section !== 'custom') {
-        if (!sections[section]) sections[section] = []
-        sections[section].push(item)
+        // Use feeder_ref to detect unique section instances
+        const sectionInstance = item.feeder_ref ? item.feeder_ref.split('—')[0].trim() : section
+        if (!sections[sectionInstance]) sections[sectionInstance] = { type: section, items: [] }
+        sections[sectionInstance].items.push(item)
       } else {
         standalone.push(item)
       }
     }
 
     // Section-level rows
-    for (const [sectionKey, items] of Object.entries(sections)) {
-      const templateName = SECTION_TEMPLATE[sectionKey] || 'CxHV-Blank'
+    for (const [sectionInstance, { type: sectionType, items }] of Object.entries(sections)) {
+      const templateName = SECTION_TEMPLATE[sectionType] || 'CxHV-Blank'
       const trade = TRADE_MAP[templateName] || 'Electrical'
-      const assetTag = SECTION_LABEL[sectionKey] || sectionKey
+      const assetTag = SECTION_LABEL[sectionType] || sectionInstance
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
       dataRows.push([
@@ -245,7 +263,7 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
   let tableXml = await zip.file('xl/tables/table1.xml').async('string')
   // Table covers B5:AA{lastRow} (header at row 5, data rows 6+)
   tableXml = tableXml.replace(
-    /ref="[^"]*"/,
+    /ref="B5:AA\d+"/,
     `ref="B5:AA${lastRow}"`
   )
   zip.file('xl/tables/table1.xml', tableXml)

@@ -1,70 +1,35 @@
 import { useState, useEffect } from 'react'
 import sectionTemplates from '../data/section_templates.json'
+import testTemplates from '../data/test_templates.json'
+
+const DISPLAY_NAMES = {
+  CT: 'CT - Protection', CT2: 'CT - Metering', NCT: 'NCT (CBCT)',
+  VT: 'VT', PQM: 'Power Quality Meter', EPMS: 'EPMS',
+  RELAY: 'Relay', CUBICLE: 'Cubicle', ENERGIZATION: 'Energization',
+  SYNCH_CHECK: 'Synch Check Relay', CABLE_DIFF: 'Cable Differential',
+  TRANSFORMER: 'Transformer', SURGE_ARRESTER: 'Surge Arrester',
+  NER: 'NER', NER_CT: 'NER CT', BUSBAR: 'Busbar',
+  PROTECTION_PANEL: 'Protection Panel', STABILITY_TEST: 'Stability Test',
+  MV_CABLE: 'MV Cable', HV_CABLE: 'HV Cable',
+  SWITCHGEAR_OVERALL: 'Switchgear (Overall)', AC_DC_CHECKS: 'AC/DC Distribution',
+  SCADA: 'SAS/SCADA', SUBSTATION_CHECKS: 'Substation Checks', ESB_INTERFACE: 'ESB Interface',
+  CT_METER: 'CT - Metering', CIRCUIT_BREAKER: 'Circuit Breaker',
+  EARTH_SWITCH: 'Earth Switch', MK_OLTC_PANEL: 'MK & OLTC Panel',
+  L4_INTEGRATION: 'L4 Integration',
+}
+
+const GRID_LABELS = {
+  CT: 'CT', CT2: 'CT-M', NCT: 'NCT', CT_METER: 'CT-M',
+  VT: 'VT', PQM: 'PQM', EPMS: 'EPMS',
+  RELAY: 'Relay', CUBICLE: 'Cubicle', ENERGIZATION: 'Energization',
+  SYNCH_CHECK: 'Synch Chk', CABLE_DIFF: 'Cable Diff',
+  CIRCUIT_BREAKER: 'CB', EARTH_SWITCH: 'ES',
+  L4_INTEGRATION: 'L4 Integ.',
+}
 
 const SECTION_TYPES = Object.entries(sectionTemplates).map(([id, config]) => ({
   id, ...config
 }))
-
-// All available test types for custom equipment
-const ALL_TEST_TYPES = [
-  { id: 'CT', label: 'CT Tests' },
-  { id: 'VT', label: 'VT Tests' },
-  { id: 'TRANSFORMER', label: 'Transformer Tests' },
-  { id: 'RELAY', label: 'Relay Tests' },
-  { id: 'BUSBAR', label: 'Busbar Tests' },
-  { id: 'PQM', label: 'PQM Tests' },
-  { id: 'EPMS', label: 'EPMS Tests' },
-  { id: 'ENERGIZATION', label: 'Energization Tests' },
-  { id: 'SURGE_ARRESTER', label: 'Surge Arrester Tests' },
-  { id: 'NER', label: 'NER Tests' },
-  { id: 'NER_CT', label: 'NER CT Tests' },
-  { id: 'PROTECTION_PANEL', label: 'Protection Panel Tests' },
-  { id: 'STABILITY_TEST', label: 'Stability Tests' },
-  { id: 'MV_CABLE', label: 'MV Cable Tests' },
-  { id: 'HV_CABLE', label: 'HV Cable Tests' },
-  { id: 'SUBSTATION_CHECKS', label: 'Substation Checks' },
-  { id: 'ESB_INTERFACE', label: 'Grid Interface Tests' },
-]
-
-function CustomEquipmentAdder({ section, onUpdate }) {
-  const [name, setName] = useState('')
-  const [testType, setTestType] = useState('RELAY')
-
-  function handleAdd() {
-    if (!name.trim()) return
-    const newItem = { id: `custom_${Date.now()}`, label: name.trim(), qty: 1, name: name.trim(), testType }
-    onUpdate({ ...section, items: [...section.items, newItem] })
-    setName('')
-  }
-
-  return (
-    <div style={{
-      marginTop: 12, padding: '10px 12px', borderRadius: 6,
-      border: '1px dashed #cbd5e1', background: '#f8fafc',
-      display: 'flex', alignItems: 'center', gap: 8
-    }}>
-      <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add:</span>
-      <input
-        value={name}
-        onChange={e => setName(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && handleAdd()}
-        placeholder="Equipment name (e.g. NER Relay)"
-        style={{ flex: 1, padding: '6px 10px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 12 }}
-      />
-      <select value={testType} onChange={e => setTestType(e.target.value)}
-        style={{ padding: '6px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 11 }}
-      >
-        {ALL_TEST_TYPES.map(t => (
-          <option key={t.id} value={t.id}>{t.label}</option>
-        ))}
-      </select>
-      <button onClick={handleAdd} style={{
-        padding: '6px 12px', background: '#FF9900', color: '#fff', border: 'none',
-        borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap'
-      }}>Add</button>
-    </div>
-  )
-}
 
 // Equipment-list section (Transformer Bay, Protection, Cables, Substation Checks)
 function EquipmentSection({ section, onUpdate, onRemove }) {
@@ -138,9 +103,6 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
           )
         })}
       </div>
-
-      {/* Custom equipment adder */}
-      <CustomEquipmentAdder section={section} onUpdate={onUpdate} />
     </div>
   )
 }
@@ -204,12 +166,16 @@ function FeederSection({ section, onUpdate }) {
         }}>Quick Add</button>
       </div>
 
+      {/* Scrollable grid container */}
+      <div style={{ overflowX: 'auto', marginBottom: 8 }}>
       {/* Column headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, 1fr) 28px`, gap: 2, marginBottom: 4 }}>
-        <span style={{ fontSize: 9, fontWeight: 600, color: '#64748b' }}>REF</span>
-        <span style={{ fontSize: 9, fontWeight: 600, color: '#64748b' }}>TYPE</span>
+      <div style={{ display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, minmax(70px, 1fr)) 28px`, gap: 2, marginBottom: 4, minWidth: `${190 + eqTypes.length * 75 + 28}px`, alignItems: 'center' }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', justifySelf: 'center' }}>REF</span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', justifySelf: 'center' }}>TYPE</span>
         {eqTypes.map(eq => (
-          <span key={eq} style={{ fontSize: 9, fontWeight: 600, color: '#64748b', textAlign: 'center' }}>{eq}</span>
+          <span key={eq} style={{ fontSize: 10, fontWeight: 600, color: '#64748b', textAlign: 'center', width: '100%' }}>
+            {GRID_LABELS[eq] || eq}
+          </span>
         ))}
         <span></span>
       </div>
@@ -217,7 +183,7 @@ function FeederSection({ section, onUpdate }) {
       {/* Feeder rows */}
       {section.feeders.map((feeder, idx) => (
         <div key={idx} style={{
-          display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, 1fr) 28px`,
+          display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, minmax(70px, 1fr)) 28px`, minWidth: `${190 + eqTypes.length * 75 + 28}px`,
           gap: 2, marginBottom: 2, alignItems: 'center', padding: '3px 4px', borderRadius: 4,
           background: idx % 2 === 0 ? '#f8fafc' : 'transparent'
         }}>
@@ -231,7 +197,7 @@ function FeederSection({ section, onUpdate }) {
             {feederTypes.map(ft => <option key={ft.id} value={ft.id}>{ft.label}</option>)}
           </select>
           {eqTypes.map(eq => (
-            <div key={eq} style={{ textAlign: 'center' }}>
+            <div key={eq} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <input type="checkbox" checked={feeder.equipment.includes(eq)}
                 onChange={() => toggleEquipment(idx, eq)}
                 style={{ width: 14, height: 14, accentColor: '#FF9900', cursor: 'pointer' }}
@@ -244,6 +210,7 @@ function FeederSection({ section, onUpdate }) {
         </div>
       ))}
 
+      </div>{/* end scrollable container */}
       <button onClick={addFeeder} style={{
         marginTop: 6, width: '100%', padding: '5px', border: '1px dashed #cbd5e1',
         borderRadius: 4, fontSize: 11, cursor: 'pointer', color: '#64748b', background: 'none'
@@ -264,10 +231,14 @@ export default function SectionBuilder({ onSubmit }) {
 
   function addSection(typeId) {
     const template = sectionTemplates[typeId]
+    // Auto-name with instance number if same type already exists
+    const existingCount = sections.filter(s => s.type === typeId).length
+    const autoName = existingCount > 0 ? `${template.label} ${existingCount + 1}` : ''
+    
     const newSection = {
       id: Date.now(),
       type: typeId,
-      name: '',
+      name: autoName,
     }
     
     // Equipment-list types
@@ -326,7 +297,7 @@ export default function SectionBuilder({ onSubmit }) {
             allItems.push({
               feeder_ref: feederRef,
               type: eqId,
-              name: eqId === 'CT2' ? 'CT-T2' : eqId,
+              name: DISPLAY_NAMES[eqId] || eqId,
               qty: 1,
               drawing: 'SLD (Manual)',
               feeder_type: feeder.type,
@@ -349,11 +320,11 @@ export default function SectionBuilder({ onSubmit }) {
       <div style={{
         padding: '14px 20px', background: '#232F3E', color: '#fff',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-      }}>
+      }}> 
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700 }}>📋 COR Section Builder</div>
+          <div style={{ fontSize: 14, fontWeight: 700 }}>📋 Scope Builder</div>
           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
-            Add sections matching your COR scope — each section becomes a sheet in the Excel output
+            Define your substation sections & equipment — drives COR sheets + Procore inspections
           </div>
         </div>
       </div>
@@ -411,21 +382,21 @@ export default function SectionBuilder({ onSubmit }) {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {SECTION_TYPES.map(st => {
-              const alreadyAdded = st.id !== 'custom' && sections.some(s => s.type === st.id)
+              const count = sections.filter(s => s.type === st.id).length
               return (
-              <button key={st.id} onClick={() => !alreadyAdded && addSection(st.id)} style={{
+              <button key={st.id} onClick={() => addSection(st.id)} style={{
                 padding: '8px 14px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                border: alreadyAdded ? '1px solid #e2e8f0' : '1px solid #d1d5db',
-                background: alreadyAdded ? '#f1f5f9' : '#fff',
-                cursor: alreadyAdded ? 'not-allowed' : 'pointer',
-                color: alreadyAdded ? '#cbd5e1' : '#475569',
+                border: '1px solid #d1d5db',
+                background: '#fff',
+                cursor: 'pointer',
+                color: '#475569',
                 transition: 'all 0.15s',
-                opacity: alreadyAdded ? 0.5 : 1,
+                position: 'relative',
               }}
                 onMouseEnter={e => { if (!alreadyAdded) { e.target.style.borderColor = '#FF9900'; e.target.style.background = '#fffbeb' } }}
                 onMouseLeave={e => { if (!alreadyAdded) { e.target.style.borderColor = '#d1d5db'; e.target.style.background = '#fff' } }}
               >
-                {alreadyAdded ? `✓ ${st.label}` : st.label}
+                {st.label}{count > 0 && <span style={{ marginLeft: 6, fontSize: 9, background: '#FF9900', color: '#fff', borderRadius: 10, padding: '1px 5px', fontWeight: 700 }}>{count}</span>}
               </button>
               )
             })}

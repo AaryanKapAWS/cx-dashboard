@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import EquipmentTable from './components/EquipmentTable'
-import TestDetail from './components/TestDetail'
+// import TestDetail from './components/TestDetail' // replaced by inline TestCustomiser
 import SectionBuilder from './components/SectionBuilder'
 import DocsReference from './components/DocsReference'
 import { generateCOR } from './utils/corGenerator'
@@ -17,14 +17,26 @@ export default function App() {
   const [projectRegion, setProjectRegion] = useState('EMEA')
   const [uploadMode, setUploadMode] = useState('section') // 'section' or 'retro'
 
+  function handleRename(equipIdx, newName) {
+    setEquipment(prev => prev.map((item, i) => 
+      i === equipIdx ? { ...item, displayName: newName } : item
+    ))
+  }
+
+  function handleUpdateTests(equipIdx, newTests) {
+    setEquipment(prev => prev.map((item, i) => 
+      i === equipIdx ? { ...item, customTests: newTests } : item
+    ))
+  }
+
   async function handleGenerateCOR() {
     if (equipment.length === 0) {
       setToast({ message: '⚠ No equipment to export — add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
-    const result = await generateCOR(equipment, 'HV Substation')
-    setToast({ message: `✓ COR exported — ${result.tests} tests across ${result.items} items (${result.sheets} sheets)` })
+    const result = await generateCOR(equipment, projectName || 'HV Substation')
+    setToast({ message: `✓ COR exported — ${result.totalTests} tests across ${result.sections} sections` })
     setTimeout(() => setToast(null), 5000)
   }
 
@@ -65,7 +77,7 @@ export default function App() {
               cursor: 'pointer', transition: 'all 0.2s'
             }}
           >
-            ⚡ Equipment Builder
+            ⚡ Scope & Export
           </button>
           <button
             onClick={() => setTab('docs')}
@@ -94,10 +106,10 @@ export default function App() {
             borderBottom: '1px solid #334155'
           }}>
             <h1 style={{ margin: 0, color: '#fff', fontSize: 20, fontWeight: 700 }}>
-              ⚡ Equipment Builder → COR / Procore Upload
+              ⚡ HV Substation Commissioning Tool
             </h1>
             <p style={{ margin: '4px 0 0', color: '#94a3b8', fontSize: 13 }}>
-              Define sections and equipment, then generate COR or Procore bulk upload file
+              Build equipment scope, generate COR test sheets & Procore inspection upload
             </p>
           </div>
 
@@ -187,12 +199,12 @@ export default function App() {
           {/* Equipment Table */}
           {equipment.length > 0 && (
             <>
-              <EquipmentTable equipment={equipment} selectedIndex={selectedRow} onSelect={setSelectedRow}
+              <EquipmentTable equipment={equipment} selectedIndex={selectedRow} onSelect={setSelectedRow} onUpdateTests={handleUpdateTests} onRename={handleRename}
                 onRemove={(idx) => {
                   if (idx === 'all') { setEquipment([]); setSelectedRow(null) }
                   else { setEquipment(prev => prev.filter((_, i) => i !== idx)); setSelectedRow(null) }
                 }} />
-              {selectedRow !== null && equipment[selectedRow] && <TestDetail equipment={equipment[selectedRow]} />}
+              
             </>
           )}
 
