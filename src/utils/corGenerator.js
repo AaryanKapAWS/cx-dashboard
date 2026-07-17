@@ -65,6 +65,7 @@ export async function generateCOR(equipmentData, projectName) {
   const wb = new ExcelJS.Workbook()
   wb.creator = 'HV Substation Commissioning Tool'
   wb.created = new Date()
+  wb.calcProperties = { fullCalcOnLoad: true }
 
   // Group equipment into sheets (one sheet per feeder, overall items grouped together)
   const sections = {}
@@ -396,7 +397,7 @@ export async function generateCOR(equipmentData, projectName) {
   // ═══════════════════════════════════════════════════════════════════
   // SHEET 2: COMMISSIONING PROGRAMME (combined progress + schedule)
   // ═══════════════════════════════════════════════════════════════════
-  const wsProg = wb.addWorksheet('Commissioning Programme', { properties: { tabColor: { argb: 'FFFF9900' } } })
+  const wsProg = wb.addWorksheet('Cx Programme', { properties: { tabColor: { argb: 'FFFF9900' } } })
 
   // Column widths (same indent approach as Project Overview)
   wsProg.getColumn(1).width = 2    // A: gutter
@@ -404,7 +405,7 @@ export async function generateCOR(equipmentData, projectName) {
   wsProg.getColumn(3).width = 26   // C: System/Equipment name
   wsProg.getColumn(4).width = 7    // D: Total/Tests
   wsProg.getColumn(5).width = 7    // E: Done/L3
-  wsProg.getColumn(6).width = 7    // F: In Prog/L4
+  wsProg.getColumn(6).width = 10   // F: In Prog/L4/% Complete
   wsProg.getColumn(7).width = 7    // G: Pending/L5
   wsProg.getColumn(8).width = 11   // H: % Complete/Planned Start
   wsProg.getColumn(9).width = 11   // I: L1/Planned Finish
@@ -421,7 +422,7 @@ export async function generateCOR(equipmentData, projectName) {
   wsProg.addRow([]).height = 8
 
   // Row 2: Title
-  const progTitle = wsProg.addRow(['', '', `${projectName} — Commissioning Programme`])
+  const progTitle = wsProg.addRow(['', '', `${projectName} — Cx Programme`])
   progTitle.getCell(3).font = { name: 'Calibri', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
   wsProg.mergeCells(progTitle.number, 3, progTitle.number, 13)
   progTitle.height = 22
@@ -495,7 +496,7 @@ export async function generateCOR(equipmentData, projectName) {
     if (col >= 2) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
   })
 
-  const pipeHdr = wsProg.addRow(['', '', 'Stage', 'Total', 'Done', '% Complete'])
+  const pipeHdr = wsProg.addRow(['', '', 'Stage', 'Total', 'Done', '% Complete', '', '', '', '', '', '', ''])
   pipeHdr.height = 18
   pipeHdr.eachCell((cell, col) => {
     if (col >= 2) {
@@ -508,7 +509,7 @@ export async function generateCOR(equipmentData, projectName) {
 
   const stages = ['SAT Completed', 'CxA Witnessed', 'Completed', 'Report Received', 'Report on Procore', 'Report Reviewed', 'Report Closed']
   for (const stage of stages) {
-    const r = wsProg.addRow(['', '', stage, grandTotal, 0, 0])
+    const r = wsProg.addRow(['', '', stage, grandTotal, 0, 0, '', '', '', '', '', '', ''])
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 3) {
@@ -544,9 +545,11 @@ export async function generateCOR(equipmentData, projectName) {
     if (col === 3) cell.alignment = { horizontal: 'left', vertical: 'middle' }
   })
 
+  const lvCompRows = []
   for (const stat of allStats) {
     const lv = stat.levels
     const r = wsProg.addRow(['', '', stat.name, lv.L1, 0, lv.L2, 0, lv.L3, 0, lv.L4, 0, lv.L5, 0])
+    lvCompRows.push(r.number)
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 3) {
@@ -572,7 +575,7 @@ export async function generateCOR(equipmentData, projectName) {
     if (col >= 2) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
   })
 
-  const ganttHdr = wsProg.addRow(['', '', 'Equipment', 'Tests', 'L3', 'L4', 'L5', 'Planned Start', 'Planned Finish', 'Duration', 'Status'])
+  const ganttHdr = wsProg.addRow(['', '', 'Equipment', 'Tests', 'L3', 'L4', 'L5', 'Planned Start', 'Planned Finish', 'Duration', 'Status', '', ''])
   ganttHdr.height = 18
   ganttHdr.eachCell((cell, col) => {
     if (col >= 2) {
@@ -583,25 +586,50 @@ export async function generateCOR(equipmentData, projectName) {
     }
   })
 
+  // Compute actual dates: programme starts today, each item gets duration from test count
+  // Items within same section run in parallel; sections run sequentially
+  const scheduleRowMap = []  // Tracks {name, section, progRow} for Cx Charts linking
+  const programmeStart = new Date()
+  programmeStart.setHours(0, 0, 0, 0)
+  let sectionStartDate = new Date(programmeStart)
+
   for (const [sectionName, items] of Object.entries(sections)) {
-    // Section separator (orange bar)
-    const sep = wsProg.addRow(['', '', sectionName])
+    // Section separator (dark blue-grey bar)
+    const sep = wsProg.addRow(['', '', sectionName, '', '', '', '', '', '', '', '', '', ''])
     sep.height = 20
     sep.eachCell((cell, col) => {
       if (col >= 2) {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.orange } }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
         cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFFFF' } }
         cell.alignment = { vertical: 'middle' }
+        cell.border = { bottom: { style: 'thin', color: { argb: C.orange } } }
       }
     })
+
+    let sectionMaxEnd = new Date(sectionStartDate)
 
     for (const item of items) {
       const tests = getTests(item)
       const levels = { L3: 0, L4: 0, L5: 0 }
       for (const [lv] of tests) { if (levels[lv] !== undefined) levels[lv]++ }
 
-      const r = wsProg.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', '', '', '', 'Pending'])
+      // Duration: 1 day per 3 tests, minimum 2 days
+      const duration = Math.max(2, Math.ceil(tests.length / 3))
+      const itemStart = new Date(sectionStartDate)
+      const itemEnd = new Date(itemStart)
+      itemEnd.setDate(itemEnd.getDate() + duration)
+
+      // Track max end date in section
+      if (itemEnd > sectionMaxEnd) sectionMaxEnd = new Date(itemEnd)
+
+      const r = wsProg.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, '', '', '', ''])
       r.height = 18
+      // Duration formula: Planned Finish - Planned Start & "d"
+      r.getCell(10).value = { formula: `INT(I${r.number}-H${r.number})&"d"` }
+      // Status formula: based on whether dates have passed
+      r.getCell(11).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
+      r.getCell(11).font = { name: 'Calibri', size: 9, italic: true }
+      scheduleRowMap.push({ name: getEquipName(item), section: sectionName, progRow: r.number })
       r.eachCell((cell, col) => {
         if (col >= 3) {
           cell.font = { name: 'Calibri', size: 9 }
@@ -609,15 +637,18 @@ export async function generateCOR(equipmentData, projectName) {
           cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
           if (col === 8 || col === 9) cell.numFmt = 'DD-MMM-YY'
         }
-        // Status colour (conditional-like: Pending = light red)
         if (col === 11) {
           cell.font = { name: 'Calibri', size: 9, italic: true, color: { argb: 'FF999999' } }
         }
       })
-    }
-  }
 
-  // ── Border box around entire content ──
+      // Stagger items within section (60% overlap)
+      sectionStartDate.setDate(sectionStartDate.getDate() + Math.ceil(duration * 0.6))
+    }
+
+    // Next section starts after current section ends
+    sectionStartDate = new Date(sectionMaxEnd)
+  }// ── Border box around entire content ──
   const progLastRow = wsProg.lastRow.number
   for (let r = 2; r <= progLastRow; r++) {
     const row = wsProg.getRow(r)
@@ -632,45 +663,8 @@ export async function generateCOR(equipmentData, projectName) {
   }
 
   // Settings
-  wsProg.views = [{ showGridLines: false, state: 'frozen', ySplit: 3 }]
+  wsProg.views = [{ showGridLines: false, state: 'frozen', ySplit: 3, topLeftCell: 'B4' }]
   wsProg.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
-
-  // ═══════════════════════════════════════════════════════════════════
-  // SHEET 3: _ChartData (hidden helper for Excel charts)
-  // ═══════════════════════════════════════════════════════════════════
-  const wsChart = wb.addWorksheet('_ChartData', { state: 'hidden' })
-
-  // Table 1: Progress by Section (for stacked bar chart)
-  wsChart.addRow(['PROGRESS BY SECTION'])
-  wsChart.addRow(['Section', 'Completed', 'In Progress', 'Pending'])
-  for (const stat of allStats) {
-    wsChart.addRow([stat.name, 0, 0, stat.total])
-  }
-  wsChart.addRow(['OVERALL', 0, 0, grandTotal])
-  wsChart.addRow([])
-
-  // Table 2: Documentation Pipeline (for funnel/bar chart)
-  wsChart.addRow(['DOCUMENTATION PIPELINE'])
-  wsChart.addRow(['Stage', 'Completed', 'Remaining'])
-  for (const stage of stages) {
-    wsChart.addRow([stage, 0, grandTotal])
-  }
-  wsChart.addRow([])
-
-  // Table 3: Level breakdown (for pie/donut chart)
-  wsChart.addRow(['LEVEL BREAKDOWN'])
-  wsChart.addRow(['Level', 'Count'])
-  for (const [key, val] of Object.entries(overallLevels)) {
-    wsChart.addRow([LEVEL_LABELS[key], val])
-  }
-  wsChart.addRow([])
-
-  // Table 4: Level completion per section (for grouped bar chart)
-  wsChart.addRow(['LEVEL COMPLETION BY SECTION'])
-  wsChart.addRow(['Section', 'L1 Done', 'L2 Done', 'L3 Done', 'L4 Done', 'L5 Done'])
-  for (const stat of allStats) {
-    wsChart.addRow([stat.name, 0, 0, 0, 0, 0])
-  }
 
   // Track sheet ranges for formula references
   const sheetInfo = []
@@ -834,8 +828,213 @@ export async function generateCOR(equipmentData, projectName) {
       wsProg.getCell(pRow, 6).value = { formula: `IF(D${pRow}=0,0,E${pRow}/D${pRow})` }
       wsProg.getCell(pRow, 6).numFmt = '0.00%'
     }
-  }// ═══════════════════════════════════════════════════════════════════
-  // SHEET N-1: SIGN-OFF
+  }
+
+  // ─── Level Completion "Done" formulas ───
+  // For each section row in Level Completion, count tests at each level that are 100% complete
+  for (let i = 0; i < Math.min(sheetInfo.length, lvCompRows.length); i++) {
+    const si = sheetInfo[i]
+    const sn = si.sheetName.includes(' ') ? `'${si.sheetName}'` : si.sheetName
+    const lvRow = lvCompRows[i]
+    const dRange = `$D$${si.dataStart}:$D$${si.dataEnd}`   // Level column
+    const tRange = `$T$${si.dataStart}:$T$${si.dataEnd}`   // % Complete column
+    
+    // L1 Done (col 5), L2 Done (col 7), L3 Done (col 9), L4 Done (col 11), L5 Done (col 13)
+    const levels = ['L1', 'L2', 'L3', 'L4', 'L5']
+    const doneCols = [5, 7, 9, 11, 13]
+    for (let lv = 0; lv < 5; lv++) {
+      wsProg.getCell(lvRow, doneCols[lv]).value = { 
+        formula: `COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${tRange},1)` 
+      }
+    }
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CX CHARTS SHEET — Cell-based Gantt (LIVE — updates when you edit dates)
+  // ═══════════════════════════════════════════════════════════════════
+  const wsCharts = wb.addWorksheet('Cx Charts', {
+    properties: { tabColor: { argb: 'FFFF9900' } }
+  })
+  
+  // ─── Calculate programme date range ───
+  const progStart = new Date()
+  progStart.setHours(0, 0, 0, 0)
+  let progEnd = new Date(progStart)
+  
+  // Collect all equipment with dates for the Gantt
+  const ganttItems = []  // [{name, section, start, end}]
+  let ganttCalcStart = new Date(progStart)
+  
+  for (const [sectionName, items] of Object.entries(sections)) {
+    let sectionMax = new Date(ganttCalcStart)
+    for (const item of items) {
+      const tests = getTests(item)
+      const duration = Math.max(2, Math.ceil(tests.length / 3))
+      const itemStart = new Date(ganttCalcStart)
+      const itemEnd = new Date(itemStart)
+      itemEnd.setDate(itemEnd.getDate() + duration)
+      if (itemEnd > sectionMax) sectionMax = new Date(itemEnd)
+      if (itemEnd > progEnd) progEnd = new Date(itemEnd)
+      
+      ganttItems.push({ name: getEquipName(item), section: sectionName, start: itemStart, end: itemEnd })
+      ganttCalcStart.setDate(ganttCalcStart.getDate() + Math.ceil(duration * 0.6))
+    }
+    ganttCalcStart = new Date(sectionMax)
+  }
+  
+  // Add 5 days padding to end
+  progEnd.setDate(progEnd.getDate() + 5)
+  
+  // Calculate total days for columns
+  const totalDays = Math.ceil((progEnd - progStart) / (1000 * 60 * 60 * 24))
+  const maxCols = Math.max(180, Math.min(totalDays, 365))  // Minimum 6 months, max 1 year
+  
+  // ─── Row 1: Title ───
+  wsCharts.getCell('A1').value = 'Commissioning Programme'
+  wsCharts.getCell('A1').font = { name: 'Calibri', bold: true, size: 14, color: { argb: '232F3E' } }
+  wsCharts.mergeCells(1, 1, 1, 5)
+  wsCharts.getRow(1).height = 24
+  
+  // ─── Row 3: Date headers (one column per day starting from col D) ───
+  // Col A = Equipment, Col B = Start, Col C = End, Col D+ = dates
+  wsCharts.getCell('A3').value = 'Equipment'
+  wsCharts.getCell('B3').value = 'Start'
+  wsCharts.getCell('C3').value = 'Finish'
+  wsCharts.getCell('A3').font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFF' } }
+  wsCharts.getCell('B3').font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFF' } }
+  wsCharts.getCell('C3').font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFF' } }
+  wsCharts.getCell('A3').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
+  wsCharts.getCell('B3').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
+  wsCharts.getCell('C3').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
+  
+  // Write date headers
+  for (let d = 0; d < maxCols; d++) {
+    const date = new Date(progStart)
+    date.setDate(date.getDate() + d)
+    const col = d + 4  // col D = index 4
+    const cell = wsCharts.getCell(3, col)
+    cell.value = date
+    cell.numFmt = 'DD'
+    cell.font = { name: 'Calibri', size: 7, color: { argb: '555555' } }
+    cell.alignment = { horizontal: 'center', textRotation: 90 }
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
+    wsCharts.getColumn(col).width = 2.8
+  }
+  
+  // ─── Row 2: Month headers (merged across date columns) ───
+  let currentMonth = -1
+  let monthStartCol = 4
+  for (let d = 0; d <= maxCols; d++) {
+    const date = new Date(progStart)
+    date.setDate(date.getDate() + d)
+    const month = date.getMonth()
+    
+    if (month !== currentMonth || d === maxCols) {
+      if (currentMonth >= 0 && monthStartCol < d + 4) {
+        const endCol = d + 3
+        if (endCol > monthStartCol) {
+          wsCharts.mergeCells(2, monthStartCol, 2, endCol)
+        }
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        const prevDate = new Date(progStart)
+        prevDate.setDate(prevDate.getDate() + d - 1)
+        wsCharts.getCell(2, monthStartCol).value = monthNames[currentMonth] + ' ' + prevDate.getFullYear()
+        wsCharts.getCell(2, monthStartCol).font = { name: 'Calibri', bold: true, size: 9, color: { argb: '232F3E' } }
+        wsCharts.getCell(2, monthStartCol).alignment = { horizontal: 'center' }
+      }
+      currentMonth = month
+      monthStartCol = d + 4
+    }
+  }
+  
+  // ─── Equipment rows with formulas ───
+  let currentSection = ''
+  let ganttRow = 4
+  
+  for (const item of ganttItems) {
+    // Section separator
+    if (item.section !== currentSection) {
+      currentSection = item.section
+      const sepRow = wsCharts.getRow(ganttRow)
+      wsCharts.getCell(ganttRow, 1).value = item.section
+      wsCharts.getCell(ganttRow, 1).font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      for (let c = 1; c <= maxCols + 3; c++) {
+        wsCharts.getCell(ganttRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
+      }
+      sepRow.height = 20
+      ganttRow++
+    }
+    
+    // Equipment row
+    const row = wsCharts.getRow(ganttRow)
+    row.height = 18
+    
+    // Col A: Name
+    wsCharts.getCell(ganttRow, 1).value = item.name
+    wsCharts.getCell(ganttRow, 1).font = { name: 'Calibri', bold: true, size: 9, color: { argb: '000000' } }
+    wsCharts.getCell(ganttRow, 1).alignment = { vertical: 'middle' }
+    
+    // Col B: Start date (linked to Cx Programme)
+    const schedEntry = scheduleRowMap.find(s => s.name === item.name && s.section === item.section)
+    if (schedEntry) {
+      wsCharts.getCell(ganttRow, 2).value = { formula: `'Cx Programme'!H${schedEntry.progRow}` }
+      wsCharts.getCell(ganttRow, 3).value = { formula: `'Cx Programme'!I${schedEntry.progRow}` }
+    } else {
+      wsCharts.getCell(ganttRow, 2).value = item.start
+      wsCharts.getCell(ganttRow, 3).value = item.end
+    }
+    wsCharts.getCell(ganttRow, 2).numFmt = 'DD-MMM'
+    wsCharts.getCell(ganttRow, 2).font = { name: 'Calibri', size: 8 }
+    wsCharts.getCell(ganttRow, 3).numFmt = 'DD-MMM'
+    wsCharts.getCell(ganttRow, 3).font = { name: 'Calibri', size: 8 }
+    
+    // Cols D+: Formula-based bars
+    // Formula: =IF(AND(D$3>=$B{row}, D$3<=$C{row}), 1, "")
+    for (let d = 0; d < maxCols; d++) {
+      const col = d + 4
+      const colLetter = wsCharts.getColumn(col).letter
+      const cell = wsCharts.getCell(ganttRow, col)
+      cell.value = { formula: `IF(AND(${colLetter}$3>=$B${ganttRow},${colLetter}$3<=$C${ganttRow}),1,"")` }
+      cell.font = { size: 1, color: { argb: 'FFFFFFFF' } }
+      cell.numFmt = ';;;'  // Custom format hides all values
+    }
+    
+    // Alternating row background (very light)
+    if (ganttRow % 2 === 0) {
+      wsCharts.getCell(ganttRow, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAFAFA' } }
+    }
+    
+    ganttRow++
+  }
+  
+  // ─── Conditional formatting: orange fill where formula = 1 ───
+  const lastGanttRow = ganttRow - 1
+  const firstDateCol = wsCharts.getColumn(4).letter
+  const lastDateCol = wsCharts.getColumn(maxCols + 3).letter
+  const cfRange = `${firstDateCol}4:${lastDateCol}${lastGanttRow}`
+  
+  wsCharts.addConditionalFormatting({
+    ref: cfRange,
+    rules: [{
+      type: 'cellIs',
+      operator: 'equal',
+      formulae: ['1'],
+      style: {
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF9900' }, bgColor: { argb: 'FFFF9900' } }
+      },
+      priority: 1
+    }]
+  })
+  
+  // ─── Column widths ───
+  wsCharts.getColumn(1).width = 28  // Equipment name
+  wsCharts.getColumn(2).width = 10  // Start
+  wsCharts.getColumn(3).width = 10  // End
+  
+  // ─── Freeze panes (freeze equipment name + dates header) ───
+  wsCharts.views = [{ state: 'frozen', xSplit: 3, ySplit: 3, showGridLines: false, topLeftCell: 'D4' }]
+  wsCharts.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
   // ═══════════════════════════════════════════════════════════════════
   const wsSign = wb.addWorksheet('Certificate of Readiness', { properties: { tabColor: { argb: 'FF27AE60' } } })
   wsSign.getColumn(1).width = 5
@@ -907,11 +1106,16 @@ export async function generateCOR(equipmentData, projectName) {
   wsRev.getColumn(3).width = 20
   wsRev.getColumn(4).width = 50
 
+
   // ═══════════════════════════════════════════════════════════════════
-  // EXPORT
+  // ═══════════════════════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════════════════════// EXPORT
   // ═══════════════════════════════════════════════════════════════════
   const buffer = await wb.xlsx.writeBuffer()
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  
+  const finalBuffer = buffer
+  
+  const blob = new Blob([finalBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   const date = new Date().toISOString().split('T')[0]
   const filename = `COR_${projectName.replace(/[^a-zA-Z0-9]/g, '_')}_${date}.xlsx`
   saveAs(blob, filename)
