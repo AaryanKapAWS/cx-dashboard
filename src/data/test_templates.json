@@ -263,11 +263,6 @@
     ],
     [
       "L3",
-      "Interlock Checks",
-      ""
-    ],
-    [
-      "L3",
       "CB Failure Function Test",
       ""
     ]
@@ -377,6 +372,11 @@
     [
       "L3",
       "Heater and Lighting Check",
+      ""
+    ],
+    [
+      "L3",
+      "Interlock Checks",
       ""
     ]
   ],

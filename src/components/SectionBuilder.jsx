@@ -396,7 +396,7 @@ export default function SectionBuilder({ onSubmit }) {
                 onMouseEnter={e => { if (!alreadyAdded) { e.target.style.borderColor = '#FF9900'; e.target.style.background = '#fffbeb' } }}
                 onMouseLeave={e => { if (!alreadyAdded) { e.target.style.borderColor = '#d1d5db'; e.target.style.background = '#fff' } }}
               >
-                {st.label}{count > 0 && <span style={{ marginLeft: 6, fontSize: 9, background: '#FF9900', color: '#fff', borderRadius: 10, padding: '1px 5px', fontWeight: 700 }}>{count}</span>}
+                {st.label}{st.id === 'panel_board' && <span style={{ marginLeft: 5, fontSize: 8, background: '#fef3c7', color: '#92400e', borderRadius: 3, padding: '1px 4px', fontWeight: 700, letterSpacing: '0.3px' }}>BETA</span>}{count > 0 && <span style={{ marginLeft: 6, fontSize: 9, background: '#FF9900', color: '#fff', borderRadius: 10, padding: '1px 5px', fontWeight: 700 }}>{count}</span>}
               </button>
               )
             })}
