@@ -13,19 +13,19 @@
         "id": "VT",
         "label": "Voltage Transformer (VT)",
         "default": true,
-        "qty": 2
+        "qty": 1
       },
       {
         "id": "CT",
         "label": "Current Transformer (CT)",
         "default": true,
-        "qty": 2
+        "qty": 1
       },
       {
         "id": "SURGE_ARRESTER",
         "label": "Surge Arrester",
         "default": true,
-        "qty": 1
+        "qty": 2
       },
       {
         "id": "NER_CT",
@@ -126,7 +126,7 @@
       },
       {
         "id": "vt_panel",
-        "label": "VT Panel / Metering",
+        "label": "Bus Bar VT",
         "defaults": [
           "VT",
           "PQM"
@@ -147,6 +147,20 @@
           "RELAY",
           "CUBICLE",
           "CABLE_DIFF",
+          "L4_INTEGRATION",
+          "ENERGIZATION"
+        ]
+      },
+      {
+        "id": "aux_transformer",
+        "label": "Aux Transformer",
+        "defaults": [
+          "CT",
+          "CIRCUIT_BREAKER",
+          "PQM",
+          "EPMS",
+          "RELAY",
+          "CUBICLE",
           "L4_INTEGRATION",
           "ENERGIZATION"
         ]

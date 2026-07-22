@@ -57,6 +57,11 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
     onUpdate({ ...section, items })
   }
 
+  function updateNames(eqId, names) {
+    const items = section.items.map(i => i.id === eqId ? { ...i, names } : i)
+    onUpdate({ ...section, items })
+  }
+
   return (
     <div style={{ padding: '12px 16px' }}>
       <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 12px' }}>{template.description}</p>
@@ -91,12 +96,30 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
                     onChange={e => updateQty(eq.id, e.target.value)}
                     style={{ width: 40, padding: '3px 6px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 12, textAlign: 'center' }}
                   />
-                  <input
-                    value={item?.name || ''}
-                    onChange={e => updateName(eq.id, e.target.value)}
-                    placeholder="Custom name (optional)"
-                    style={{ width: 160, padding: '4px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 11 }}
-                  />
+                  {(item?.qty || 1) === 1 ? (
+                    <input
+                      value={item?.name || ''}
+                      onChange={e => updateName(eq.id, e.target.value)}
+                      placeholder="Custom name (optional)"
+                      style={{ width: 180, padding: '4px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 11 }}
+                    />
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {Array.from({ length: item.qty }, (_, idx) => (
+                        <input
+                          key={idx}
+                          value={(item?.names || [])[idx] || ''}
+                          onChange={e => {
+                            const names = [...(item?.names || [])]
+                            names[idx] = e.target.value
+                            updateNames(eq.id, names)
+                          }}
+                          placeholder={`${eq.label} ${idx + 1}`}
+                          style={{ width: 180, padding: '3px 8px', border: '1px solid #d1d5db', borderRadius: 4, fontSize: 11 }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
             </div>
