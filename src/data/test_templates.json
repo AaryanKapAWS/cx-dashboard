@@ -146,29 +146,56 @@
   ],
   "VT": [
     [
-      "L3",
-      "Visual Inspection",
-      ""
+      "L1",
+      "FAT Report on Procore"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
     ],
     [
       "L3",
-      "Insulation Resistance",
-      ""
+      "Visual Inspection"
     ],
     [
       "L3",
-      "Winding Resistance",
-      ""
+      "Insulation Resistance"
     ],
     [
       "L3",
-      "Polarity Check",
-      ""
+      "Polarity Test"
     ],
     [
       "L3",
-      "Ratio Check",
-      ""
+      "Winding Resistance"
+    ],
+    [
+      "L3",
+      "Ratio Check"
+    ],
+    [
+      "L3",
+      "VT Burden and Secondary Burden"
+    ],
+    [
+      "L4",
+      "Primary Injection"
+    ],
+    [
+      "L5",
+      "Pre Energization Check"
+    ],
+    [
+      "L5",
+      "Post Energization Check"
     ]
   ],
   "PQM": [
@@ -972,6 +999,11 @@
       "L5",
       "Post Energization Checks",
       "Post_Energisation_Checksheet"
+    ],
+    [
+      "L4",
+      "Teleprotection Link Verification",
+      ""
     ]
   ],
   "ESB_INTERFACE": [
@@ -1229,6 +1261,1400 @@
       "L3",
       "Verification of 66QT Rapid Pressure Rise Relay Contacts",
       ""
+    ]
+  ],
+  "DRY_TRANSFORMER": [
+    [
+      "L1",
+      "FAT Report on Procore"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Turns Ratio and Vector Group Test"
+    ],
+    [
+      "L3",
+      "Measurement of Winding Resistances (All Taps)"
+    ],
+    [
+      "L3",
+      "DC Winding Resistance - Primary HV"
+    ],
+    [
+      "L3",
+      "DC Winding Resistance - Secondary LV"
+    ],
+    [
+      "L3",
+      "Insulation Resistance and Polarisation Index"
+    ],
+    [
+      "L3",
+      "Winding Dissipation Factor (Tan Delta)"
+    ],
+    [
+      "L3",
+      "SFRA - Sweep Frequency Response Analysis"
+    ],
+    [
+      "L3",
+      "Temperature Sensor Calibration (RTD/PTC)"
+    ],
+    [
+      "L3",
+      "Cooling Fan Functional Test"
+    ],
+    [
+      "L3",
+      "Fan Current and Direction Check"
+    ],
+    [
+      "L3",
+      "Alarm and Trip Set Point Verification"
+    ],
+    [
+      "L3",
+      "Heater Functional Check"
+    ],
+    [
+      "L3",
+      "Visual Inspection and Torque Check"
+    ],
+    [
+      "L4",
+      "CT Primary Injection"
+    ],
+    [
+      "L4",
+      "Protection Function Test (87T/64)"
+    ],
+    [
+      "L5",
+      "Pre-Energization Checks"
+    ],
+    [
+      "L5",
+      "Energization"
+    ],
+    [
+      "L5",
+      "Post-Energization Thermal Check"
+    ]
+  ],
+  "GIS_BAY": [
+    [
+      "L1",
+      "FAT report on Procore"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "SF6 Gas Quality Test"
+    ],
+    [
+      "L3",
+      "Gas Density Monitor Test"
+    ],
+    [
+      "L3",
+      "Switchgear Interlock Test"
+    ],
+    [
+      "L3",
+      "Busbar Ductor Test"
+    ],
+    [
+      "L3",
+      "HV AC Withstand Test and PD Measurement"
+    ],
+    [
+      "L3",
+      "Insulation Resistance of Main Circuit"
+    ],
+    [
+      "L3",
+      "Dielectric Test on Aux and Control Circuit"
+    ],
+    [
+      "L3",
+      "Control Circuit Connection/Functional Test"
+    ]
+  ],
+  "DS_ES_GIS": [
+    [
+      "L1",
+      "FAT report"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Contact Resistance Ductor Test"
+    ],
+    [
+      "L3",
+      "Motor Winding Resistance"
+    ],
+    [
+      "L3",
+      "Coil Resistance Measurement"
+    ],
+    [
+      "L3",
+      "Motor Current and Timing Test"
+    ],
+    [
+      "L3",
+      "Operation at Min Max Rated Control Voltage"
+    ],
+    [
+      "L3",
+      "Position Indicator Check"
+    ],
+    [
+      "L3",
+      "Manual Operation"
+    ],
+    [
+      "L3",
+      "Auxiliary Contacts Check"
+    ],
+    [
+      "L3",
+      "Interlock Check"
+    ],
+    [
+      "L4",
+      "DS Interlock Check"
+    ],
+    [
+      "L4",
+      "ES Interlock Check"
+    ]
+  ],
+  "CB_GIS": [
+    [
+      "L1",
+      "FAT report"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "SF6 Gas Functional Check"
+    ],
+    [
+      "L3",
+      "Leakage Test"
+    ],
+    [
+      "L3",
+      "Dew Point Measurement of SF6 Gas"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Contact Resistance Ductor Test"
+    ],
+    [
+      "L3",
+      "Dynamic Contact Resistance DCRM"
+    ],
+    [
+      "L3",
+      "CB Operating Timing Test"
+    ],
+    [
+      "L3",
+      "Minimum Voltage Operation"
+    ],
+    [
+      "L3",
+      "Operational Lockout Check"
+    ],
+    [
+      "L3",
+      "Anti-Pumping Features Check"
+    ],
+    [
+      "L3",
+      "Anti-Condensation Heater Check"
+    ],
+    [
+      "L3",
+      "Pole Discrepancy Relay Timing Test"
+    ],
+    [
+      "L3",
+      "Coil Resistance Measurement"
+    ],
+    [
+      "L3",
+      "Motor Charging Current Test"
+    ],
+    [
+      "L3",
+      "Spring Operating Mechanism Test"
+    ],
+    [
+      "L3",
+      "Manual/Electrical Operation Check"
+    ],
+    [
+      "L3",
+      "CB Auxiliary Circuit Check"
+    ],
+    [
+      "L3",
+      "CB Castel Key Interlock Check"
+    ],
+    [
+      "L4",
+      "CB Interlock Check"
+    ],
+    [
+      "L4",
+      "Local/Remote Operation Check"
+    ]
+  ],
+  "CT_GIS": [
+    [
+      "L1",
+      "FAT report"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Tan Delta and Capacitance Test"
+    ],
+    [
+      "L3",
+      "Polarity Test"
+    ],
+    [
+      "L3",
+      "Saturation/Magnetization Test"
+    ],
+    [
+      "L3",
+      "Winding Resistance"
+    ],
+    [
+      "L3",
+      "Ratio Check"
+    ],
+    [
+      "L3",
+      "Burden Test"
+    ],
+    [
+      "L3",
+      "Continuity Test and Check Connections"
+    ],
+    [
+      "L3",
+      "Contact Resistance and Torque Test"
+    ],
+    [
+      "L3",
+      "DGA Test for Oil"
+    ],
+    [
+      "L4",
+      "CT Primary Injection Test"
+    ]
+  ],
+  "VT_GIS": [
+    [
+      "L1",
+      "FAT report"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Tan Delta and Capacitance Test"
+    ],
+    [
+      "L3",
+      "Winding Resistance"
+    ],
+    [
+      "L3",
+      "Polarity Test"
+    ],
+    [
+      "L3",
+      "Ratio Check"
+    ],
+    [
+      "L3",
+      "Burden Test"
+    ],
+    [
+      "L3",
+      "Continuity Test and Check Connections"
+    ],
+    [
+      "L3",
+      "DGA Test for Oil"
+    ],
+    [
+      "L4",
+      "VT Secondary Injection Test"
+    ]
+  ],
+  "SA_GIS": [
+    [
+      "L1",
+      "FAT report"
+    ],
+    [
+      "L1",
+      "FAT Observation"
+    ],
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Surge Counter Reading Check"
+    ],
+    [
+      "L3",
+      "Tan Delta and Capacitance Test"
+    ],
+    [
+      "L3",
+      "Third Harmonic Resistive Current Test"
+    ],
+    [
+      "L3",
+      "Leakage Current Meter Calibration"
+    ]
+  ],
+  "RING_CT_GIS": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Polarity Test"
+    ],
+    [
+      "L3",
+      "Ratio Check"
+    ],
+    [
+      "L3",
+      "Winding Resistance"
+    ],
+    [
+      "L3",
+      "Continuity Test"
+    ]
+  ],
+  "HV_CABLE_GIS": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual and Mechanical Inspection"
+    ],
+    [
+      "L3",
+      "Cable Continuity Check"
+    ],
+    [
+      "L3",
+      "Cable Screen Ohmic Resistance"
+    ],
+    [
+      "L3",
+      "Conductor Ohmic Resistance"
+    ],
+    [
+      "L3",
+      "IR for Cable Screen"
+    ],
+    [
+      "L3",
+      "IR for Conductor Before AC Withstand"
+    ],
+    [
+      "L3",
+      "AC Withstand Voltage Test with Resonant System"
+    ],
+    [
+      "L3",
+      "Partial Discharge Test during AC Withstand"
+    ],
+    [
+      "L3",
+      "IR for Conductor After AC Withstand"
+    ],
+    [
+      "L3",
+      "Cable Termination Inspection Hot Shrink"
+    ],
+    [
+      "L3",
+      "Sheath Voltage Limiting Device Test"
+    ],
+    [
+      "L3",
+      "Cross Bonding Link Box Inspection"
+    ]
+  ],
+  "LCC_GIS": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "MCB Phase Sequence Check"
+    ],
+    [
+      "L3",
+      "MCB Polarity Check"
+    ],
+    [
+      "L3",
+      "MCB Voltage Measurement"
+    ],
+    [
+      "L3",
+      "Wiring Check"
+    ],
+    [
+      "L3",
+      "Auxiliary Supply Check"
+    ],
+    [
+      "L3",
+      "DC Mixing Check"
+    ],
+    [
+      "L3",
+      "Heating and Lighting Check"
+    ],
+    [
+      "L3",
+      "Functional Equipment Operation Check"
+    ],
+    [
+      "L3",
+      "Functional Auxiliary Relay Test"
+    ],
+    [
+      "L3",
+      "Functional LED Test"
+    ],
+    [
+      "L3",
+      "Functional Alarm Signal I/O Check"
+    ],
+    [
+      "L3",
+      "IR of Aux and Control Circuits"
+    ]
+  ],
+  "CUBICLE_GIS": [
+    [
+      "L3",
+      "Cubicle AC Power Up and Scheme Check"
+    ],
+    [
+      "L3",
+      "Cubicle DC Power Up and Scheme Check"
+    ],
+    [
+      "L3",
+      "Inter Panel Wiring Checks"
+    ],
+    [
+      "L3",
+      "Voltage Detector Operation Confirmation - May not be applicable"
+    ],
+    [
+      "L3",
+      "All Spare Contact Healthiness Check"
+    ]
+  ],
+  "IED_OC_GIS": [
+    [
+      "L3",
+      "Wiring Check"
+    ],
+    [
+      "L3",
+      "Relay Power On Test"
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation"
+    ],
+    [
+      "L3",
+      "Meter Functional Test by Current and Voltage Injection"
+    ],
+    [
+      "L3",
+      "Breaker Trip Test through Relay Secondary Injection"
+    ],
+    [
+      "L3",
+      "Alarms and Indication Check"
+    ],
+    [
+      "L3",
+      "Equipment Details Validation"
+    ],
+    [
+      "L3",
+      "DC Supply Check"
+    ],
+    [
+      "L3",
+      "Measurement Validation"
+    ],
+    [
+      "L3",
+      "LED Test"
+    ],
+    [
+      "L3",
+      "Digital Inputs Test"
+    ],
+    [
+      "L3",
+      "Digital Outputs Test"
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check"
+    ],
+    [
+      "L3",
+      "Time Sync Check"
+    ],
+    [
+      "L3",
+      "Configuration File Validation"
+    ],
+    [
+      "L3",
+      "Lock Out Validation"
+    ],
+    [
+      "L4",
+      "Trip Circuit Supervision Check"
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation"
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check"
+    ],
+    [
+      "L4",
+      "Interlock Checks Castel Key Local/Remote"
+    ],
+    [
+      "L4",
+      "CB Failure Function Test"
+    ],
+    [
+      "L4",
+      "Final Setting Verification"
+    ],
+    [
+      "L4",
+      "SCADA End Signal Checks"
+    ],
+    [
+      "L4",
+      "25 Synchro-check Function Test"
+    ],
+    [
+      "L4",
+      "50 Phase Instantaneous Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51 Phase Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "50N Neutral Instantaneous Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51N Neutral Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "27 Undervoltage Protection Secondary Injection"
+    ],
+    [
+      "L4",
+      "59 Overvoltage Protection Secondary Injection"
+    ]
+  ],
+  "IED_87T_GIS": [
+    [
+      "L3",
+      "Wiring Check"
+    ],
+    [
+      "L3",
+      "Relay Power On Test"
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation"
+    ],
+    [
+      "L3",
+      "Meter Functional Test by Current and Voltage Injection"
+    ],
+    [
+      "L3",
+      "Breaker Trip Test through Relay Secondary Injection"
+    ],
+    [
+      "L3",
+      "Alarms and Indication Check"
+    ],
+    [
+      "L3",
+      "Equipment Details Validation"
+    ],
+    [
+      "L3",
+      "DC Supply Check"
+    ],
+    [
+      "L3",
+      "Measurement Validation"
+    ],
+    [
+      "L3",
+      "LED Test"
+    ],
+    [
+      "L3",
+      "Digital Inputs Test"
+    ],
+    [
+      "L3",
+      "Digital Outputs Test"
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check"
+    ],
+    [
+      "L3",
+      "Time Sync Check"
+    ],
+    [
+      "L3",
+      "Configuration File Validation"
+    ],
+    [
+      "L3",
+      "Lock Out Validation"
+    ],
+    [
+      "L4",
+      "Trip Circuit Supervision Check"
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation"
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check"
+    ],
+    [
+      "L4",
+      "Interlock Checks Castel Key Local/Remote"
+    ],
+    [
+      "L4",
+      "CB Failure Function Test"
+    ],
+    [
+      "L4",
+      "Final Setting Verification"
+    ],
+    [
+      "L4",
+      "SCADA End Signal Checks"
+    ],
+    [
+      "L4",
+      "87T Transformer Differential Protection Secondary Injection"
+    ],
+    [
+      "L4",
+      "50 Phase Instantaneous Overcurrent HV Secondary Injection"
+    ],
+    [
+      "L4",
+      "51 Phase Time Overcurrent HV Secondary Injection"
+    ],
+    [
+      "L4",
+      "50 Phase Instantaneous Overcurrent MV Secondary Injection"
+    ],
+    [
+      "L4",
+      "51 Phase Time Overcurrent MV Secondary Injection"
+    ],
+    [
+      "L4",
+      "50N Neutral Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51N Neutral Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "50G Ground Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51G Ground Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "81O Overfrequency Secondary Injection"
+    ],
+    [
+      "L4",
+      "81U Underfrequency Secondary Injection"
+    ],
+    [
+      "L4",
+      "67N Directional Earth Fault Secondary Injection"
+    ],
+    [
+      "L4",
+      "64REF Restricted Earth Fault Secondary Injection"
+    ]
+  ],
+  "EPMS_GIS": [
+    [
+      "L4",
+      "EPMS Validation and Screenshots"
+    ]
+  ],
+  "ENERGIZATION_GIS": [
+    [
+      "L5",
+      "Pre-Energization Safety Checks"
+    ],
+    [
+      "L5",
+      "FOD Foreign Object Debris Check"
+    ],
+    [
+      "L5",
+      "Busbar 1 Energization Checks"
+    ],
+    [
+      "L5",
+      "Busbar 1 Energization"
+    ],
+    [
+      "L5",
+      "Busbar 2 Energization Checks"
+    ],
+    [
+      "L5",
+      "Busbar 2 Energization"
+    ],
+    [
+      "L5",
+      "Post Energization Check"
+    ]
+  ],
+  "ES_GIS": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Contact Resistance"
+    ],
+    [
+      "L3",
+      "Motor/Manual Operation Test"
+    ],
+    [
+      "L3",
+      "Position Indicator Check"
+    ],
+    [
+      "L3",
+      "Auxiliary Contacts Check"
+    ],
+    [
+      "L3",
+      "Interlock Check"
+    ]
+  ],
+  "IED_87B_GIS": [
+    [
+      "L3",
+      "Wiring Check"
+    ],
+    [
+      "L3",
+      "Relay Power On Test"
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation"
+    ],
+    [
+      "L3",
+      "Meter Functional Test by Current and Voltage Injection"
+    ],
+    [
+      "L3",
+      "Breaker Trip Test through Relay Secondary Injection"
+    ],
+    [
+      "L3",
+      "Alarms and Indication Check"
+    ],
+    [
+      "L3",
+      "Equipment Details Validation"
+    ],
+    [
+      "L3",
+      "DC Supply Check"
+    ],
+    [
+      "L3",
+      "Measurement Validation"
+    ],
+    [
+      "L3",
+      "LED Test"
+    ],
+    [
+      "L3",
+      "Digital Inputs Test"
+    ],
+    [
+      "L3",
+      "Digital Outputs Test"
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check"
+    ],
+    [
+      "L3",
+      "Time Sync Check"
+    ],
+    [
+      "L3",
+      "Configuration File Validation"
+    ],
+    [
+      "L3",
+      "Lock Out Validation"
+    ],
+    [
+      "L4",
+      "Trip Circuit Supervision Check"
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation"
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check"
+    ],
+    [
+      "L4",
+      "SCADA End Signal Checks"
+    ],
+    [
+      "L4",
+      "87B Busbar Differential Protection Secondary Injection"
+    ],
+    [
+      "L4",
+      "50 Phase Instantaneous Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51 Phase Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "50N Neutral Instantaneous Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "51N Neutral Time Overcurrent Secondary Injection"
+    ],
+    [
+      "L4",
+      "27 Undervoltage Protection Secondary Injection"
+    ],
+    [
+      "L4",
+      "59 Overvoltage Protection Secondary Injection"
+    ]
+  ],
+  "STABILITY_GIS": [
+    [
+      "L4",
+      "Busbar 1 Stability Test"
+    ],
+    [
+      "L4",
+      "Busbar 2 Stability Test"
+    ],
+    [
+      "L4",
+      "BB VT Loop Distribution Check"
+    ],
+    [
+      "L4",
+      "VN1/VN2 Distribution Check"
+    ],
+    [
+      "L4",
+      "DC Loop Status Check"
+    ],
+    [
+      "L4",
+      "MCB Status Check"
+    ],
+    [
+      "L4",
+      "Earth Bar CRM"
+    ]
+  ],
+  "BATTERY_BANK": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Battery Room Environment Check (ventilation, temperature, signage)"
+    ],
+    [
+      "L3",
+      "Individual Cell Voltage Measurement"
+    ],
+    [
+      "L3",
+      "Individual Cell Internal Resistance / Impedance"
+    ],
+    [
+      "L3",
+      "Overall Battery String Voltage"
+    ],
+    [
+      "L3",
+      "Specific Gravity Check (flooded cells)"
+    ],
+    [
+      "L3",
+      "Electrolyte Level Check"
+    ],
+    [
+      "L3",
+      "Inter-cell Connection Torque and Resistance"
+    ],
+    [
+      "L3",
+      "Insulation Resistance (battery to ground)"
+    ],
+    [
+      "L3",
+      "Capacity Discharge Test"
+    ],
+    [
+      "L3",
+      "Battery Autonomy Verification"
+    ],
+    [
+      "L5",
+      "Post-Energization Float Voltage Verification"
+    ]
+  ],
+  "BATTERY_CHARGER": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Float Voltage Setting Verification"
+    ],
+    [
+      "L3",
+      "Boost/Equalize Voltage Setting Verification"
+    ],
+    [
+      "L3",
+      "Current Limiting Check"
+    ],
+    [
+      "L3",
+      "Ripple Voltage Measurement (AC on DC)"
+    ],
+    [
+      "L3",
+      "Alarm Function Test (high/low voltage, earth fault, charger fail)"
+    ],
+    [
+      "L3",
+      "Auto Changeover Test (mains fail \u2192 battery)"
+    ],
+    [
+      "L3",
+      "Output Voltage Stability Under Load"
+    ],
+    [
+      "L3",
+      "Charger Efficiency Check"
+    ]
+  ],
+  "DC_DISTRIBUTION": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "MCB / Fuse Coordination Check"
+    ],
+    [
+      "L3",
+      "Bus Voltage Measurement"
+    ],
+    [
+      "L3",
+      "Insulation Resistance"
+    ],
+    [
+      "L3",
+      "Circuit Continuity Verification"
+    ],
+    [
+      "L3",
+      "Load Distribution Check (per circuit)"
+    ],
+    [
+      "L3",
+      "Labelling and Schedule Verification"
+    ],
+    [
+      "L4",
+      "DC Supply to Protection / SCADA Verification"
+    ]
+  ],
+  "UPS": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L2",
+      "IVF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Input/Output Voltage Measurement"
+    ],
+    [
+      "L3",
+      "Transfer Time Test (mains \u2192 battery)"
+    ],
+    [
+      "L3",
+      "Transfer Time Test (battery \u2192 mains)"
+    ],
+    [
+      "L3",
+      "Battery Autonomy Under Load"
+    ],
+    [
+      "L3",
+      "Alarm Function Test"
+    ],
+    [
+      "L3",
+      "Bypass Operation Check"
+    ],
+    [
+      "L3",
+      "Output Waveform and THD Check"
+    ]
+  ],
+  "DC_EARTH_FAULT": [
+    [
+      "L2",
+      "RIF"
+    ],
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Insulation Resistance of DC System"
+    ],
+    [
+      "L3",
+      "Earth Fault Detection Sensitivity Test"
+    ],
+    [
+      "L3",
+      "Alarm Annunciation Check"
+    ],
+    [
+      "L3",
+      "Per-Circuit Isolation Test"
+    ]
+  ],
+  "EARTH_GRID": [
+    [
+      "L3",
+      "Visual Inspection of Earth Connections"
+    ],
+    [
+      "L3",
+      "Earth Grid Continuity Test"
+    ],
+    [
+      "L3",
+      "Earth Resistance Measurement (Fall-of-Potential)"
+    ],
+    [
+      "L3",
+      "Step Voltage Assessment"
+    ],
+    [
+      "L3",
+      "Touch Voltage Assessment"
+    ],
+    [
+      "L3",
+      "Soil Resistivity Measurement"
+    ],
+    [
+      "L3",
+      "Cross-bonding and Jumper Verification"
+    ]
+  ],
+  "EARTH_ELECTRODE": [
+    [
+      "L3",
+      "Visual Inspection"
+    ],
+    [
+      "L3",
+      "Electrode Resistance Measurement"
+    ],
+    [
+      "L3",
+      "Electrode Continuity to Main Grid"
+    ],
+    [
+      "L3",
+      "Connection Torque and Condition Check"
     ]
   ]
 }

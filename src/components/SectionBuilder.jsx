@@ -4,6 +4,7 @@ import testTemplates from '../data/test_templates.json'
 
 const DISPLAY_NAMES = {
   CT: 'CT - Protection', CT2: 'CT - Metering', NCT: 'NCT (CBCT)',
+  CT_HV: 'CT (HV)', VT_HV: 'VT (HV)', DRY_TRANSFORMER: 'Dry Transformer',
   VT: 'VT', PQM: 'Power Quality Meter', EPMS: 'EPMS',
   RELAY: 'Relay', CUBICLE: 'Cubicle', ENERGIZATION: 'Energization',
   SYNCH_CHECK: 'Synch Check Relay', CABLE_DIFF: 'Cable Differential',
@@ -16,15 +17,32 @@ const DISPLAY_NAMES = {
   CT_METER: 'CT - Metering', CIRCUIT_BREAKER: 'Circuit Breaker',
   EARTH_SWITCH: 'Earth Switch', MK_OLTC_PANEL: 'MK & OLTC Panel',
   L4_INTEGRATION: 'L4 Integration',
+  GIS_BAY: 'GIS Bay (HIS PASS)', DS_ES_GIS: 'Disconnector / Earth Switch',
+  CB_GIS: 'Circuit Breaker (SF6)', ES_GIS: 'Earth Switch',
+  CT_GIS: 'CT (GIS)', VT_GIS: 'VT (GIS)', SA_GIS: 'Surge Arrester',
+  RING_CT_GIS: 'Ring CT (NER)', HV_CABLE_GIS: 'HV Cable',
+  LCC_GIS: 'Local Control Cubicle (LCC)', CUBICLE_GIS: 'Cubicle',
+  IED_OC_GIS: 'IED - Overcurrent (50/51)', IED_87T_GIS: 'IED - Transformer Diff (87T)',
+  IED_87B_GIS: 'IED - Busbar Diff (87B)', STABILITY_GIS: 'Busbar Stability (87B)',
+  EPMS_GIS: 'EPMS', ENERGIZATION_GIS: 'Energization',
 }
 
 const GRID_LABELS = {
   CT: 'CT', CT2: 'CT-M', NCT: 'NCT', CT_METER: 'CT-M',
+  CT_HV: 'CT', VT_HV: 'VT',
   VT: 'VT', PQM: 'PQM', EPMS: 'EPMS',
-  RELAY: 'Relay', CUBICLE: 'Cubicle', ENERGIZATION: 'Energization',
+  RELAY: 'Relay', CUBICLE: 'Cubicle', ENERGIZATION: 'Energ.',
   SYNCH_CHECK: 'Synch Chk', CABLE_DIFF: 'Cable Diff',
   CIRCUIT_BREAKER: 'CB', EARTH_SWITCH: 'ES',
+  BUSBAR: 'Busbar',
+  SURGE_ARRESTER: 'SA',
   L4_INTEGRATION: 'L4 Integ.',
+  GIS_BAY: 'GIS Bay', DS_ES_GIS: 'DS/ES', CB_GIS: 'CB',
+  ES_GIS: 'ES', CT_GIS: 'CT', VT_GIS: 'VT', SA_GIS: 'SA',
+  RING_CT_GIS: 'Ring CT', HV_CABLE_GIS: 'Cable',
+  LCC_GIS: 'LCC', CUBICLE_GIS: 'Cubicle',
+  IED_OC_GIS: 'IED OC', IED_87T_GIS: 'IED 87T', IED_87B_GIS: 'IED 87B',
+  STABILITY_GIS: 'Stability', EPMS_GIS: 'EPMS', ENERGIZATION_GIS: 'Energ.',
 }
 
 const SECTION_TYPES = Object.entries(sectionTemplates).map(([id, config]) => ({
@@ -145,6 +163,16 @@ function FeederSection({ section, onUpdate }) {
     onUpdate({ ...section, feeders: section.feeders.filter((_, i) => i !== idx) })
   }
 
+  function moveFeeder(idx, direction) {
+    const newIdx = idx + direction
+    if (newIdx < 0 || newIdx >= section.feeders.length) return
+    const feeders = [...section.feeders]
+    const temp = feeders[idx]
+    feeders[idx] = feeders[newIdx]
+    feeders[newIdx] = temp
+    onUpdate({ ...section, feeders })
+  }
+
   function updateRef(idx, ref) {
     const feeders = section.feeders.map((f, i) => i === idx ? { ...f, ref } : f)
     onUpdate({ ...section, feeders })
@@ -192,7 +220,7 @@ function FeederSection({ section, onUpdate }) {
       {/* Scrollable grid container */}
       <div style={{ overflowX: 'auto', marginBottom: 8 }}>
       {/* Column headers */}
-      <div style={{ display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, minmax(70px, 1fr)) 28px`, gap: 2, marginBottom: 4, minWidth: `${190 + eqTypes.length * 75 + 28}px`, alignItems: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: `70px 100px repeat(${eqTypes.length}, minmax(50px, 1fr)) 70px`, gap: 2, marginBottom: 4, minWidth: `${170 + eqTypes.length * 55 + 70}px`, alignItems: 'center' }}>
         <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', justifySelf: 'center' }}>REF</span>
         <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', justifySelf: 'center' }}>TYPE</span>
         {eqTypes.map(eq => (
@@ -206,7 +234,7 @@ function FeederSection({ section, onUpdate }) {
       {/* Feeder rows */}
       {section.feeders.map((feeder, idx) => (
         <div key={idx} style={{
-          display: 'grid', gridTemplateColumns: `80px 110px repeat(${eqTypes.length}, minmax(70px, 1fr)) 28px`, minWidth: `${190 + eqTypes.length * 75 + 28}px`,
+          display: 'grid', gridTemplateColumns: `70px 100px repeat(${eqTypes.length}, minmax(50px, 1fr)) 70px`, minWidth: `${170 + eqTypes.length * 55 + 70}px`,
           gap: 2, marginBottom: 2, alignItems: 'center', padding: '3px 4px', borderRadius: 4,
           background: idx % 2 === 0 ? '#f8fafc' : 'transparent'
         }}>
@@ -227,9 +255,17 @@ function FeederSection({ section, onUpdate }) {
               />
             </div>
           ))}
-          <button onClick={() => removeFeeder(idx)} style={{
-            background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 13
-          }}>×</button>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 2 }}>
+            <button onClick={() => moveFeeder(idx, -1)} title="Move up" style={{
+              background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 10, padding: '2px 4px', lineHeight: 1
+            }}>▲</button>
+            <button onClick={() => moveFeeder(idx, 1)} title="Move down" style={{
+              background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 10, padding: '2px 4px', lineHeight: 1
+            }}>▼</button>
+            <button onClick={() => removeFeeder(idx)} style={{
+              background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', fontSize: 14, padding: '0 4px', marginLeft: 4
+            }}>×</button>
+          </div>
         </div>
       ))}
 
@@ -244,8 +280,14 @@ function FeederSection({ section, onUpdate }) {
 
 
 export default function SectionBuilder({ onSubmit }) {
-  const [sections, setSections] = useState([])
-  const [projectName, setProjectName] = useState('')
+  const [sections, setSections] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cor_sections')) || [] } catch { return [] }
+  })
+  const [projectName, setProjectName] = useState(() => localStorage.getItem('cor_sectionProjectName') || '')
+
+  // Auto-save sections to localStorage
+  useEffect(() => { localStorage.setItem('cor_sections', JSON.stringify(sections)) }, [JSON.stringify(sections)])
+  useEffect(() => { localStorage.setItem('cor_sectionProjectName', projectName) }, [projectName])
 
   // Live sync — update parent whenever sections change
   useEffect(() => {
@@ -324,6 +366,7 @@ export default function SectionBuilder({ onSubmit }) {
               qty: 1,
               drawing: 'SLD (Manual)',
               feeder_type: feeder.type,
+              feeder_type_label: ((sectionTemplates[section.type]?.feeder_types || []).find(ft => ft.id === feeder.type) || {}).label || feeder.type,
               section: section.type,
             })
           }

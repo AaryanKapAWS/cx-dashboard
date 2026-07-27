@@ -1,7 +1,7 @@
 {
-  "transformer_bay": {
-    "label": "Transformer Bay",
-    "description": "Power transformer and associated HV equipment",
+  "oil_transformer": {
+    "label": "Oil Transformer",
+    "description": "ONAN/ONAF power transformer with oil system, OLTC, cooling, and associated HV equipment",
     "equipment": [
       {
         "id": "TRANSFORMER",
@@ -59,9 +59,57 @@
       }
     ]
   },
-  "switchgear": {
-    "label": "Switchgear",
-    "description": "Overall switchgear equipment (tested once for entire switchgear)",
+  "dry_transformer": {
+    "label": "Dry Transformer",
+    "description": "Cast resin / dry-type transformer \u2014 no oil system, no OLTC (typically indoor)",
+    "equipment": [
+      {
+        "id": "DRY_TRANSFORMER",
+        "label": "Dry Transformer",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "VT",
+        "label": "Voltage Transformer (VT)",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "CT",
+        "label": "Current Transformer (CT)",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "SURGE_ARRESTER",
+        "label": "Surge Arrester",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "BUSBAR",
+        "label": "Busbar",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "NER",
+        "label": "Neutral Earthing Resistor (NER)",
+        "default": false,
+        "qty": 1
+      },
+      {
+        "id": "ENERGIZATION",
+        "label": "Energization",
+        "default": true,
+        "qty": 1
+      }
+    ]
+  },
+  "switchgear_ais": {
+    "label": "Switchgear (AIS)",
+    "description": "Air-insulated switchgear \u2014 cubicle type at any voltage (MV/HV)",
     "feeder_description": "Per-feeder equipment \u2014 select type per feeder to auto-populate",
     "equipment": [
       {
@@ -88,15 +136,17 @@
         "id": "incomer",
         "label": "Incomer",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CT_METER",
+          "NCT",
           "CIRCUIT_BREAKER",
           "VT",
           "EARTH_SWITCH",
           "PQM",
           "EPMS",
           "RELAY",
-          "CUBICLE",
           "L4_INTEGRATION",
           "ENERGIZATION"
         ]
@@ -105,12 +155,13 @@
         "id": "bus_coupler",
         "label": "Bus Coupler",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CIRCUIT_BREAKER",
           "VT",
           "PQM",
           "RELAY",
-          "CUBICLE",
           "SYNCH_CHECK",
           "L4_INTEGRATION",
           "ENERGIZATION"
@@ -121,6 +172,7 @@
         "label": "NER",
         "defaults": [
           "CT",
+          "BUSBAR",
           "RELAY"
         ]
       },
@@ -129,6 +181,7 @@
         "label": "Bus Bar VT",
         "defaults": [
           "VT",
+          "BUSBAR",
           "PQM"
         ]
       },
@@ -136,6 +189,8 @@
         "id": "outgoing",
         "label": "Outgoing Feeder",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CT_METER",
           "NCT",
@@ -145,7 +200,6 @@
           "PQM",
           "EPMS",
           "RELAY",
-          "CUBICLE",
           "CABLE_DIFF",
           "L4_INTEGRATION",
           "ENERGIZATION"
@@ -155,12 +209,13 @@
         "id": "aux_transformer",
         "label": "Aux Transformer",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CIRCUIT_BREAKER",
           "PQM",
           "EPMS",
           "RELAY",
-          "CUBICLE",
           "L4_INTEGRATION",
           "ENERGIZATION"
         ]
@@ -169,6 +224,8 @@
         "id": "xfmr",
         "label": "Transformer Feeder",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CT_METER",
           "NCT",
@@ -177,7 +234,6 @@
           "PQM",
           "EPMS",
           "RELAY",
-          "CUBICLE",
           "L4_INTEGRATION",
           "ENERGIZATION"
         ]
@@ -186,9 +242,14 @@
         "id": "spare",
         "label": "Spare",
         "defaults": [
+          "CUBICLE",
+          "BUSBAR",
           "CT",
           "CIRCUIT_BREAKER",
-          "RELAY"
+          "PQM",
+          "EPMS",
+          "RELAY",
+          "ENERGIZATION"
         ]
       },
       {
@@ -214,7 +275,114 @@
       "CT_METER",
       "CIRCUIT_BREAKER",
       "EARTH_SWITCH",
-      "L4_INTEGRATION"
+      "L4_INTEGRATION",
+      "BUSBAR"
+    ]
+  },
+  "hv_switchgear_gis": {
+    "label": "Switchgear (GIS)",
+    "description": "Gas-insulated switchgear (110-400kV) \u2014 SF6 compartments, per Sarath ZAZ062HV format",
+    "feeder_types": [
+      {
+        "id": "line_feeder",
+        "label": "Line Feeder",
+        "defaults": [
+          "GIS_BAY",
+          "DS_ES_GIS",
+          "CB_GIS",
+          "CT_GIS",
+          "VT_GIS",
+          "SA_GIS",
+          "HV_CABLE_GIS",
+          "LCC_GIS",
+          "CUBICLE_GIS",
+          "IED_OC_GIS",
+          "EPMS_GIS",
+          "ENERGIZATION_GIS"
+        ]
+      },
+      {
+        "id": "transformer_feeder",
+        "label": "Transformer Feeder",
+        "defaults": [
+          "GIS_BAY",
+          "DS_ES_GIS",
+          "CB_GIS",
+          "CT_GIS",
+          "VT_GIS",
+          "SA_GIS",
+          "RING_CT_GIS",
+          "HV_CABLE_GIS",
+          "LCC_GIS",
+          "CUBICLE_GIS",
+          "IED_OC_GIS",
+          "IED_87T_GIS",
+          "EPMS_GIS",
+          "ENERGIZATION_GIS"
+        ]
+      },
+      {
+        "id": "bus_section",
+        "label": "Bus Section / Coupler",
+        "defaults": [
+          "GIS_BAY",
+          "DS_ES_GIS",
+          "CB_GIS",
+          "ES_GIS",
+          "CT_GIS",
+          "VT_GIS",
+          "LCC_GIS",
+          "CUBICLE_GIS",
+          "IED_OC_GIS",
+          "IED_87B_GIS",
+          "STABILITY_GIS",
+          "EPMS_GIS",
+          "ENERGIZATION_GIS"
+        ]
+      },
+      {
+        "id": "bus_vt",
+        "label": "Bus Bar VT",
+        "defaults": [
+          "VT_GIS"
+        ]
+      },
+      {
+        "id": "spare",
+        "label": "Spare",
+        "defaults": [
+          "GIS_BAY",
+          "DS_ES_GIS",
+          "CB_GIS"
+        ]
+      },
+      {
+        "id": "custom",
+        "label": "Custom",
+        "defaults": [
+          "GIS_BAY",
+          "CB_GIS"
+        ]
+      }
+    ],
+    "equipment_types": [
+      "GIS_BAY",
+      "DS_ES_GIS",
+      "CB_GIS",
+      "ES_GIS",
+      "CT_GIS",
+      "VT_GIS",
+      "SA_GIS",
+      "RING_CT_GIS",
+      "HV_CABLE_GIS",
+      "LCC_GIS",
+      "CUBICLE_GIS",
+      "IED_OC_GIS",
+      "IED_87T_GIS",
+      "IED_87B_GIS",
+      "STABILITY_GIS",
+      "EPMS_GIS",
+      "ENERGIZATION_GIS"
     ]
   },
   "protection": {
@@ -242,12 +410,66 @@
       {
         "id": "HV_CABLE",
         "label": "HV Cable",
-        "default": false,
-        "qty": 0
+        "default": true,
+        "qty": 1
       },
       {
         "id": "MV_CABLE",
         "label": "MV Cable",
+        "default": true,
+        "qty": 1
+      }
+    ]
+  },
+  "battery_dc": {
+    "label": "Battery & DC System",
+    "description": "Station battery banks, chargers, DC distribution, and UPS",
+    "equipment": [
+      {
+        "id": "BATTERY_BANK",
+        "label": "Battery Bank",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "BATTERY_CHARGER",
+        "label": "Battery Charger",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "DC_DISTRIBUTION",
+        "label": "DC Distribution Board",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "UPS",
+        "label": "UPS",
+        "default": false,
+        "qty": 1
+      },
+      {
+        "id": "DC_EARTH_FAULT",
+        "label": "DC Earth Fault Monitor",
+        "default": true,
+        "qty": 1
+      }
+    ]
+  },
+  "earthing": {
+    "label": "Earthing System",
+    "description": "Station earth grid, step & touch voltage, and electrode testing",
+    "equipment": [
+      {
+        "id": "EARTH_GRID",
+        "label": "Earth Grid",
+        "default": true,
+        "qty": 1
+      },
+      {
+        "id": "EARTH_ELECTRODE",
+        "label": "Earth Electrode",
         "default": true,
         "qty": 1
       }

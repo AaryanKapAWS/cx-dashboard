@@ -84,14 +84,31 @@ export async function generateCOR(equipmentData, projectName) {
     
     if (items.length > 1) {
       // Real feeder — gets its own sheet
-      const feederType = items[0]?.feeder_type ? items[0].feeder_type.replace(/_/g, ' ') : ''
+      const feederType = items[0]?.feeder_type_label || (items[0]?.feeder_type ? items[0].feeder_type.replace(/_/g, ' ') : '')
       const displayFeeder = feederName ? feederName.toUpperCase() : ''
-      const typeLabel = feederType ? ` ${feederType.charAt(0).toUpperCase() + feederType.slice(1)}` : ''
-      const sheetLabel = feederName ? `${sectionName} - ${displayFeeder}${typeLabel}` : sectionName
-      sections[sheetLabel] = items
+      const typeLabel = feederType ? ` ${feederType}` : ''
+      let sheetLabel = feederName ? `${displayFeeder}${typeLabel}` : sectionName
+      // Prevent duplicate sheet names — prepend section name if clash, add counter if still clashing
+      if (sections[sheetLabel]) {
+        sheetLabel = `${sectionName} - ${sheetLabel}`
+      }
+      // Final safety: if STILL duplicate (e.g. same section name used twice), add counter
+      let finalLabel = sheetLabel
+      let counter = 2
+      while (sections[finalLabel]) {
+        finalLabel = `${sheetLabel} (${counter})`
+        counter++
+      }
+      sections[finalLabel] = items
     } else {
       // Single item — merge into "SectionName (Overall)" sheet
-      const overallLabel = `${sectionName}`
+      let overallLabel = `${sectionName}`
+      // If overall label already exists AND belongs to a different section type, make unique
+      if (sections[overallLabel] && sections[overallLabel][0]?.section !== items[0]?.section) {
+        let oCounter = 2
+        while (sections[`${overallLabel} ${oCounter}`]) oCounter++
+        overallLabel = `${overallLabel} ${oCounter}`
+      }
       if (!sections[overallLabel]) sections[overallLabel] = []
       sections[overallLabel].push(items[0])
     }
@@ -622,7 +639,9 @@ export async function generateCOR(equipmentData, projectName) {
       // Track max end date in section
       if (itemEnd > sectionMaxEnd) sectionMaxEnd = new Date(itemEnd)
 
-      const r = wsProg.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, '', '', '', ''])
+      // Extract feeder ref from section name for schedule clarity (e.g. "01A" from "01A Incomer")
+      const feederPrefix = (items.length > 1 && sectionName.match(/^\d{2}[A-Z]/)) ? sectionName.split(' ')[0] + ' ' : ''
+      const r = wsProg.addRow(['', '', feederPrefix + getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, '', '', '', ''])
       r.height = 18
       // Duration formula: Planned Finish - Planned Start & "d"
       r.getCell(10).value = { formula: `INT(I${r.number}-H${r.number})&"d"` }
@@ -891,9 +910,11 @@ export async function generateCOR(equipmentData, projectName) {
   const maxCols = Math.max(180, Math.min(totalDays, 365))
   
   // ─── Column widths ───
-  wsCharts.getColumn(1).width = 38  // Equipment name (wide enough for full names)
-  wsCharts.getColumn(2).width = 9   // Start date
-  wsCharts.getColumn(3).width = 9   // End date
+  // ─── Set ALL column widths upfront ───
+  wsCharts.getColumn(1).width = 60
+  wsCharts.getColumn(2).width = 11
+  wsCharts.getColumn(3).width = 11
+  for (let c = 4; c <= 184; c++) { wsCharts.getColumn(c).width = 2 }
   
   // ─── Row 1: Title ───
   wsCharts.getCell('A1').value = 'Commissioning Programme'
@@ -932,8 +953,7 @@ export async function generateCOR(equipmentData, projectName) {
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } }
     }
     
-    // Narrow columns for tight bars
-    wsCharts.getColumn(col).width = 1.8
+    // Column width set after all rows are written
   }
   
   // ─── Row 2: Month headers (merged across date columns) ───
@@ -987,13 +1007,13 @@ export async function generateCOR(equipmentData, projectName) {
       for (let c = 1; c <= maxCols + 3; c++) {
         wsCharts.getCell(ganttRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
       }
-      sepRow.height = 6
+      sepRow.height = 14
       ganttRow++
     }
     
     // Equipment row
     const row = wsCharts.getRow(ganttRow)
-    row.height = 17
+    row.height = 22
     
     // Col A: Name (bold, black)
     wsCharts.getCell(ganttRow, 1).value = item.name
@@ -1035,6 +1055,8 @@ export async function generateCOR(equipmentData, projectName) {
     ganttRow++
   }
   
+  // Column widths already set at top
+
   // ─── Conditional formatting: orange fill where formula = 1 ───
   const lastGanttRow = ganttRow - 1
   const firstDateCol = wsCharts.getColumn(4).letter

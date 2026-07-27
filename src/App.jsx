@@ -8,14 +8,23 @@ import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 
 export default function App() {
   const [tab, setTab] = useState('builder')
-  const [equipment, setEquipment] = useState([])
+  const [equipment, setEquipment] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cor_equipment')) || [] } catch { return [] }
+  })
   const [selectedRow, setSelectedRow] = useState(null)
   const [toast, setToast] = useState(null)
-  const [projectLocation, setProjectLocation] = useState('')
-  const [projectFbnId, setProjectFbnId] = useState('')
-  const [projectName, setProjectName] = useState('')
-  const [projectRegion, setProjectRegion] = useState('EMEA')
+  const [projectLocation, setProjectLocation] = useState(() => localStorage.getItem('cor_location') || '')
+  const [projectFbnId, setProjectFbnId] = useState(() => localStorage.getItem('cor_fbnId') || '')
+  const [projectName, setProjectName] = useState(() => localStorage.getItem('cor_projectName') || '')
+  const [projectRegion, setProjectRegion] = useState(() => localStorage.getItem('cor_region') || 'EMEA')
   const [uploadMode, setUploadMode] = useState('section') // 'section' or 'retro'
+
+  // Auto-save to localStorage
+  useEffect(() => { localStorage.setItem('cor_equipment', JSON.stringify(equipment)) }, [equipment])
+  useEffect(() => { localStorage.setItem('cor_location', projectLocation) }, [projectLocation])
+  useEffect(() => { localStorage.setItem('cor_fbnId', projectFbnId) }, [projectFbnId])
+  useEffect(() => { localStorage.setItem('cor_projectName', projectName) }, [projectName])
+  useEffect(() => { localStorage.setItem('cor_region', projectRegion) }, [projectRegion])
 
   function handleRename(equipIdx, newName) {
     setEquipment(prev => prev.map((item, i) => 
