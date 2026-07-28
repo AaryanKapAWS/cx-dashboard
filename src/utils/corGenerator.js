@@ -1,5 +1,6 @@
 import ExcelJS from 'exceljs'
 import { saveAs } from 'file-saver'
+import JSZip from 'jszip'
 import TEST_TEMPLATES from '../data/test_templates.json'
 
 // ─── COLOURS ────────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ function truncate(name) {
 
 function styleHeader(row, color = C.navy) {
   row.eachCell((cell) => {
-    cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFFFF' } }
+    cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: 'FFFFFFFF' } }
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } }
     cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
     cell.border = THIN_BORDER
@@ -142,16 +143,16 @@ export async function generateCOR(equipmentData, projectName) {
 
   wsCover.getColumn(1).width = 2
   wsCover.getColumn(2).width = 2.43
-  wsCover.getColumn(3).width = 20
+  wsCover.getColumn(3).width = 30
   wsCover.getColumn(4).width = 26.71
   wsCover.getColumn(5).width = 17.86
   wsCover.getColumn(6).width = 25
   wsCover.getColumn(7).width = 21.29
 
-  const FIELD_BORDER = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } }
+  const FIELD_BORDER = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
   const SECTION_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
-  const LABEL_FONT = { name: 'Calibri', bold: true, size: 10, color: { argb: '555555' } }
-  const VALUE_FONT = { name: 'Calibri', size: 10, color: { argb: '000000' } }
+  const LABEL_FONT = { name: 'Times New Roman', bold: true, size: 10, color: { argb: '555555' } }
+  const VALUE_FONT = { name: 'Times New Roman', size: 10, color: { argb: '000000' } }
 
   // Row 1: Empty row ABOVE the box (ensures top border is visible)
   const r1 = wsCover.addRow([])
@@ -165,7 +166,7 @@ export async function generateCOR(equipmentData, projectName) {
   const logoRow1 = wsCover.addRow([])
   logoRow1.height = 33
   logoRow1.getCell(5).value = 'Commissioning Outstanding Register (COR)'
-  logoRow1.getCell(5).font = { name: 'Calibri', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
+  logoRow1.getCell(5).font = { name: 'Times New Roman', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
   wsCover.mergeCells(logoRow1.number, 5, logoRow1.number, 7)
   logoRow1.getCell(5).alignment = { horizontal: 'center', vertical: 'bottom' }
 
@@ -173,7 +174,7 @@ export async function generateCOR(equipmentData, projectName) {
   const logoRow2 = wsCover.addRow([])
   logoRow2.height = 18
   logoRow2.getCell(5).value = 'HV / MV Substation Commissioning'
-  logoRow2.getCell(5).font = { name: 'Calibri', size: 10, color: { argb: '999999' } }
+  logoRow2.getCell(5).font = { name: 'Times New Roman', size: 10, color: { argb: '999999' } }
   wsCover.mergeCells(logoRow2.number, 5, logoRow2.number, 7)
   logoRow2.getCell(5).alignment = { horizontal: 'center', vertical: 'top' }
 
@@ -203,7 +204,7 @@ export async function generateCOR(equipmentData, projectName) {
   infoHeader.eachCell((cell, col) => {
     if (col >= 2) {
       cell.fill = SECTION_FILL
-      cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
       cell.alignment = { vertical: 'middle' }
     }
   })
@@ -237,7 +238,7 @@ export async function generateCOR(equipmentData, projectName) {
   teamHeader.eachCell((cell, col) => {
     if (col >= 2) {
       cell.fill = SECTION_FILL
-      cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
       cell.alignment = { vertical: 'middle' }
     }
   })
@@ -267,7 +268,7 @@ export async function generateCOR(equipmentData, projectName) {
   scopeHeader.eachCell((cell, col) => {
     if (col >= 2) {
       cell.fill = SECTION_FILL
-      cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
       cell.alignment = { vertical: 'middle' }
     }
   })
@@ -276,7 +277,7 @@ export async function generateCOR(equipmentData, projectName) {
   scopeHeaders.height = 18
   scopeHeaders.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '666666' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '666666' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { horizontal: 'center', vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -289,7 +290,7 @@ export async function generateCOR(equipmentData, projectName) {
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 2) {
-        cell.font = { name: 'Calibri', size: 10 }
+        cell.font = { name: 'Times New Roman', size: 10 }
         cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
         cell.border = FIELD_BORDER
       }
@@ -299,7 +300,7 @@ export async function generateCOR(equipmentData, projectName) {
   scopeTotal.height = 18
   scopeTotal.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 10 }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10 }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F3F4' } }
       cell.alignment = { horizontal: col === 2 ? 'left' : 'center', vertical: 'middle' }
       cell.border = { top: { style: 'thin', color: { argb: C.navy } }, bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -316,7 +317,7 @@ export async function generateCOR(equipmentData, projectName) {
   docsHeader.eachCell((cell, col) => {
     if (col >= 2) {
       cell.fill = SECTION_FILL
-      cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
       cell.alignment = { vertical: 'middle' }
     }
   })
@@ -325,7 +326,7 @@ export async function generateCOR(equipmentData, projectName) {
   docsSubHeader.height = 18
   docsSubHeader.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '666666' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '666666' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -340,10 +341,10 @@ export async function generateCOR(equipmentData, projectName) {
   for (const [lbl1, val1, lbl2, val2] of docsData) {
     const r = wsCover.addRow(['', '', lbl1, val1, '', lbl2, val2])
     r.height = 18
-    r.getCell(3).font = { name: 'Calibri', bold: true, size: 9, color: { argb: '444444' } }
+    r.getCell(3).font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '444444' } }
     r.getCell(4).font = VALUE_FONT
     r.getCell(4).border = FIELD_BORDER
-    r.getCell(6).font = { name: 'Calibri', bold: true, size: 9, color: { argb: '444444' } }
+    r.getCell(6).font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '444444' } }
     r.getCell(7).font = VALUE_FONT
     r.getCell(7).border = FIELD_BORDER
     r.eachCell((cell, col) => { if (col >= 2) cell.alignment = { vertical: 'middle' } })
@@ -359,7 +360,7 @@ export async function generateCOR(equipmentData, projectName) {
   legendHeader.eachCell((cell, col) => {
     if (col >= 2) {
       cell.fill = SECTION_FILL
-      cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
       cell.alignment = { vertical: 'middle' }
     }
   })
@@ -375,10 +376,10 @@ export async function generateCOR(equipmentData, projectName) {
     const r = wsCover.addRow(['', '', level, desc])
     r.height = 18
     r.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } }
-    r.getCell(3).font = { name: 'Calibri', bold: true, size: 10 }
+    r.getCell(3).font = { name: 'Times New Roman', bold: true, size: 10 }
     r.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: color } }
     r.getCell(3).alignment = { vertical: 'middle' }
-    r.getCell(4).font = { name: 'Calibri', size: 10, color: { argb: '555555' } }
+    r.getCell(4).font = { name: 'Times New Roman', size: 10, color: { argb: '555555' } }
     r.getCell(4).alignment = { vertical: 'middle' }
     wsCover.mergeCells(r.number, 4, r.number, 7)
   }
@@ -419,28 +420,28 @@ export async function generateCOR(equipmentData, projectName) {
   // Column widths (same indent approach as Project Overview)
   wsProg.getColumn(1).width = 2    // A: gutter
   wsProg.getColumn(2).width = 2.43 // B: indent
-  wsProg.getColumn(3).width = 26   // C: System/Equipment name
-  wsProg.getColumn(4).width = 7    // D: Total/Tests
-  wsProg.getColumn(5).width = 7    // E: Done/L3
-  wsProg.getColumn(6).width = 10   // F: In Prog/L4/% Complete
-  wsProg.getColumn(7).width = 7    // G: Pending/L5
-  wsProg.getColumn(8).width = 11   // H: % Complete/Planned Start
-  wsProg.getColumn(9).width = 11   // I: L1/Planned Finish
-  wsProg.getColumn(10).width = 7   // J: L2/Duration
-  wsProg.getColumn(11).width = 9   // K: L3(lvl)/Status
-  wsProg.getColumn(12).width = 7   // L: L4(lvl)
-  wsProg.getColumn(13).width = 7   // M: L5(lvl)
+  wsProg.getColumn(3).width = 32   // C: System/Equipment name (wider)
+  wsProg.getColumn(4).width = 8    // D: Total/Tests
+  wsProg.getColumn(5).width = 8    // E: Done/L3
+  wsProg.getColumn(6).width = 8    // F: In Prog/L4
+  wsProg.getColumn(7).width = 8    // G: Pending/L5
+  wsProg.getColumn(8).width = 12   // H: % Complete/Planned Start
+  wsProg.getColumn(9).width = 12   // I: Planned Finish
+  wsProg.getColumn(10).width = 9   // J: Duration
+  wsProg.getColumn(11).width = 10  // K: Status
+  wsProg.getColumn(12).width = 8   // L: L4(lvl)
+  wsProg.getColumn(13).width = 8   // M: L5(lvl)
 
   const PROG_BOX_BORDER = { style: 'medium', color: { argb: C.navy } }
   const SECTION_BAR = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
-  const SECTION_FONT = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }
+  const SECTION_FONT = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }
 
   // Row 1: gutter above box
   wsProg.addRow([]).height = 8
 
   // Row 2: Title
   const progTitle = wsProg.addRow(['', '', `${projectName} — Cx Programme`])
-  progTitle.getCell(3).font = { name: 'Calibri', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
+  progTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
   wsProg.mergeCells(progTitle.number, 3, progTitle.number, 13)
   progTitle.height = 22
 
@@ -461,7 +462,7 @@ export async function generateCOR(equipmentData, projectName) {
   progHdr.height = 18
   progHdr.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -477,7 +478,7 @@ export async function generateCOR(equipmentData, projectName) {
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 3) {
-        cell.font = { name: 'Calibri', size: 10 }
+        cell.font = { name: 'Times New Roman', size: 10 }
         cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
         cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
         if (col === 8) cell.numFmt = '0.00%'
@@ -493,7 +494,7 @@ export async function generateCOR(equipmentData, projectName) {
   overallRow.height = 20
   overallRow.eachCell((cell, col) => {
     if (col >= 3) {
-      cell.font = { name: 'Calibri', bold: true, size: 10 }
+      cell.font = { name: 'Times New Roman', bold: true, size: 10 }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F3F4' } }
       cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
       cell.border = { top: { style: 'thin', color: { argb: C.navy } }, bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -502,7 +503,7 @@ export async function generateCOR(equipmentData, projectName) {
   })
 
   // Spacer
-  wsProg.addRow([]).height = 12
+  wsProg.addRow([]).height = 18
 
   // ────────────────────────────────────────────────────────────────
   // SECTION 2: DOCUMENTATION STATUS (Pipeline)
@@ -517,7 +518,7 @@ export async function generateCOR(equipmentData, projectName) {
   pipeHdr.height = 18
   pipeHdr.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -530,7 +531,7 @@ export async function generateCOR(equipmentData, projectName) {
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 3) {
-        cell.font = { name: 'Calibri', size: 10 }
+        cell.font = { name: 'Times New Roman', size: 10 }
         cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
         cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
         if (col === 6) cell.numFmt = '0.00%'
@@ -539,7 +540,7 @@ export async function generateCOR(equipmentData, projectName) {
   }
 
   // Spacer
-  wsProg.addRow([]).height = 12
+  wsProg.addRow([]).height = 18
 
   // ────────────────────────────────────────────────────────────────
   // SECTION 3: LEVEL COMPLETION
@@ -554,7 +555,7 @@ export async function generateCOR(equipmentData, projectName) {
   lvlHdr.height = 18
   lvlHdr.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { horizontal: 'center', vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -570,7 +571,7 @@ export async function generateCOR(equipmentData, projectName) {
     r.height = 18
     r.eachCell((cell, col) => {
       if (col >= 3) {
-        cell.font = { name: 'Calibri', size: 10 }
+        cell.font = { name: 'Times New Roman', size: 10 }
         cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
         cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
       }
@@ -580,8 +581,21 @@ export async function generateCOR(equipmentData, projectName) {
     })
   }
 
-  // Spacer
-  wsProg.addRow([]).height = 12
+  
+  // Level Completion OVERALL row
+  const lvOverallRow2 = wsProg.addRow(['', '', 'OVERALL', overallLevels.L1, 0, overallLevels.L2, 0, overallLevels.L3, 0, overallLevels.L4, 0, overallLevels.L5, 0])
+  lvOverallRow2.height = 18
+  const lvOverallRowNum = lvOverallRow2.number
+  lvOverallRow2.eachCell((cell, col) => {
+    if (col >= 3) {
+      cell.font = { name: 'Times New Roman', bold: true, size: 10 }
+      cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
+      cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
+    }
+  })
+
+// Spacer
+  wsProg.addRow([]).height = 18
 
   // ────────────────────────────────────────────────────────────────
   // SECTION 4: COMMISSIONING SCHEDULE (Gantt-style)
@@ -596,7 +610,7 @@ export async function generateCOR(equipmentData, projectName) {
   ganttHdr.height = 18
   ganttHdr.eachCell((cell, col) => {
     if (col >= 2) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
@@ -617,7 +631,7 @@ export async function generateCOR(equipmentData, projectName) {
     sep.eachCell((cell, col) => {
       if (col >= 2) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
-        cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFFFF' } }
+        cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFFFF' } }
         cell.alignment = { vertical: 'middle' }
         cell.border = { bottom: { style: 'thin', color: { argb: C.orange } } }
       }
@@ -647,17 +661,17 @@ export async function generateCOR(equipmentData, projectName) {
       r.getCell(10).value = { formula: `INT(I${r.number}-H${r.number})&"d"` }
       // Status formula: based on whether dates have passed
       r.getCell(11).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
-      r.getCell(11).font = { name: 'Calibri', size: 9, italic: true }
+      r.getCell(11).font = { name: 'Times New Roman', size: 9, italic: true }
       scheduleRowMap.push({ name: getEquipName(item), section: sectionName, progRow: r.number })
       r.eachCell((cell, col) => {
         if (col >= 3) {
-          cell.font = { name: 'Calibri', size: 9 }
+          cell.font = { name: 'Times New Roman', size: 9 }
           cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
           cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
           if (col === 8 || col === 9) cell.numFmt = 'DD-MMM-YY'
         }
         if (col === 11) {
-          cell.font = { name: 'Calibri', size: 9, italic: true, color: { argb: 'FF999999' } }
+          cell.font = { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF999999' } }
         }
       })
 
@@ -682,6 +696,8 @@ export async function generateCOR(equipmentData, projectName) {
   }
 
   // Settings
+  
+  
   wsProg.views = [{ showGridLines: false, state: 'frozen', ySplit: 3, topLeftCell: 'B4' }]
   wsProg.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
 
@@ -710,7 +726,7 @@ export async function generateCOR(equipmentData, projectName) {
     const ws = wb.addWorksheet(truncate(sectionName), { properties: { tabColor: { argb: 'FF2E86AB' } } })
 
     // Title
-    ws.addRow([`${projectName} — ${sectionName}`]).getCell(1).font = { name: 'Calibri', bold: true, size: 12, color: { argb: C.navy.slice(2) } }
+    ws.addRow([`${projectName} — ${sectionName}`]).getCell(1).font = { name: 'Times New Roman', bold: true, size: 12, color: { argb: C.navy.slice(2) } }
     ws.mergeCells(1, 1, 1, 20)
     ws.addRow([])
 
@@ -735,12 +751,12 @@ export async function generateCOR(equipmentData, projectName) {
         sep.height = 22
         const sepRowNum = sep.number
         ws.mergeCells(sepRowNum, 2, sepRowNum, 5)
-        sep.getCell(2).font = { name: 'Calibri', bold: true, size: 11, color: { argb: 'FF000000' } }
+        sep.getCell(2).font = { name: 'Times New Roman', bold: true, size: 11, color: { argb: 'FF000000' } }
         sep.getCell(2).alignment = { vertical: 'middle', horizontal: 'left' }
-        sep.eachCell(cell => { 
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.orange } }
-          cell.border = THIN_BORDER
-        })
+        for (let sc = 1; sc <= 19; sc++) {
+          sep.getCell(sc).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.orange } }
+          sep.getCell(sc).border = THIN_BORDER
+        }
       }
       lastEquipName = equipName
 
@@ -754,7 +770,7 @@ export async function generateCOR(equipmentData, projectName) {
         ])
 
         row.eachCell((cell, col) => {
-          cell.font = { name: 'Calibri', size: 9 }
+          cell.font = { name: 'Times New Roman', size: 9 }
           cell.border = THIN_BORDER
           cell.alignment = { vertical: 'middle', horizontal: col === 5 ? 'left' : 'center', wrapText: col === 5 }
           if (col >= 6 && col <= 9) cell.numFmt = 'DD-MMM-YY'
@@ -780,7 +796,12 @@ export async function generateCOR(equipmentData, projectName) {
           }
         }
 
-        sNo++
+        
+        // Black borders on % Complete column only
+        const BLACK_BORDER = { top: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } }
+        row.getCell(20).border = BLACK_BORDER
+
+sNo++
       }
     }
 
@@ -793,7 +814,66 @@ export async function generateCOR(equipmentData, projectName) {
       }
     }
 
-    // Freeze panes
+    
+    // Conditional formatting — colour YES/NO cells and % Complete
+    const cfLastRow = lastRow
+    
+    // YES = green background (on all YES/NO columns: J,K,L,N,O,P,R = 10,11,12,14,15,16,18)
+    for (const cfCol of yesNoCols) {
+      const colLetter = ws.getColumn(cfCol).letter
+      ws.addConditionalFormatting({
+        ref: `${colLetter}${dataStartRow}:${colLetter}${cfLastRow}`,
+        rules: [{
+          type: 'cellIs', operator: 'equal', formulae: ['"YES"'], priority: 1,
+          style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' }, bgColor: { argb: 'FFC6EFCE' } }, font: { color: { argb: 'FF006100' } } }
+        }]
+      })
+      // NO = pink/red background
+      ws.addConditionalFormatting({
+        ref: `${colLetter}${dataStartRow}:${colLetter}${cfLastRow}`,
+        rules: [{
+          type: 'cellIs', operator: 'equal', formulae: ['"NO"'], priority: 2,
+          style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' }, bgColor: { argb: 'FFFFC7CE' } }, font: { color: { argb: 'FF9C0006' } } }
+        }]
+      })
+      // N/A = yellow background
+      ws.addConditionalFormatting({
+        ref: `${colLetter}${dataStartRow}:${colLetter}${cfLastRow}`,
+        rules: [{
+          type: 'cellIs', operator: 'equal', formulae: ['"N/A"'], priority: 2,
+          style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' }, bgColor: { argb: 'FFFFFFCC' } }, font: { color: { argb: 'FF9C6500' } } }
+        }]
+      })
+    }
+    
+    // % Complete column (T = col 20) — traffic light colours
+    const pctCol = ws.getColumn(20).letter
+    // 0% = pink
+    ws.addConditionalFormatting({
+      ref: `${pctCol}${dataStartRow}:${pctCol}${cfLastRow}`,
+      rules: [{
+        type: 'cellIs', operator: 'equal', formulae: ['0'], priority: 3,
+        style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' }, bgColor: { argb: 'FFFFC7CE' } } }
+      }]
+    })
+    // >0% and <60% = yellow
+    ws.addConditionalFormatting({
+      ref: `${pctCol}${dataStartRow}:${pctCol}${cfLastRow}`,
+      rules: [{
+        type: 'cellIs', operator: 'between', formulae: ['0.01', '0.59'], priority: 4,
+        style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' }, bgColor: { argb: 'FFFFFFCC' } } }
+      }]
+    })
+    // >=60% = green
+    ws.addConditionalFormatting({
+      ref: `${pctCol}${dataStartRow}:${pctCol}${cfLastRow}`,
+      rules: [{
+        type: 'cellIs', operator: 'greaterThanOrEqual', formulae: ['0.6'], priority: 5,
+        style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' }, bgColor: { argb: 'FFC6EFCE' } } }
+      }]
+    })
+
+// Freeze panes
     ws.views = [{ state: 'frozen', xSplit: 5, ySplit: 3 }]
 
     // Track range for summary formulas
@@ -867,219 +947,95 @@ export async function generateCOR(equipmentData, projectName) {
       }
     }
   }
+  // Level Completion OVERALL row — SUM of all per-section Done values
+  const doneCols = [5, 7, 9, 11, 13]  // L1Done, L2Done, L3Done, L4Done, L5Done
+  for (const dc of doneCols) {
+    const colLetter = wsProg.getColumn(dc).letter
+    const refs = lvCompRows.map(r => `${colLetter}${r}`)
+    wsProg.getCell(lvOverallRowNum, dc).value = { formula: refs.join('+') }
+  }
+
+
 
 
   // ═══════════════════════════════════════════════════════════════════
-  // CX CHARTS SHEET — Cell-based Gantt (LIVE — updates when you edit dates)
+  
+
+
+
+  // CX CHARTS SHEET — Visual dashboard with Excel chart objects
   // ═══════════════════════════════════════════════════════════════════
   const wsCharts = wb.addWorksheet('Cx Charts', {
     properties: { tabColor: { argb: 'FFFF9900' } }
   })
   
-  // ─── Calculate programme date range ───
-  const progStart = new Date()
-  progStart.setHours(0, 0, 0, 0)
-  let progEnd = new Date(progStart)
+  // Title
+  wsCharts.getCell('A1').value = 'Commissioning Visual Dashboard'
+  wsCharts.getCell('A1').font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: '232F3E' } }
+  wsCharts.getRow(1).height = 26
   
-  // Collect all equipment with dates for the Gantt
-  const ganttItems = []  // [{name, section, start, end}]
-  let ganttCalcStart = new Date(progStart)
+  // Gantt data table (row 3+): Equipment | Start Offset (days) | Duration (days)
+  // Used by the Gantt chart — start offset makes invisible bar, duration makes orange bar
+  wsCharts.getCell('A3').value = 'Equipment'
+  wsCharts.getCell('B3').value = 'Start Offset'
+  wsCharts.getCell('C3').value = 'Duration'
+  wsCharts.getCell('A3').font = { name: 'Times New Roman', bold: true, size: 9 }
+  wsCharts.getCell('B3').font = { name: 'Times New Roman', bold: true, size: 9 }
+  wsCharts.getCell('C3').font = { name: 'Times New Roman', bold: true, size: 9 }
+  
+  // Calculate programme dates and build Gantt data
+  const gProgStart = new Date()
+  gProgStart.setHours(0, 0, 0, 0)
+  let gSectionStart = new Date(gProgStart)
+  let ganttDataRow = 4
   
   for (const [sectionName, items] of Object.entries(sections)) {
-    let sectionMax = new Date(ganttCalcStart)
+    // Section separator row
+    wsCharts.getCell(ganttDataRow, 1).value = sectionName
+    wsCharts.getCell(ganttDataRow, 1).font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: 'FFFFFF' } }
+    wsCharts.getCell(ganttDataRow, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
+    wsCharts.getCell(ganttDataRow, 2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
+    wsCharts.getCell(ganttDataRow, 3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
+    ganttDataRow++
+    
+    let sectionMax = new Date(gSectionStart)
     for (const item of items) {
       const tests = getTests(item)
       const duration = Math.max(2, Math.ceil(tests.length / 3))
-      const itemStart = new Date(ganttCalcStart)
+      const itemStart = new Date(gSectionStart)
       const itemEnd = new Date(itemStart)
       itemEnd.setDate(itemEnd.getDate() + duration)
       if (itemEnd > sectionMax) sectionMax = new Date(itemEnd)
-      if (itemEnd > progEnd) progEnd = new Date(itemEnd)
       
-      ganttItems.push({ name: getEquipName(item), section: sectionName, start: itemStart, end: itemEnd })
-      ganttCalcStart.setDate(ganttCalcStart.getDate() + Math.ceil(duration * 0.6))
-    }
-    ganttCalcStart = new Date(sectionMax)
-  }
-  
-  // Add 5 days padding to end
-  progEnd.setDate(progEnd.getDate() + 5)
-  
-  // Minimum 6 months, max 1 year
-  const totalDays = Math.ceil((progEnd - progStart) / (1000 * 60 * 60 * 24))
-  const maxCols = Math.max(180, Math.min(totalDays, 365))
-  
-  // ─── Column widths ───
-  // ─── Set ALL column widths upfront ───
-  wsCharts.getColumn(1).width = 60
-  wsCharts.getColumn(2).width = 11
-  wsCharts.getColumn(3).width = 11
-  for (let c = 4; c <= 184; c++) { wsCharts.getColumn(c).width = 2 }
-  
-  // ─── Row 1: Title ───
-  wsCharts.getCell('A1').value = 'Commissioning Programme'
-  wsCharts.getCell('A1').font = { name: 'Calibri', bold: true, size: 14, color: { argb: '232F3E' } }
-  wsCharts.mergeCells(1, 1, 1, 3)
-  wsCharts.getRow(1).height = 26
-  
-  // ─── Row 3: Headers ───
-  wsCharts.getCell('A3').value = 'Equipment'
-  wsCharts.getCell('B3').value = 'Start'
-  wsCharts.getCell('C3').value = 'End'
-  const hdrCells = ['A3', 'B3', 'C3']
-  for (const ref of hdrCells) {
-    wsCharts.getCell(ref).font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFF' } }
-    wsCharts.getCell(ref).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
-    wsCharts.getCell(ref).alignment = { vertical: 'middle' }
-  }
-  wsCharts.getRow(3).height = 20
-  
-  // ─── Date columns (D onwards) — narrow, with day numbers ───
-  for (let d = 0; d < maxCols; d++) {
-    const date = new Date(progStart)
-    date.setDate(date.getDate() + d)
-    const col = d + 4  // col D = index 4
-    const cell = wsCharts.getCell(3, col)
-    cell.value = date
-    cell.numFmt = 'DD'
-    cell.font = { name: 'Calibri', size: 7, color: { argb: '666666' } }
-    cell.alignment = { horizontal: 'center', textRotation: 90 }
-    
-    // Weekend shading (Sat=6, Sun=0)
-    const dayOfWeek = date.getDay()
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8E8E8' } }
-    } else {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8F9FA' } }
-    }
-    
-    // Column width set after all rows are written
-  }
-  
-  // ─── Row 2: Month headers (merged across date columns) ───
-  let currentMonth = -1
-  let monthStartCol = 4
-  for (let d = 0; d <= maxCols; d++) {
-    const date = new Date(progStart)
-    date.setDate(date.getDate() + d)
-    const month = date.getMonth()
-    
-    if (month !== currentMonth || d === maxCols) {
-      if (currentMonth >= 0 && monthStartCol < d + 4) {
-        const endCol = d + 3
-        if (endCol > monthStartCol) {
-          wsCharts.mergeCells(2, monthStartCol, 2, endCol)
-        }
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-        const prevDate = new Date(progStart)
-        prevDate.setDate(prevDate.getDate() + d - 1)
-        const monthCell = wsCharts.getCell(2, monthStartCol)
-        monthCell.value = monthNames[currentMonth] + ' ' + prevDate.getFullYear()
-        monthCell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: '232F3E' } }
-        monthCell.alignment = { horizontal: 'center', vertical: 'middle' }
-        monthCell.border = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } }
+      const startOffset = Math.round((itemStart - gProgStart) / (1000 * 60 * 60 * 24))
+      
+      wsCharts.getCell(ganttDataRow, 1).value = getEquipName(item)
+      wsCharts.getCell(ganttDataRow, 1).font = { name: 'Times New Roman', size: 9 }
+      // Reference Cx Programme schedule dates via formulas
+      const schedMatch = scheduleRowMap.find(s => s.name === getEquipName(item) && s.section === sectionName)
+      if (schedMatch) {
+        wsCharts.getCell(ganttDataRow, 2).value = { formula: `'Cx Programme'!H${schedMatch.progRow}-MIN('Cx Programme'!H$${statusDataStart}:H$${statusDataStart + 200})` }
+        wsCharts.getCell(ganttDataRow, 3).value = { formula: `'Cx Programme'!I${schedMatch.progRow}-'Cx Programme'!H${schedMatch.progRow}` }
+      } else {
+        wsCharts.getCell(ganttDataRow, 2).value = startOffset
+        wsCharts.getCell(ganttDataRow, 3).value = duration
       }
-      currentMonth = month
-      monthStartCol = d + 4
-    }
-  }
-  wsCharts.getRow(2).height = 20
-  
-  // ─── Equipment rows ───
-  let currentSection = ''
-  let ganttRow = 4
-  let sectionItemCount = 0
-  
-  for (let idx = 0; idx < ganttItems.length; idx++) {
-    const item = ganttItems[idx]
-    
-    // Section separator
-    if (item.section !== currentSection) {
-      // Count items in this section
-      sectionItemCount = ganttItems.filter(g => g.section === item.section).length
-      currentSection = item.section
+      ganttDataRow++
       
-      const sepRow = wsCharts.getRow(ganttRow)
-      wsCharts.getCell(ganttRow, 1).value = `${item.section}  (${sectionItemCount})`
-      wsCharts.getCell(ganttRow, 1).font = { name: 'Calibri', bold: true, size: 9, color: { argb: 'FFFFFF' } }
-      wsCharts.getCell(ganttRow, 1).alignment = { vertical: 'middle' }
-      // Fill entire row (solid section divider bar)
-      for (let c = 1; c <= maxCols + 3; c++) {
-        wsCharts.getCell(ganttRow, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF37474F' } }
-      }
-      sepRow.height = 14
-      ganttRow++
+      gSectionStart.setDate(gSectionStart.getDate() + Math.ceil(duration * 0.6))
     }
-    
-    // Equipment row
-    const row = wsCharts.getRow(ganttRow)
-    row.height = 22
-    
-    // Col A: Name (bold, black)
-    wsCharts.getCell(ganttRow, 1).value = item.name
-    wsCharts.getCell(ganttRow, 1).font = { name: 'Calibri', bold: true, size: 9, color: { argb: '000000' } }
-    wsCharts.getCell(ganttRow, 1).alignment = { vertical: 'middle' }
-    wsCharts.getCell(ganttRow, 1).border = { bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } } }
-    
-    // Col B/C: Start/End dates (linked to Cx Programme)
-    const schedEntry = scheduleRowMap.find(s => s.name === item.name && s.section === item.section)
-    if (schedEntry) {
-      wsCharts.getCell(ganttRow, 2).value = { formula: `'Cx Programme'!H${schedEntry.progRow}` }
-      wsCharts.getCell(ganttRow, 3).value = { formula: `'Cx Programme'!I${schedEntry.progRow}` }
-    } else {
-      wsCharts.getCell(ganttRow, 2).value = item.start
-      wsCharts.getCell(ganttRow, 3).value = item.end
-    }
-    wsCharts.getCell(ganttRow, 2).numFmt = 'DD-MMM'
-    wsCharts.getCell(ganttRow, 2).font = { name: 'Calibri', size: 8, color: { argb: '555555' } }
-    wsCharts.getCell(ganttRow, 2).alignment = { horizontal: 'center', vertical: 'middle' }
-    wsCharts.getCell(ganttRow, 2).border = { bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } } }
-    wsCharts.getCell(ganttRow, 3).numFmt = 'DD-MMM'
-    wsCharts.getCell(ganttRow, 3).font = { name: 'Calibri', size: 8, color: { argb: '555555' } }
-    wsCharts.getCell(ganttRow, 3).alignment = { horizontal: 'center', vertical: 'middle' }
-    wsCharts.getCell(ganttRow, 3).border = { bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } } }
-    
-    // Date columns: formula bars + weekend shading on empty cells
-    for (let d = 0; d < maxCols; d++) {
-      const col = d + 4
-      const colLetter = wsCharts.getColumn(col).letter
-      const cell = wsCharts.getCell(ganttRow, col)
-      cell.value = { formula: `IF(AND(${colLetter}$3>=$B${ganttRow},${colLetter}$3<=$C${ganttRow}),1,"")` }
-      cell.font = { size: 1, color: { argb: 'FFFFFFFF' } }
-      cell.numFmt = ';;;'
-      
-      // Light gridline between rows for readability
-      cell.border = { bottom: { style: 'hair', color: { argb: 'FFEEEEEE' } } }
-    }
-    
-    ganttRow++
+    gSectionStart = new Date(sectionMax)
   }
   
-  // Column widths already set at top
-
-  // ─── Conditional formatting: orange fill where formula = 1 ───
-  const lastGanttRow = ganttRow - 1
-  const firstDateCol = wsCharts.getColumn(4).letter
-  const lastDateCol = wsCharts.getColumn(maxCols + 3).letter
-  const cfRange = `${firstDateCol}4:${lastDateCol}${lastGanttRow}`
+  const ganttLastRow = ganttDataRow - 1
   
-  wsCharts.addConditionalFormatting({
-    ref: cfRange,
-    rules: [{
-      type: 'cellIs',
-      operator: 'equal',
-      formulae: ['1'],
-      style: {
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF9900' }, bgColor: { argb: 'FFFF9900' } }
-      },
-      priority: 1
-    }]
-  })
+  // Column widths
+  wsCharts.getColumn(1).width = 30
+  wsCharts.getColumn(2).width = 10
+  wsCharts.getColumn(3).width = 10
   
-    
-  // ─── Freeze panes (equipment names + date headers always visible) ───
-  wsCharts.views = [{ state: 'frozen', xSplit: 3, ySplit: 3, showGridLines: false, topLeftCell: 'D4' }]
-  wsCharts.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }  // ═══════════════════════════════════════════════════════════════════
+  wsCharts.views = [{ showGridLines: false }]
+  wsCharts.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
   const wsSign = wb.addWorksheet('Certificate of Readiness', { properties: { tabColor: { argb: 'FF27AE60' } } })
   
   // Column layout (matching Project Overview)
@@ -1102,13 +1058,13 @@ export async function generateCOR(equipmentData, projectName) {
   // Row 3: Title
   const signTitle = wsSign.addRow(['', '', 'Certificate of Readiness'])
   signTitle.height = 28
-  signTitle.getCell(3).font = { name: 'Calibri', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
+  signTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
   signTitle.getCell(3).alignment = { vertical: 'middle' }
   wsSign.mergeCells(signTitle.number, 3, signTitle.number, 7)
 
   // Row 4: Subtitle
   const signSub = wsSign.addRow(['', '', 'HV / MV Substation Commissioning'])
-  signSub.getCell(3).font = { name: 'Calibri', size: 10, color: { argb: '999999' } }
+  signSub.getCell(3).font = { name: 'Times New Roman', size: 10, color: { argb: '999999' } }
   wsSign.mergeCells(signSub.number, 3, signSub.number, 7)
   
   wsSign.addRow([]).height = 12
@@ -1117,7 +1073,7 @@ export async function generateCOR(equipmentData, projectName) {
   const signSec1 = wsSign.addRow(['', '', 'PROJECT DETAILS', '', '', '', ''])
   signSec1.height = 20
   signSec1.eachCell((cell, col) => {
-    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
+    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
   })
 
   const signFields = [
@@ -1143,7 +1099,7 @@ export async function generateCOR(equipmentData, projectName) {
   const signSec2 = wsSign.addRow(['', '', 'AUTHORISATION', '', '', '', ''])
   signSec2.height = 20
   signSec2.eachCell((cell, col) => {
-    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
+    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
   })
 
   // Table header
@@ -1151,7 +1107,7 @@ export async function generateCOR(equipmentData, projectName) {
   authHdr.height = 20
   authHdr.eachCell((cell, col) => {
     if (col >= 3) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
       cell.alignment = { vertical: 'middle' }
@@ -1162,10 +1118,10 @@ export async function generateCOR(equipmentData, projectName) {
   for (const role of signRoles) {
     const r = wsSign.addRow(['', '', role, '', '', '', ''])
     r.height = 28
-    r.getCell(3).font = { name: 'Calibri', bold: true, size: 10 }
+    r.getCell(3).font = { name: 'Times New Roman', bold: true, size: 10 }
     r.getCell(3).alignment = { vertical: 'middle' }
     for (let c = 4; c <= 7; c++) {
-      r.getCell(c).border = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } }
+      r.getCell(c).border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
     }
   }
 
@@ -1175,12 +1131,12 @@ export async function generateCOR(equipmentData, projectName) {
   const signSec3 = wsSign.addRow(['', '', 'DECLARATION', '', '', '', ''])
   signSec3.height = 20
   signSec3.eachCell((cell, col) => {
-    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
+    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
   })
 
   const declRow = wsSign.addRow(['', '', 'This Certificate of Readiness (COR) confirms that all equipment, systems and controls listed herein have been commissioned in accordance with the project commissioning specification. All required test documentation has been received, reviewed and uploaded to Procore. The substation is confirmed ready for energization and handover.'])
   declRow.height = 50
-  declRow.getCell(3).font = { name: 'Calibri', size: 9, italic: true, color: { argb: '666666' } }
+  declRow.getCell(3).font = { name: 'Times New Roman', size: 9, italic: true, color: { argb: '666666' } }
   declRow.getCell(3).alignment = { wrapText: true, vertical: 'top' }
   wsSign.mergeCells(declRow.number, 3, declRow.number, 7)
 
@@ -1223,7 +1179,7 @@ export async function generateCOR(equipmentData, projectName) {
   // Row 3: Title
   const revTitle = wsRev.addRow(['', '', 'Revision History'])
   revTitle.height = 28
-  revTitle.getCell(3).font = { name: 'Calibri', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
+  revTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
   revTitle.getCell(3).alignment = { vertical: 'middle' }
   wsRev.mergeCells(revTitle.number, 3, revTitle.number, 6)
 
@@ -1233,7 +1189,7 @@ export async function generateCOR(equipmentData, projectName) {
   const revSec = wsRev.addRow(['', '', 'REVISION LOG', '', '', ''])
   revSec.height = 20
   revSec.eachCell((cell, col) => {
-    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Calibri', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
+    if (col >= 2) { cell.fill = SECTION_FILL; cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: 'FFFFFF' } }; cell.alignment = { vertical: 'middle' } }
   })
 
   // Table header
@@ -1241,7 +1197,7 @@ export async function generateCOR(equipmentData, projectName) {
   revHdr.height = 20
   revHdr.eachCell((cell, col) => {
     if (col >= 3) {
-      cell.font = { name: 'Calibri', bold: true, size: 9, color: { argb: '555555' } }
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
       cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
       cell.alignment = { vertical: 'middle' }
@@ -1259,13 +1215,13 @@ export async function generateCOR(equipmentData, projectName) {
   for (const [rev, date, author, desc] of revData) {
     const r = wsRev.addRow(['', '', rev, date, author, desc])
     r.height = 20
-    r.getCell(3).font = { name: 'Calibri', size: 10 }
+    r.getCell(3).font = { name: 'Times New Roman', size: 10 }
     r.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' }
-    r.getCell(4).font = { name: 'Calibri', size: 10 }
-    r.getCell(5).font = { name: 'Calibri', size: 10 }
-    r.getCell(6).font = { name: 'Calibri', size: 10 }
+    r.getCell(4).font = { name: 'Times New Roman', size: 10 }
+    r.getCell(5).font = { name: 'Times New Roman', size: 10 }
+    r.getCell(6).font = { name: 'Times New Roman', size: 10 }
     for (let c = 3; c <= 6; c++) {
-      r.getCell(c).border = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } }
+      r.getCell(c).border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
     }
   }
 
@@ -1290,9 +1246,79 @@ export async function generateCOR(equipmentData, projectName) {
   // ═══════════════════════════════════════════════════════════════════
   // ═══════════════════════════════════════════════════════════════════// EXPORT
   // ═══════════════════════════════════════════════════════════════════
-  const buffer = await wb.xlsx.writeBuffer()
   
-  const finalBuffer = buffer
+  // ─── Level chart helper data (row 200+, for chart3 reference) ───
+  const lvChartRow = 200
+  wsProg.getCell(lvChartRow, 3).value = 'L1'
+  wsProg.getCell(lvChartRow, 4).value = 'L2'
+  wsProg.getCell(lvChartRow, 5).value = 'L3'
+  wsProg.getCell(lvChartRow, 6).value = 'L4'
+  wsProg.getCell(lvChartRow, 7).value = 'L5'
+  wsProg.getCell(lvChartRow + 1, 3).value = { formula: `E${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 1, 4).value = { formula: `G${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 1, 5).value = { formula: `I${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 1, 6).value = { formula: `K${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 1, 7).value = { formula: `M${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 2, 3).value = { formula: `D${lvOverallRowNum}-E${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 2, 4).value = { formula: `F${lvOverallRowNum}-G${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 2, 5).value = { formula: `H${lvOverallRowNum}-I${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 2, 6).value = { formula: `J${lvOverallRowNum}-K${lvOverallRowNum}` }
+  wsProg.getCell(lvChartRow + 2, 7).value = { formula: `L${lvOverallRowNum}-M${lvOverallRowNum}` }
+
+const buffer = await wb.xlsx.writeBuffer()
+  
+  
+  // ═══════════════════════════════════════════════════════════════════
+  // INJECT PROGRESS CHARTS (via JSZip)
+  // ═══════════════════════════════════════════════════════════════════
+  let finalBuffer = buffer
+  try {
+    const zip = await JSZip.loadAsync(buffer)
+    const sn = 'Cx Programme'
+    const fr = statusDataStart
+    const lr = statusDataStart + allStats.length
+
+    // Chart 1: Progress by Section
+    const c1 = '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:p><a:pPr><a:defRPr sz="1100" b="1"/></a:pPr><a:r><a:rPr lang="en-US" sz="1100" b="1"/><a:t>Commissioning Progress by Section</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:plotArea><c:layout/><c:barChart><c:barDir val="bar"/><c:grouping val="stacked"/><c:varyColors val="0"/><c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>' + "'" + sn + "'" + '!$E$' + (fr-1) + '</c:f></c:strRef></c:tx><c:spPr><a:solidFill><a:srgbClr val="27AE60"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$' + fr + ':$C$' + lr + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$E$' + fr + ':$E$' + lr + '</c:f></c:numRef></c:val></c:ser><c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:strRef><c:f>' + "'" + sn + "'" + '!$F$' + (fr-1) + '</c:f></c:strRef></c:tx><c:spPr><a:solidFill><a:srgbClr val="FF9900"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$' + fr + ':$C$' + lr + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$F$' + fr + ':$F$' + lr + '</c:f></c:numRef></c:val></c:ser><c:ser><c:idx val="2"/><c:order val="2"/><c:tx><c:strRef><c:f>' + "'" + sn + "'" + '!$G$' + (fr-1) + '</c:f></c:strRef></c:tx><c:spPr><a:solidFill><a:srgbClr val="C0392B"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$' + fr + ':$C$' + lr + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$G$' + fr + ':$G$' + lr + '</c:f></c:numRef></c:val></c:ser><c:gapWidth val="150"/><c:overlap val="100"/><c:axId val="111"/><c:axId val="222"/></c:barChart><c:catAx><c:axId val="111"/><c:scaling><c:orientation val="maxMin"/></c:scaling><c:delete val="0"/><c:axPos val="l"/><c:crossAx val="222"/></c:catAx><c:valAx><c:axId val="222"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="b"/><c:crossAx val="111"/></c:valAx></c:plotArea><c:legend><c:legendPos val="b"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>'
+
+    // Chart 2: SAT Milestone  
+    const pfr = overallFormulaRow + 5
+    const plr = pfr + 6
+    const c2 = '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:p><a:pPr><a:defRPr sz="1100" b="1"/></a:pPr><a:r><a:rPr lang="en-US" sz="1100" b="1"/><a:t>SAT and Reports Milestone Tracking</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:plotArea><c:layout/><c:barChart><c:barDir val="bar"/><c:grouping val="stacked"/><c:varyColors val="0"/><c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>' + "'" + sn + "'" + '!$E$' + (pfr-1) + '</c:f></c:strRef></c:tx><c:spPr><a:solidFill><a:srgbClr val="27AE60"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$' + pfr + ':$C$' + plr + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$E$' + pfr + ':$E$' + plr + '</c:f></c:numRef></c:val></c:ser><c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:v>Remaining</c:v></c:tx><c:spPr><a:solidFill><a:srgbClr val="C0392B"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$' + pfr + ':$C$' + plr + '</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$D$' + pfr + ':$D$' + plr + '</c:f></c:numRef></c:val></c:ser><c:gapWidth val="150"/><c:overlap val="100"/><c:axId val="333"/><c:axId val="444"/></c:barChart><c:catAx><c:axId val="333"/><c:scaling><c:orientation val="maxMin"/></c:scaling><c:delete val="0"/><c:axPos val="l"/><c:crossAx val="444"/></c:catAx><c:valAx><c:axId val="444"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="b"/><c:crossAx val="333"/></c:valAx></c:plotArea><c:legend><c:legendPos val="b"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>'
+
+    // Chart 3: Level Completion
+    const c3 = '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:p><a:pPr><a:defRPr sz="1100" b="1"/></a:pPr><a:r><a:rPr lang="en-US" sz="1100" b="1"/><a:t>Level Completion Overview</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:plotArea><c:layout/><c:barChart><c:barDir val="col"/><c:grouping val="stacked"/><c:varyColors val="0"/><c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:v>Completed</c:v></c:tx><c:spPr><a:solidFill><a:srgbClr val="27AE60"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$200:$G$200</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$C$201:$G$201</c:f></c:numRef></c:val></c:ser><c:ser><c:idx val="1"/><c:order val="1"/><c:tx><c:v>Remaining</c:v></c:tx><c:spPr><a:solidFill><a:srgbClr val="C0392B"/></a:solidFill></c:spPr><c:cat><c:strRef><c:f>' + "'" + sn + "'" + '!$C$200:$G$200</c:f></c:strRef></c:cat><c:val><c:numRef><c:f>' + "'" + sn + "'" + '!$C$202:$G$202</c:f></c:numRef></c:val></c:ser><c:overlap val="100"/><c:axId val="555"/><c:axId val="666"/></c:barChart><c:catAx><c:axId val="555"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="b"/><c:crossAx val="666"/></c:catAx><c:valAx><c:axId val="666"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="l"/><c:crossAx val="555"/></c:valAx></c:plotArea><c:legend><c:legendPos val="r"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>'
+
+    // Drawing with 3 charts
+    const d2 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><xdr:twoCellAnchor><xdr:from><xdr:col>14</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>4</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>26</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>18</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="2" name="Chart 1"/><xdr:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></xdr:cNvGraphicFramePr></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" r:id="rId1"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor><xdr:twoCellAnchor><xdr:from><xdr:col>14</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>20</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>26</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>40</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="3" name="Chart 2"/><xdr:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></xdr:cNvGraphicFramePr></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" r:id="rId2"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor><xdr:twoCellAnchor><xdr:from><xdr:col>14</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>42</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>26</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>58</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="4" name="Chart 3"/><xdr:cNvGraphicFramePr><a:graphicFrameLocks noGrp="1"/></xdr:cNvGraphicFramePr></xdr:nvGraphicFramePr><xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" r:id="rId3"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>'
+
+    const d2Rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart3.xml"/></Relationships>'
+
+    zip.file('xl/charts/chart1.xml', c1)
+    zip.file('xl/charts/chart2.xml', c2)
+    zip.file('xl/charts/chart3.xml', c3)
+    zip.file('xl/drawings/drawing2.xml', d2)
+    zip.file('xl/drawings/_rels/drawing2.xml.rels', d2Rels)
+
+    // Link to Cx Programme (sheet2)
+    var s2r = 'xl/worksheets/_rels/sheet2.xml.rels'
+    var s2v = zip.file(s2r) ? await zip.file(s2r).async('string') : null
+    if (s2v) { s2v = s2v.replace('</Relationships>', '<Relationship Id="rId99" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing2.xml"/></Relationships>') }
+    else { s2v = '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId99" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing2.xml"/></Relationships>' }
+    zip.file(s2r, s2v)
+
+    var s2x = await zip.file('xl/worksheets/sheet2.xml').async('string')
+    if (s2x && !s2x.includes('drawing')) { s2x = s2x.replace('</worksheet>', '<drawing r:id="rId99"/></worksheet>'); zip.file('xl/worksheets/sheet2.xml', s2x) }
+
+    var ct = await zip.file('[Content_Types].xml').async('string')
+    if (!ct.includes('chart1.xml')) { ct = ct.replace('</Types>', '<Override PartName="/xl/charts/chart1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/charts/chart2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/charts/chart3.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/drawings/drawing2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>') }
+    zip.file('[Content_Types].xml', ct)
+
+    finalBuffer = await zip.generateAsync({ type: 'arraybuffer' })
+  } catch (e) {
+    console.warn('Chart injection failed:', e)
+    finalBuffer = buffer
+  }
   
   const blob = new Blob([finalBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
   const date = new Date().toISOString().split('T')[0]
