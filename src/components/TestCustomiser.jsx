@@ -2,11 +2,11 @@ import { useState } from 'react'
 import testTemplates from '../data/test_templates.json'
 
 const LEVEL_COLORS = {
-  'L1': { bg: '#E8F5E9', color: '#2e7d32' },
-  'L2': { bg: '#E3F2FD', color: '#1565c0' },
-  'L3': { bg: '#FFF8E1', color: '#f57f17' },
-  'L4': { bg: '#FCE4EC', color: '#c62828' },
-  'L5': { bg: '#F3E5F5', color: '#6a1b9a' },
+  'L1': { bg: '#FCE4EC', color: '#880e4f' },
+  'L2': { bg: '#FFF3E0', color: '#e65100' },
+  'L3': { bg: '#FFFDE7', color: '#f57f17' },
+  'L4': { bg: '#E3F2FD', color: '#1565c0' },
+  'L5': { bg: '#EDE7F6', color: '#4a148c' },
 }
 
 /**

@@ -102,10 +102,10 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect, onR
               {typeLabel}
             </span>
             <span style={{ fontSize: 13, fontWeight: 500, color: '#1e293b' }}>
-              {isSelected ? (
+              {isSelected && onRename ? (
                 <input type="text"
                   value={item.displayName || displayName}
-                  onChange={(e) => onRename && onRename(item._idx, e.target.value)}
+                  onChange={(e) => onRename(item._idx, e.target.value)}
                   onClick={(e) => e.stopPropagation()}
                   style={{ fontSize: 13, fontWeight: 500, color: '#1e293b', border: '1px solid #e2e8f0', borderRadius: 4, padding: '2px 8px', width: '100%', maxWidth: 300 }}
                 />
@@ -136,7 +136,7 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect, onR
   }
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, margin: '16px 32px 0', overflow: 'hidden' }}>
+    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, margin: 0, overflow: 'hidden' }}>
       {/* Header */}
       <div style={{ padding: '14px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

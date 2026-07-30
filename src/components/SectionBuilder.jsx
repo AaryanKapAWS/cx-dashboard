@@ -379,7 +379,7 @@ export default function SectionBuilder({ onSubmit }) {
 
   return (
     <div style={{
-      margin: '16px 32px 0', background: '#fff',
+      margin: 0, background: '#fff',
       border: '1px solid #e2e8f0', borderRadius: 10, overflow: 'hidden'
     }}>
       {/* Header */}
@@ -472,7 +472,7 @@ export default function SectionBuilder({ onSubmit }) {
         {/* Submit */}
         {sections.length > 0 && (
           <div style={{ fontSize: 12, color: '#64748b', marginTop: 12, paddingTop: 12, borderTop: '1px solid #e2e8f0' }}>
-            {sections.length} section{sections.length !== 1 ? 's' : ''} · Equipment Register updates live below ↓
+            {sections.length} section{sections.length !== 1 ? 's' : ''} · Equipment Register updates live →
           </div>
         )}
       </div>
