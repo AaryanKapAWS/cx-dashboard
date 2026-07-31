@@ -277,6 +277,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   const [paletteFilter, setPaletteFilter] = useState('')
   const [addChildFor, setAddChildFor] = useState(null)
   const [scopeCollapsed, setScopeCollapsed] = useState(false)
+  const [collapsedLines, setCollapsedLines] = useState({})
   const [dragEqId, setDragEqId] = useState(null)
   const [dragFeeder, setDragFeeder] = useState(null)
 
@@ -293,10 +294,10 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   // Flatten → equipment list for COR
   useEffect(() => {
     const items = []
-    function walkLines(lineList, parentName) {
+    function walkLines(lineList, parentName, parentPreset) {
       for (const line of lineList) {
         const hasFeeders = (line.feeders || []).length > 0
-        // If this is a child line, group under parent section name
+        // Use parent name for grouping children under their parent in the Equipment Register
         const sectionName = parentName || line.name
         for (const eq of (line.equipment || [])) {
           for (let q = 0; q < (eq.qty || 1); q++) {
@@ -308,6 +309,8 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
               feeder_ref: feederLabel ? `${sectionName} — ${feederLabel}` : sectionName,
               feeder_type: line.preset || 'custom',
               feeder_type_label: feederLabel || sectionName, section: line.preset || 'custom',
+              child_section: parentName ? line.name : null,
+              parent_section: parentName || null,
             })
           }
         }
@@ -321,14 +324,16 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
                 feeder_ref: `${sectionName} — ${feeder.ref} ${feeder.name}`,
                 feeder_type: feeder.type, feeder_type_label: feeder.name || feeder.ref,
                 section: line.preset || 'switchgear',
+                child_section: parentName ? line.name : null,
+                parent_section: parentName || null,
               })
             }
           }
         }
-        if (line.children && line.children.length) walkLines(line.children, sectionName)
+        if (line.children && line.children.length) walkLines(line.children, line.name, line.preset)
       }
     }
-    walkLines(lines, null)
+    walkLines(lines, null, null)
     onSubmit(items)
   }, [lines])
 
@@ -490,7 +495,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
 
   // ── RECURSIVE TREE RENDERER ──
   function renderTreeLines(lineList, depth) {
-    return lineList.map(line => {
+    return lineList.map((line, lineIdx) => {
       const isActive = selectedLine === line.id && !selectedFeeder
       const hasActiveFdr = selectedLine === line.id && selectedFeeder
       const fdrCount = (line.feeders || []).length
@@ -498,29 +503,40 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
       const preset = LINE_PRESETS.find(p => p.id === line.preset)
       const isParent = preset?.hasChildren
       const showingAddChild = addChildFor === line.id
+      const isCollapsed = collapsedLines[line.id] || false
+      const hasCollapsible = childCount > 0 || (isParent && fdrCount > 0)
+      const isLastInList = lineIdx === lineList.length - 1
+
+      // Count total visible sub-items for connector rendering
+      const visibleFeeders = (!isCollapsed && isParent) ? line.feeders || [] : []
+      const visibleChildren = (!isCollapsed && childCount > 0) ? line.children : []
+      const totalSubItems = visibleFeeders.length + (visibleChildren ? visibleChildren.length : 0)
 
       return (
         <div key={line.id}>
           {/* Line row */}
           <div onClick={() => { setSelectedLine(line.id); setSelectedFeeder(null) }}
             style={{
-              padding: `10px 16px 10px ${18 + depth * 20}px`, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+              padding: `10px 16px 10px ${12 + depth * 20}px`, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
               background: isActive ? '#FFF8EB' : hasActiveFdr ? '#FAFBFC' : 'transparent',
               borderLeft: isActive ? '3px solid #FF9900' : '3px solid transparent',
             }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: line.colour, flexShrink: 0 }} />
-            <input value={line.name}
-              onChange={(e) => renameLine(line.id, e.target.value)}
-              onClick={(e) => e.stopPropagation()}
+            {/* Collapse/expand arrow for sections with children */}
+            {hasCollapsible ? (
+              <span onClick={(e) => { e.stopPropagation(); setCollapsedLines(prev => ({ ...prev, [line.id]: !prev[line.id] })) }}
+                style={{ fontSize: 15, color: '#64748b', cursor: 'pointer', width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, userSelect: 'none' }}>
+                {isCollapsed ? '▸' : '▾'}
+              </span>
+            ) : (
+              <span style={{ width: 16, flexShrink: 0 }} />
+            )}
+            {depth === 0 && <div style={{ width: 10, height: 10, borderRadius: '50%', background: line.colour, flexShrink: 0 }} />}
+            <span
               style={{
-                fontSize: 14, fontWeight: isActive ? 600 : 400, color: '#1e293b',
+                fontSize: depth === 0 ? 14 : 13, fontWeight: isActive ? 600 : 400, color: '#1e293b',
                 flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                border: 'none', outline: 'none', background: 'transparent',
-                borderBottom: '1px dashed transparent', padding: '2px 0',
               }}
-              onFocus={(e) => e.currentTarget.style.borderBottom = '1px dashed #FF9900'}
-              onBlur={(e) => e.currentTarget.style.borderBottom = '1px dashed transparent'}
-            />
+            >{line.name}</span>
             {(isParent && fdrCount > 0) && (
               <span style={{ fontSize: 10, color: '#64748b', background: '#e2e8f0', borderRadius: 8, padding: '2px 6px' }}>{fdrCount}</span>
             )}
@@ -535,12 +551,11 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
                 +↓
               </button>
             )}
-            <span style={{ fontSize: 11, color: '#b0b0b0' }}>✎</span>
           </div>
 
           {/* Add-child dropdown (restricted to allowed types) */}
           {showingAddChild && ALLOWED_CHILDREN[line.preset] && (
-            <div style={{ marginLeft: 16 + depth * 20 + 18, padding: '4px 0 4px 10px', borderLeft: '1px solid #FF990040' }}>
+            <div style={{ marginLeft: 12 + depth * 20 + 16 + 10, padding: '4px 0 4px 10px', borderLeft: '1px solid #FF990040' }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, padding: '4px 0' }}>
                 {LINE_PRESETS.filter(p => ALLOWED_CHILDREN[line.preset].includes(p.id)).map(p => (
                   <button key={p.id} onClick={(e) => { e.stopPropagation(); addLine(p.id, line.id) }} style={{
@@ -553,55 +568,60 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
             </div>
           )}
 
-          {/* Feeder children (for switchgear-type lines) */}
-          {isParent && fdrCount > 0 && (
-            <div style={{ marginLeft: 16 + depth * 20 + 18, borderLeft: '1px solid #e2e8f0' }}>
-              {line.feeders.map(feeder => {
-                const isFdrActive = selectedFeeder === feeder.id
-                return (
-                  <div key={feeder.id}
-                    onClick={() => { setSelectedLine(line.id); setSelectedFeeder(feeder.id) }}
-                    style={{
-                      padding: '8px 12px 8px 16px', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
-                      background: isFdrActive ? '#FFF8EB' : 'transparent',
-                      borderLeft: isFdrActive ? '3px solid #FF9900' : '3px solid transparent',
-                      marginLeft: -1,
-                    }}>
-                    <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', minWidth: 28 }}>{feeder.ref}</span>
-                    <input value={feeder.name}
-                      onChange={(e) => renameFeeder(line.id, feeder.id, e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      style={{
-                        fontSize: 13, color: '#334155', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        border: 'none', outline: 'none', background: 'transparent',
-                        borderBottom: '1px dashed transparent', padding: '2px 0',
-                      }}
-                      onFocus={(e) => e.currentTarget.style.borderBottom = '1px dashed #FF9900'}
-                      onBlur={(e) => e.currentTarget.style.borderBottom = '1px dashed transparent'}
-                    />
-                    <span style={{ fontSize: 10, color: '#94a3b8' }}>{feeder.equipment.length}eq</span>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+          {/* Feeder children (for switchgear-type lines) — standard tree connectors */}
+          {visibleFeeders.length > 0 && visibleFeeders.map((feeder, fIdx) => {
+            const isFdrActive = selectedFeeder === feeder.id
+            const isLastSub = fIdx === visibleFeeders.length - 1 && (!visibleChildren || visibleChildren.length === 0)
+            const indent = 12 + depth * 20 + 16 + 5 // align connector under parent dot center (padding + arrow + half-dot)
+            return (
+              <div key={feeder.id}
+                onClick={() => { setSelectedLine(line.id); setSelectedFeeder(feeder.id) }}
+                style={{
+                  height: 32, display: 'flex', alignItems: 'center', cursor: 'pointer',
+                  paddingLeft: indent + 20, paddingRight: 12,
+                  background: isFdrActive ? '#FFF8EB' : 'transparent',
+                  position: 'relative',
+                }}>
+                {/* Connector: vertical line */}
+                <div style={{ position: 'absolute', left: indent, top: 0, bottom: isLastSub ? '50%' : 0, width: 1.5, background: '#e5e7eb' }} />
+                {/* Connector: horizontal branch */}
+                <div style={{ position: 'absolute', left: indent, top: 'calc(50% - 0.75px)', width: 12, height: 1.5, background: '#e5e7eb' }} />
+                <span style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', minWidth: 28 }}>{feeder.ref}</span>
+                <span style={{
+                  fontSize: 13, color: '#334155', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>{feeder.name}</span>
+                <span style={{ fontSize: 10, color: '#94a3b8' }}>{feeder.equipment.length}eq</span>
+              </div>
+            )
+          })}
 
-          {/* Child lines (recursive) */}
-          {childCount > 0 && (
-            <div style={{ marginLeft: 16 + depth * 20 + 10, borderLeft: '2px solid ' + line.colour + '30' }}>
-              {renderTreeLines(line.children, depth + 1)}
-            </div>
-          )}
+          {/* Child lines (recursive) — standard tree connectors */}
+          {visibleChildren && visibleChildren.length > 0 && visibleChildren.map((child, cIdx) => {
+            const isLastChild = cIdx === visibleChildren.length - 1
+            const indent = 12 + depth * 20 + 16 + 5 // same indent as feeders — under parent dot center
+            return (
+              <div key={child.id} style={{ position: 'relative' }}>
+                {/* Connector: vertical line — stops at row center (19px) for last child, full height otherwise */}
+                <div style={{ position: 'absolute', left: indent, top: 0, height: isLastChild ? 19 : '100%', width: 1.5, background: '#e5e7eb', zIndex: 0 }} />
+                {/* Connector: horizontal branch to child */}
+                <div style={{ position: 'absolute', left: indent, top: 18.25, width: 12, height: 1.5, background: '#e5e7eb', zIndex: 0 }} />
+                {/* Render the child line at depth+1 but offset by the connector space */}
+                <div style={{ marginLeft: indent + 12 - (12 + (depth + 1) * 20) }}>
+                  {renderTreeLines([child], depth + 1)}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )
     })
   }
 
   return (
-    <div style={{ display: 'flex', gap: 0, background: '#fff', borderRadius: 10, border: '1px solid #e2e8f0', overflow: 'hidden', minWidth: 640 }}>
+    <div style={{ display: 'flex', gap: 0, background: '#fff', borderRadius: 10, border: '1px solid #e2e8f0', overflow: 'hidden', minWidth: 640, maxHeight: 'calc(100vh - 200px)' }}>
 
       {/* ═══ LEFT PANEL: TREE ═══ */}
-      <div style={{ width: scopeCollapsed ? 44 : 380, minWidth: scopeCollapsed ? 44 : 320, flexShrink: 0, borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease' }}>
+      <div style={{ width: scopeCollapsed ? 44 : 380, minWidth: scopeCollapsed ? 44 : 320, flexShrink: 0, borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease', overflow: 'hidden' }}>
         <div style={{ padding: scopeCollapsed ? '12px 8px' : '12px 16px', background: '#232F3E', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {!scopeCollapsed && (
             <div>
@@ -616,7 +636,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
         </div>
 
         {!scopeCollapsed && (
-          <div style={{ padding: '6px 0' }}>
+          <div style={{ padding: '6px 0', flex: 1, overflowY: 'auto', minHeight: 0 }}>
             {lines.length === 0 && (
               <div style={{ padding: '30px 16px', textAlign: 'center', color: '#94a3b8', fontSize: 12 }}>
                 Add a section to start building<br/>your substation scope
@@ -665,16 +685,38 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: activeLine.colour }} />
               {/* Breadcrumb: Line > Feeder */}
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', cursor: 'pointer' }}
-                  onClick={() => setSelectedFeeder(null)}>
-                  {activeLine.name}
-                </span>
+                {!activeFeeder ? (
+                  <input value={activeLine.name}
+                    onChange={(e) => renameLine(activeLine.id, e.target.value)}
+                    style={{
+                      fontSize: 14, fontWeight: 700, color: '#1e293b', border: 'none', outline: 'none',
+                      background: 'transparent', borderBottom: '1.5px solid #e2e8f0', padding: '2px 4px',
+                      borderRadius: 0, width: '100%', maxWidth: 240,
+                    }}
+                    onFocus={(e) => e.currentTarget.style.borderBottomColor = '#FF9900'}
+                    onBlur={(e) => e.currentTarget.style.borderBottomColor = '#e2e8f0'}
+                  />
+                ) : (
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b', cursor: 'pointer' }}
+                    onClick={() => setSelectedFeeder(null)}>
+                    {activeLine.name}
+                  </span>
+                )}
                 {activeFeeder && (
                   <>
                     <span style={{ fontSize: 12, color: '#94a3b8' }}>›</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#1e293b' }}>
-                      {activeFeeder.ref} {activeFeeder.name}
-                    </span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#64748b', marginRight: 4 }}>{activeFeeder.ref}</span>
+                    <input value={activeFeeder.name}
+                      onChange={(e) => renameFeeder(activeLine.id, activeFeeder.id, e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        fontSize: 14, fontWeight: 700, color: '#1e293b', border: 'none', outline: 'none',
+                        background: 'transparent', borderBottom: '1.5px solid #e2e8f0', padding: '2px 4px',
+                        borderRadius: 0, width: '100%', maxWidth: 180,
+                      }}
+                      onFocus={(e) => e.currentTarget.style.borderBottomColor = '#FF9900'}
+                      onBlur={(e) => e.currentTarget.style.borderBottomColor = '#e2e8f0'}
+                    />
                   </>
                 )}
               </div>

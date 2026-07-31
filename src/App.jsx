@@ -51,10 +51,14 @@ export default function App() {
   const activeEquipment = mode === 'bay'
     ? (bayActiveSection
       ? bayEquipment.filter(item => {
-          const ref = item.feeder_ref || ''
-          const dashIdx = ref.indexOf(' \u2014 ')
-          const sectionName = dashIdx >= 0 ? ref.slice(0, dashIdx) : ref
-          return sectionName === bayActiveSection
+          // Show items that:
+          // 1. Are top-level items of this section (no parent, feeder_ref starts with section name)
+          // 2. ARE this section (child_section matches — these are the section's own items when it's a child)
+          // 3. Are direct children of this section (parent_section === bayActiveSection)
+          const isTopLevelOwn = !item.parent_section && (item.feeder_ref || '').split(' \u2014 ')[0] === bayActiveSection
+          const isThisSection = item.child_section === bayActiveSection
+          const isDirectChild = item.parent_section === bayActiveSection
+          return isTopLevelOwn || isThisSection || isDirectChild
         })
       : bayEquipment)
     : equipment
@@ -217,6 +221,7 @@ export default function App() {
             <div style={{ flex: '1 1 35%', minWidth: 0, overflow: 'hidden' }}>
               <EquipmentTable
                 equipment={activeEquipment}
+                sectionName={mode === 'bay' ? bayActiveSection : null}
                 selectedIndex={activeSelectedRow}
                 onSelect={setActiveSelectedRow}
                 onUpdateTests={handleUpdateTests}

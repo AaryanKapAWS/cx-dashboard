@@ -45,31 +45,69 @@ function getDisplayName(item) {
   return item.name || TYPE_LABELS[item.type] || item.type
 }
 
-function getSection(feederRef) {
-  if (!feederRef) return 'Unassigned'
-  return feederRef.split(' \u2014 ')[0] || 'Unassigned'
-}
-
-function getFeeder(feederRef) {
-  if (!feederRef) return ''
-  const parts = feederRef.split(' \u2014 ')
-  return parts.length > 1 ? parts[1] : ''
-}
-
-export default function EquipmentTable({ equipment, selectedIndex, onSelect, onRemove, onUpdateTests, onRename }) {
+export default function EquipmentTable({ equipment, sectionName: sectionNameProp, selectedIndex, onSelect, onRemove, onUpdateTests, onRename }) {
   const [activeFeeder, setActiveFeeder] = useState({})
 
-  // Group: section \u2192 feeder \u2192 items
-  const sections = {}
+  // ─── GROUPING LOGIC ───────────────────────────────────────────────────────────
+  // Determine the "root" section — the common parent of all items in the list.
+  // Then group items into:
+  //   1. "overall" — items whose child_section matches the root (they ARE the root's own items)
+  //                  OR items with no child_section that belong to this root
+  //   2. "tabs" — items whose child_section is a DIRECT child of the root
+  //
+  // The root section is determined by finding items that have NO child_section (top-level)
+  // or where child_section matches parent_section of other items.
+  //
+  // Simple rule: 
+  //   - Items with child_section === null → "overall" (parent's own equipment)
+  //   - Items with child_section !== null → grouped into tabs by child_section name
+  //   - Items from feeders (feeder_ref has " — " but child_section is null, e.g. MV Switchgear feeders)
+  //     → grouped into tabs by the feeder part of feeder_ref
+
+  // Section header — use prop if provided, otherwise derive from first item's feeder_ref
+  const sectionHeader = sectionNameProp || (equipment.length > 0
+    ? (equipment[0].feeder_ref || '').split(' \u2014 ')[0] || 'Equipment'
+    : 'Equipment')
+
+  // Split items into overall (flat) and tabs
+  const overall = []
+  const tabGroups = {}
+
   equipment.forEach((item, idx) => {
-    const section = getSection(item.feeder_ref)
-    const feeder = item.feeder_ref || section
-    if (!sections[section]) sections[section] = {}
-    if (!sections[section][feeder]) sections[section][feeder] = []
-    sections[section][feeder].push({ ...item, _idx: idx })
+    const enriched = { ...item, _idx: idx }
+    
+    // If child_section matches the section we're viewing, this IS the section's own item → always flat
+    if (item.child_section === sectionHeader) {
+      overall.push(enriched)
+      return
+    }
+
+    // If no child_section, determine if it's flat (overall) or a tab (feeder)
+    if (!item.child_section) {
+      const ref = item.feeder_ref || ''
+      const dashIdx = ref.indexOf(' \u2014 ')
+      const feederPart = dashIdx >= 0 ? ref.slice(dashIdx + 3) : ''
+      
+      if (feederPart) {
+        // Has a feeder part (MV Switchgear feeder OR "Overall" group)
+        if (!tabGroups[feederPart]) tabGroups[feederPart] = []
+        tabGroups[feederPart].push(enriched)
+      } else {
+        // Pure parent item, no sub-group
+        overall.push(enriched)
+      }
+    } else {
+      // Has child_section — this belongs to a child tab
+      const tabName = item.child_section
+      if (!tabGroups[tabName]) tabGroups[tabName] = []
+      tabGroups[tabName].push(enriched)
+    }
   })
 
+  const tabNames = Object.keys(tabGroups)
   const totalTests = equipment.reduce((sum, item) => sum + getTestCount(item), 0)
+  const currentTab = activeFeeder[sectionHeader] || tabNames[0]
+  const currentTabItems = (currentTab && tabGroups[currentTab]) || []
 
   function renderRow(item, i) {
     const testCount = getTestCount(item)
@@ -120,7 +158,7 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect, onR
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#cbd5e1', fontSize: 14, padding: '0 4px', transition: 'color 0.15s' }}
                 onMouseEnter={e => e.target.style.color = '#dc2626'}
                 onMouseLeave={e => e.target.style.color = '#cbd5e1'}
-              >×</button>
+              >&times;</button>
             </div>
           )}
         </div>
@@ -149,62 +187,46 @@ export default function EquipmentTable({ equipment, selectedIndex, onSelect, onR
         </div>
       </div>
 
-      {/* Sections */}
-      {Object.entries(sections).map(([sectionName, feeders]) => {
-        const sectionItems = Object.values(feeders).flat()
-        const sectionTests = sectionItems.reduce((s, item) => s + getTestCount(item), 0)
-        const feederKeys = Object.keys(feeders)
+      {/* Section header */}
+      {equipment.length > 0 && (
+        <div style={{ padding: '8px 20px', background: '#1B3A5C', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sectionHeader}</span>
+          <span style={{ fontSize: 10, color: '#93BEDC' }}>{equipment.length} items &middot; {totalTests} tests</span>
+        </div>
+      )}
 
-        // Split: single-item feeders (overall equipment) vs multi-item feeders (per-feeder)
-        const overallKeys = feederKeys.filter(k => feeders[k].length <= 1)
-        const multiKeys = feederKeys.filter(k => feeders[k].length > 1)
+      {/* Parent's own items (shown flat, always visible) */}
+      {overall.map((item, i) => renderRow(item, i))}
 
-        const currentFeeder = activeFeeder[sectionName] || multiKeys[0]
-        const currentItems = (currentFeeder && feeders[currentFeeder]) || []
+      {/* Tab bar — for feeders AND child sections (unified) */}
+      {tabNames.length > 0 && (
+        <div style={{ padding: '6px 20px', background: '#EDF2F7', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 2, overflowX: 'auto' }}>
+          {tabNames.map(tabName => {
+            const tabItems = tabGroups[tabName]
+            const type = (tabItems[0]?.feeder_type || '').replace(/_/g, ' ')
+            const isActive = tabName === currentTab
+            return (
+              <button key={tabName} onClick={() => setActiveFeeder(prev => ({ ...prev, [sectionHeader]: tabName }))}
+                style={{
+                  padding: '6px 14px', fontSize: 11, fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#1B3A5C' : '#64748b',
+                  background: isActive ? '#fff' : 'transparent',
+                  border: isActive ? '1px solid #d1d5db' : '1px solid transparent',
+                  borderBottom: isActive ? '2px solid #2E86AB' : '2px solid transparent',
+                  borderRadius: '6px 6px 0 0', cursor: 'pointer',
+                  textTransform: 'uppercase', letterSpacing: '0.3px',
+                  transition: 'all 0.15s', whiteSpace: 'nowrap',
+                }}
+              >
+                {tabName}{type && <span style={{ fontSize: 9, marginLeft: 6, fontWeight: 400, textTransform: 'capitalize', color: isActive ? '#2E86AB' : '#94a3b8' }}>{type}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
-        return (
-          <div key={sectionName}>
-            {/* Section header */}
-            <div style={{ padding: '8px 20px', background: '#1B3A5C', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sectionName}</span>
-              <span style={{ fontSize: 10, color: '#93BEDC' }}>{sectionItems.length} items · {sectionTests} tests</span>
-            </div>
-
-            {/* Overall items (not per-feeder) */}
-            {overallKeys.map(fk => feeders[fk].map((item, i) => renderRow(item, i)))}
-
-            {/* Feeder tab bar */}
-            {multiKeys.length > 0 && (
-              <div style={{ padding: '6px 20px', background: '#EDF2F7', borderTop: '1px solid #e2e8f0', display: 'flex', gap: 2, overflowX: 'auto' }}>
-                {multiKeys.map(fk => {
-                  const name = getFeeder(fk)
-                  const type = (feeders[fk][0]?.feeder_type || '').replace(/_/g, ' ')
-                  const isActive = fk === currentFeeder
-                  return (
-                    <button key={fk} onClick={() => setActiveFeeder(prev => ({ ...prev, [sectionName]: fk }))}
-                      style={{
-                        padding: '6px 14px', fontSize: 11, fontWeight: isActive ? 700 : 500,
-                        color: isActive ? '#1B3A5C' : '#64748b',
-                        background: isActive ? '#fff' : 'transparent',
-                        border: isActive ? '1px solid #d1d5db' : '1px solid transparent',
-                        borderBottom: isActive ? '2px solid #2E86AB' : '2px solid transparent',
-                        borderRadius: '6px 6px 0 0', cursor: 'pointer',
-                        textTransform: 'uppercase', letterSpacing: '0.3px',
-                        transition: 'all 0.15s', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {name}{type && <span style={{ fontSize: 9, marginLeft: 6, fontWeight: 400, textTransform: 'capitalize', color: isActive ? '#2E86AB' : '#94a3b8' }}>{type}</span>}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Active feeder items */}
-            {multiKeys.length > 0 && currentItems.map((item, i) => renderRow(item, i))}
-          </div>
-        )
-      })}
+      {/* Active tab items */}
+      {tabNames.length > 0 && currentTabItems.map((item, i) => renderRow(item, i))}
 
       {/* Empty state */}
       {equipment.length === 0 && (
