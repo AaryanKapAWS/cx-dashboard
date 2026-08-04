@@ -79,18 +79,22 @@ export default function App() {
   }
 
   async function handleGenerateCOR() {
-    if (activeEquipment.length === 0) {
+    // Always use FULL equipment list (not filtered by selected section)
+    const allEquipment = mode === 'bay' ? bayEquipment : equipment
+    if (allEquipment.length === 0) {
       setToast({ message: '⚠ No equipment to export — add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
-    const result = await generateCOR(activeEquipment, projectName || 'HV Substation')
+    const result = await generateCOR(allEquipment, projectName || 'HV Substation')
     setToast({ message: `✓ COR exported — ${result.totalTests} tests across ${result.sections} sections` })
     setTimeout(() => setToast(null), 5000)
   }
 
   async function handleGenerateUpload() {
-    if (activeEquipment.length === 0) {
+    // Always use FULL equipment list for upload too
+    const allEquipment = mode === 'bay' ? bayEquipment : equipment
+    if (allEquipment.length === 0) {
       setToast({ message: '⚠ No equipment to export — add items first' })
       setTimeout(() => setToast(null), 4000)
       return
@@ -102,7 +106,7 @@ export default function App() {
       region: projectRegion,
       mode: uploadMode,
     }
-    const result = await generateInspectionUpload(activeEquipment, projectConfig)
+    const result = await generateInspectionUpload(allEquipment, projectConfig)
     setToast({ message: `✓ Upload file exported — ${result.inspections} inspections` })
     setTimeout(() => setToast(null), 5000)
   }
