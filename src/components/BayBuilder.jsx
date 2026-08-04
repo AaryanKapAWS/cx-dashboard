@@ -927,7 +927,15 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
                         {/* Qty */}
                         <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Qty</span>
                         <input type="number" min="1" max="20" value={qty}
-                          onChange={(e) => updateEquipment(activeLine.id, activeFeeder?.id || null, eq.id, { qty: Math.max(1, parseInt(e.target.value) || 1) })}
+                          onChange={(e) => {
+                          const newQty = Math.max(1, parseInt(e.target.value) || 1)
+                          const updates = { qty: newQty }
+                          if (newQty === 1 && names.length > 0 && names[0]) {
+                            updates.name = names[0]
+                            updates.names = []
+                          }
+                          updateEquipment(activeLine.id, activeFeeder?.id || null, eq.id, updates)
+                        }}
                           style={{ width: 38, fontSize: 12, textAlign: 'center', border: '1px solid #e2e8f0', borderRadius: 4, padding: '4px 0' }} />
                         {/* Remove */}
                         <button onClick={() => removeEquipment(activeLine.id, activeFeeder?.id || null, eq.id)}

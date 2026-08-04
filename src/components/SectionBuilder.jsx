@@ -341,7 +341,7 @@ export default function SectionBuilder({ onSubmit }) {
           for (let q = 0; q < (item.qty || 1); q++) {
             const suffix = item.qty > 1 ? ` ${q + 1}` : ''
             allItems.push({
-              feeder_ref: `${sectionName} \u2014 ${item.name || item.label}${suffix}`,
+              feeder_ref: sectionName,
               type: typeId,
               name: item.name || `${item.label}${suffix}`,
               qty: 1,

@@ -14,7 +14,7 @@ const MODES = {
 }
 
 export default function App() {
-  const [mode, setMode] = useState(() => localStorage.getItem('app_mode') || 'section')
+  const [mode, setMode] = useState(() => localStorage.getItem('app_mode') || 'bay')
   const [tab, setTab] = useState('builder')
 
   // ── Section Builder state (Option 2) ──
@@ -115,16 +115,17 @@ export default function App() {
         background: '#0f172a', borderBottom: '1px solid #1e293b',
       }}>
         {/* Mode selector row */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: 36, borderBottom: '1px solid #1e293b' }}>
-          <div style={{ display: 'flex', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: 44, borderBottom: '1px solid #1e293b', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 0, background: '#1e293b', borderRadius: 6, padding: 3 }}>
             {Object.entries(MODES).map(([key, m]) => (
               <button key={key} onClick={() => { setMode(key); setTab('builder') }}
                 style={{
-                  padding: '4px 16px', fontSize: 11, fontWeight: 700,
-                  border: mode === key ? `1px solid ${m.colour}` : '1px solid transparent',
-                  borderRadius: 4, background: mode === key ? `${m.colour}20` : 'transparent',
-                  color: mode === key ? m.colour : '#64748b',
-                  cursor: 'pointer', transition: 'all 0.2s'
+                  padding: '6px 20px', fontSize: 12, fontWeight: 700,
+                  border: 'none',
+                  borderRadius: 4, background: mode === key ? m.colour : 'transparent',
+                  color: mode === key ? '#fff' : '#94a3b8',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {m.label}
@@ -157,9 +158,6 @@ export default function App() {
               background: 'transparent', color: tab === 'docs' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>📖 Docs</button>
-          </div>
-          <div style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>
-            {activeEquipment.length} items
           </div>
         </div>
       </div>
@@ -225,8 +223,8 @@ export default function App() {
                 selectedIndex={activeSelectedRow}
                 onSelect={setActiveSelectedRow}
                 onUpdateTests={handleUpdateTests}
-                onRename={null}
-                onRemove={null}
+                onRename={mode === 'section' ? handleRename : null}
+                onRemove={mode === 'section' ? (idx) => setActiveEquipment(prev => prev.filter((_, i) => i !== idx)) : null}
               />
 
               {/* Export buttons */}

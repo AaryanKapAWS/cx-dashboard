@@ -187,16 +187,24 @@ export default function EquipmentTable({ equipment, sectionName: sectionNameProp
         </div>
       </div>
 
-      {/* Section header */}
-      {equipment.length > 0 && (
-        <div style={{ padding: '8px 20px', background: '#1B3A5C', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sectionHeader}</span>
-          <span style={{ fontSize: 10, color: '#93BEDC' }}>{equipment.length} items &middot; {totalTests} tests</span>
-        </div>
-      )}
-
-      {/* Parent's own items (shown flat, always visible) */}
-      {overall.map((item, i) => renderRow(item, i))}
+      {/* Sections — group overall items by their section name */}
+      {(() => {
+        const secs = {}
+        overall.forEach(item => {
+          const sn = (item.feeder_ref || '').split(' \u2014 ')[0] || sectionHeader
+          if (!secs[sn]) secs[sn] = []
+          secs[sn].push(item)
+        })
+        return Object.entries(secs).map(([sn, items]) => (
+          <div key={sn}>
+            <div style={{ padding: '8px 20px', background: '#1B3A5C', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sn}</span>
+              <span style={{ fontSize: 10, color: '#93BEDC' }}>{items.length} items \u00b7 {items.reduce((s, it) => s + getTestCount(it), 0)} tests</span>
+            </div>
+            {items.map((item, i) => renderRow(item, i))}
+          </div>
+        ))
+      })()}
 
       {/* Tab bar — for feeders AND child sections (unified) */}
       {tabNames.length > 0 && (
