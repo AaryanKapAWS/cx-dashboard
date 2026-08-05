@@ -3,7 +3,7 @@ import testTemplates from '../data/test_templates.json'
 import TestCustomiser from './TestCustomiser'
 
 const TYPE_LABELS = {
-  CT: 'CT', CT2: 'CT-T2', VT: 'VT', TRANSFORMER: 'Transformer',
+  CT: 'CT', CT2: 'CT-T2', VT: 'VT', TRANSFORMER: 'Oil Transformer', DRY_TRANSFORMER: 'Dry Transformer',
   BUSBAR: 'Busbar', PQM: 'PQM', EPMS: 'EPMS', RELAY: 'Relay',
   ENERGIZATION: 'Energization', SURGE_ARRESTER: 'Surge Arrester',
   NER: 'NER', NER_CT: 'NER CT', NER_CT_SBEF: 'NER CT',
@@ -19,7 +19,7 @@ const TYPE_LABELS = {
 }
 
 const TYPE_COLORS = {
-  CT: '#3b82f6', CT2: '#3b82f6', VT: '#8b5cf6', TRANSFORMER: '#dc2626',
+  CT: '#3b82f6', CT2: '#3b82f6', VT: '#8b5cf6', TRANSFORMER: '#dc2626', DRY_TRANSFORMER: '#e11d48',
   BUSBAR: '#64748b', PQM: '#06b6d4', EPMS: '#0891b2',
   RELAY: '#f59e0b', ENERGIZATION: '#16a34a', SURGE_ARRESTER: '#ea580c',
   NER: '#7c3aed', NER_CT: '#6d28d9', NER_CT_SBEF: '#6d28d9',

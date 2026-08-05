@@ -164,12 +164,22 @@ const LINE_PRESETS = [
   {
     id: 'transformer_bay', label: 'Transformer Bay', colour: '#d35400',
     hasChildren: false,
-    defaults: [
+    hasSubtype: true,
+    subtypes: [
+      { id: 'oil', label: 'Oil Transformer' },
+      { id: 'dry', label: 'Dry Transformer' },
+    ],
+    defaults: [  // Oil (default)
       { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
       { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 1 },
       { type: 'TRANSFORMER', qty: 1 }, { type: 'NER_CT', qty: 2 }, { type: 'NER', qty: 1 },
       { type: 'MK_OLTC_PANEL', qty: 1 }, { type: 'PROTECTION_PANEL', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
-    ]
+    ],
+    defaultsDry: [  // Dry transformer (no oil, no OLTC, no NER)
+      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
+      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 1 },
+      { type: 'DRY_TRANSFORMER', qty: 1 }, { type: 'PROTECTION_PANEL', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
+    ],
   },
   {
     id: 'line_bay', label: 'Line Bay', colour: '#2980b9',
@@ -181,8 +191,13 @@ const LINE_PRESETS = [
     ]
   },
   {
-    id: 'switchgear', label: 'MV Switchgear', colour: '#27ae60',
+    id: 'switchgear', label: 'Switchgear', colour: '#27ae60',
     hasChildren: true, // This one uses feeders (children)
+    hasSubtype: true,  // Prompts for AIS/GIS when adding
+    subtypes: [
+      { id: 'ais', label: 'AIS (Air Insulated)' },
+      { id: 'gis', label: 'GIS (Gas Insulated)' },
+    ],
     feederTypes: [
       { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE','CT','CT_METER','NCT','CIRCUIT_BREAKER','VT','EARTH_SWITCH','BUSBAR','PQM','EPMS','RELAY','L4_INTEGRATION','ENERGIZATION'] },
       { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE','CT','CT_METER','NCT','CIRCUIT_BREAKER','VT','EARTH_SWITCH','BUSBAR','PQM','EPMS','RELAY','CABLE_DIFF','L4_INTEGRATION','ENERGIZATION'] },
@@ -192,6 +207,15 @@ const LINE_PRESETS = [
       { id: 'aux_tx_feeder', label: 'Aux Transformer Feeder', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','BUSBAR','PQM','EPMS','RELAY','L4_INTEGRATION','ENERGIZATION'] },
       { id: 'bb_earth_switch', label: 'BB Earth Switch', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','EARTH_SWITCH','BUSBAR','PQM','RELAY','ENERGIZATION'] },
       { id: 'spare', label: 'Spare', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','BUSBAR','PQM','EPMS','RELAY','ENERGIZATION'] },
+    ],
+    feederTypesGIS: [
+      { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_coupler', label: 'Bus Coupler', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','LCC_GIS','IED_OC_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_section', label: 'Bus Section', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','DS_ES_GIS','ES_GIS','LCC_GIS','IED_87B_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_vt', label: 'Bus Bar VT', defaults: ['VT_GIS','LCC_GIS'] },
+      { id: 'transformer_feeder', label: 'Transformer Feeder', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','HV_CABLE_GIS','LCC_GIS','IED_87T_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'spare', label: 'Spare', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','DS_ES_GIS','LCC_GIS','ENERGIZATION_GIS'] },
     ],
     defaults: [ { type: 'SWITCHGEAR_OVERALL', qty: 1 }, { type: 'AC_DC_CHECKS', qty: 1 } ] // Overall items
   },
@@ -277,6 +301,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   const [paletteFilter, setPaletteFilter] = useState('')
   const [addChildFor, setAddChildFor] = useState(null)
   const [scopeCollapsed, setScopeCollapsed] = useState(false)
+  const [subtypePrompt, setSubtypePrompt] = useState(null) // { presetId, parentId } when awaiting AIS/GIS choice
   const [collapsedLines, setCollapsedLines] = useState({})
   const [dragEqId, setDragEqId] = useState(null)
   const [dragFeeder, setDragFeeder] = useState(null)
@@ -338,14 +363,19 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   }, [lines])
 
   // ── LINE OPERATIONS ──
-  function addLine(presetId, parentId = null) {
+  function addLine(presetId, parentId = null, subtype = null) {
     const preset = LINE_PRESETS.find(p => p.id === presetId)
     const allLines = flattenLines(lines)
     const count = allLines.filter(l => l.preset === presetId).length + 1
-    const name = count > 1 ? `${preset.label} ${count}` : preset.label
+    const subtypeLabel = subtype === 'gis' ? ' (GIS)' : subtype === 'ais' ? ' (AIS)' : subtype === 'oil' ? ' (Oil)' : subtype === 'dry' ? ' (Dry)' : ''
+    const name = count > 1 ? `${preset.label}${subtypeLabel} ${count}` : `${preset.label}${subtypeLabel}`
+    // Pick correct defaults based on subtype
+    let equipDefaults = preset.defaults || []
+    if (subtype === 'dry' && preset.defaultsDry) equipDefaults = preset.defaultsDry
+    if (subtype === 'gis' && preset.defaultsGIS) equipDefaults = preset.defaultsGIS
     const newLine = {
-      id: generateId(), name, preset: presetId, colour: preset.colour,
-      equipment: (preset.defaults || []).map(d => ({ id: generateId(), type: d.type, qty: d.qty || 1, name: '' })),
+      id: generateId(), name, preset: presetId, colour: preset.colour, subtype: subtype || null,
+      equipment: equipDefaults.map(d => ({ id: generateId(), type: d.type, qty: d.qty || 1, name: '' })),
       feeders: [],
       children: [],
     }
@@ -382,7 +412,9 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   function addFeeder(lineId, feederTypeId) {
     const line = findInTree(lines, lineId)
     const preset = LINE_PRESETS.find(p => p.id === line.preset)
-    const feederType = preset?.feederTypes?.find(f => f.id === feederTypeId)
+    // Use GIS feeder types if line subtype is 'gis'
+    const feederList = (line.subtype === 'gis' && preset?.feederTypesGIS) ? preset.feederTypesGIS : preset?.feederTypes
+    const feederType = feederList?.find(f => f.id === feederTypeId)
     if (!feederType) return
     const count = (line.feeders || []).filter(f => f.type === feederTypeId).length + 1
     const ref = `${String(line.feeders.length + 1).padStart(2, '0')}${String.fromCharCode(65 + (line.feeders.length % 26))}`
@@ -643,8 +675,49 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
               </div>
             )}
             {renderTreeLines(lines, 0)}
-          </div>
+        </div>
         )}
+
+        {/* ═══ SUBTYPE PROMPT (dynamic) ═══ */}
+        {subtypePrompt && (() => {
+          const promptPreset = LINE_PRESETS.find(p => p.id === subtypePrompt.presetId)
+          const subtypes = promptPreset?.subtypes || []
+          const colours = {
+            ais: { border: '#27ae60', bg: '#f0fdf4', text: '#15803d', icon: '⚡' },
+            gis: { border: '#1a5276', bg: '#eff6ff', text: '#1e40af', icon: '🔒' },
+            oil: { border: '#d35400', bg: '#fef3e2', text: '#c2410c', icon: '🛢️' },
+            dry: { border: '#6b21a8', bg: '#faf5ff', text: '#6b21a8', icon: '🔥' },
+          }
+          return (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.4)', zIndex: 9999,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }} onClick={() => setSubtypePrompt(null)}>
+            <div style={{
+              background: '#fff', borderRadius: 12, padding: '24px 28px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)', minWidth: 280,
+            }} onClick={e => e.stopPropagation()}>
+              <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: '#1e293b' }}>{promptPreset?.label}</div>
+              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 16 }}>Select the type</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {subtypes.map(st => {
+                  const c = colours[st.id] || { border: '#64748b', bg: '#f8fafc', text: '#334155', icon: '●' }
+                  return (
+                    <button key={st.id} onClick={() => { addLine(subtypePrompt.presetId, subtypePrompt.parentId, st.id); setSubtypePrompt(null) }} style={{
+                      flex: 1, padding: '12px 16px', fontSize: 13, fontWeight: 700,
+                      border: `2px solid ${c.border}`, borderRadius: 8,
+                      background: c.bg, color: c.text, cursor: 'pointer',
+                    }}>
+                      {c.icon} {st.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          )
+        })()}
 
         {/* Add Line buttons */}
         {!scopeCollapsed && (
@@ -652,7 +725,11 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
           <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Add Section</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {LINE_PRESETS.filter(p => p.id !== 'blank').map(p => (
-              <button key={p.id} onClick={() => addLine(p.id)} style={{
+              <button key={p.id} onClick={() => {
+                const preset = LINE_PRESETS.find(pr => pr.id === p.id)
+                if (preset?.hasSubtype) { setSubtypePrompt({ presetId: p.id, parentId: null }); return }
+                addLine(p.id)
+              }} style={{
                 padding: '9px 14px', fontSize: 13, fontWeight: 600, textAlign: 'left', width: '100%',
                 border: `1.5px solid ${p.colour}30`, borderRadius: 6,
                 background: `${p.colour}06`, color: p.colour, cursor: 'pointer',
@@ -799,7 +876,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
 
                   {/* Quick-add feeder buttons */}
                   <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {(LINE_PRESETS.find(p => p.id === activeLine.preset)?.feederTypes || []).map(ft => (
+                    {(() => { const _p = LINE_PRESETS.find(p => p.id === activeLine.preset); return ((activeLine.subtype === 'gis' && _p?.feederTypesGIS) ? _p.feederTypesGIS : _p?.feederTypes) || [] })().map(ft => (
                       <button key={ft.id} onClick={() => addFeeder(activeLine.id, ft.id)}
                         style={{
                           padding: '6px 12px', fontSize: 11, fontWeight: 600,

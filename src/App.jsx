@@ -6,6 +6,7 @@ import DocsReference from './components/DocsReference'
 import SLDViewer from './components/SLDViewer'
 import { generateCOR } from './utils/corGenerator'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
+import { generateAsanaCSV } from './utils/asanaExporter'
 
 // ─── TOP-LEVEL MODES ────────────────────────────────────────────────────────
 const MODES = {
@@ -108,6 +109,18 @@ export default function App() {
     }
     const result = await generateInspectionUpload(allEquipment, projectConfig)
     setToast({ message: `✓ Upload file exported — ${result.inspections} inspections` })
+    setTimeout(() => setToast(null), 5000)
+  }
+
+  function handleAsanaExport() {
+    const allEquipment = mode === 'bay' ? bayEquipment : equipment
+    if (allEquipment.length === 0) {
+      setToast({ message: '⚠ No equipment to export — add items first' })
+      setTimeout(() => setToast(null), 4000)
+      return
+    }
+    const result = generateAsanaCSV(allEquipment, projectName || 'HV Substation')
+    setToast({ message: `✓ Asana CSV exported — ${result.totalTests} tests, ${result.sections} sections` })
     setTimeout(() => setToast(null), 5000)
   }
 
@@ -243,7 +256,12 @@ export default function App() {
                 <button onClick={handleGenerateUpload} style={{
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer'
-                }}>📤 Procore Upload File</button>
+               }}>📤 Procore Upload File</button>
+                <button onClick={handleAsanaExport} style={{
+                  padding: '8px 16px', fontSize: 12, fontWeight: 600,
+                  background: '#6a1b9a', color: '#fff', border: 'none',
+                  borderRadius: 6, cursor: 'pointer',
+                }}>📊 Asana Project CSV</button>
                 {/* Upload mode toggle switch */}
                 <div onClick={() => setUploadMode(uploadMode === 'section' ? 'individual' : 'section')}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginLeft: 8 }}>
@@ -270,7 +288,7 @@ export default function App() {
 
       {/* ═══ SLD VIEW TAB ═══ */}
       {tab === 'sld' && (
-        <SLDViewer equipment={activeEquipment} />
+        <SLDViewer equipment={mode === 'bay' ? bayEquipment : equipment} />
       )}
 
       {/* ═══ DOCS TAB ═══ */}
