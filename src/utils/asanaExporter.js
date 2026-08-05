@@ -1,13 +1,16 @@
 /**
- * Asana CSV Exporter v2
+ * Asana CSV Exporter v3
  * 
- * Generates a well-structured CSV for Asana import with:
- *   - Clean human-readable names (no raw type keys)
- *   - Milestone tasks for key commissioning gates
- *   - Auto-generated timeline dates (L1→L2→L3→L4→L5 sequencing)
- *   - Task dependencies (later levels depend on earlier)
- *   - Proper custom field values
- *   - Project description as first task
+ * Exports equipment-level tasks (NOT individual tests as subtasks).
+ * Tests become a checklist in the task Description field.
+ * 
+ * Key design decisions:
+ *   - ~86 tasks instead of 577 (every task visible on Timeline/Board/Calendar)
+ *   - 1-3 day durations per task (clean Gantt bars)
+ *   - Milestones as diamonds (start date = due date)
+ *   - Dependencies for sequencing (L1→L2→L3→L4→L5 flow)
+ *   - Dates in MM/DD/YYYY (Asana requirement)
+ *   - Custom fields: Level, Priority, Status, Equipment Type, Witness Required
  */
 
 import TEST_TEMPLATES from '../data/test_templates.json'
@@ -28,7 +31,6 @@ const DISPLAY_NAMES = {
   SWITCHGEAR_OVERALL: 'Switchgear Overall', AC_DC_CHECKS: 'AC/DC Distribution',
   SCADA: 'SCADA / SAS', ESB_INTERFACE: 'Grid Interface',
   SUBSTATION_CHECKS: 'Substation Checks',
-  // GIS
   CT_GIS: 'CT (GIS)', VT_GIS: 'VT (GIS)', CB_GIS: 'Circuit Breaker (GIS)',
   DS_ES_GIS: 'Disconnector / ES (GIS)', ES_GIS: 'Earth Switch (GIS)',
   SA_GIS: 'Surge Arrester (GIS)', RING_CT_GIS: 'Ring CT (GIS)',
@@ -37,7 +39,6 @@ const DISPLAY_NAMES = {
   IED_87T_GIS: 'IED 87T (GIS)', IED_87B_GIS: 'IED 87B (GIS)',
   LCC_GIS: 'Local Control Cabinet (GIS)', STABILITY_GIS: 'Stability Test (GIS)',
   EPMS_GIS: 'EPMS (GIS)', ENERGIZATION_GIS: 'Energization (GIS)',
-  // Battery/DC
   BATTERY_BANK: 'Battery Bank', BATTERY_CHARGER: 'Charger / Rectifier',
   DC_DISTRIBUTION: 'DC Distribution', UPS: 'UPS', DC_EARTH_FAULT: 'DC Earth Fault Monitor',
   EARTH_GRID: 'Earth Grid', EARTH_ELECTRODE: 'Earth Electrode',
@@ -51,7 +52,39 @@ const LEVEL_LABELS = {
   L5: 'L5 - Energization',
 }
 
-const LEVEL_SHORT = { L1: 'L1', L2: 'L2', L3: 'L3', L4: 'L4', L5: 'L5' }
+// Equipment that requires CxA witnessing
+const WITNESS_TYPES = new Set([
+  'TRANSFORMER', 'DRY_TRANSFORMER', 'CIRCUIT_BREAKER', 'CB_GIS',
+  'ENERGIZATION', 'ENERGIZATION_GIS', 'STABILITY_TEST', 'STABILITY_GIS',
+  'L4_INTEGRATION', 'PROTECTION_PANEL',
+])
+
+// Duration (days) per equipment based on test complexity
+function getDuration(item, testCount) {
+  if (testCount <= 3) return 1
+  if (testCount <= 8) return 2
+  if (testCount <= 15) return 3
+  if (testCount <= 25) return 4
+  return 5  // Transformers (33+ tests)
+}
+
+// Priority based on equipment criticality
+function getPriority(type) {
+  if (['TRANSFORMER', 'DRY_TRANSFORMER', 'ENERGIZATION', 'ENERGIZATION_GIS'].includes(type)) return 'High'
+  if (['CIRCUIT_BREAKER', 'CB_GIS', 'STABILITY_TEST', 'L4_INTEGRATION', 'PROTECTION_PANEL'].includes(type)) return 'High'
+  if (['CT', 'CT_HV', 'VT', 'VT_HV', 'RELAY', 'CUBICLE'].includes(type)) return 'Medium'
+  return 'Low'
+}
+
+// Determine dominant level for an equipment item
+function getDominantLevel(tests) {
+  const counts = {}
+  for (const [level] of tests) {
+    counts[level] = (counts[level] || 0) + 1
+  }
+  // Return level with most tests
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'L3'
+}
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 function getTests(item) {
@@ -78,23 +111,59 @@ function escapeCsv(val) {
   return str
 }
 
-// Generate date string offset from a base date
-function dateOffset(baseDate, days) {
-  const d = new Date(baseDate)
-  d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]  // YYYY-MM-DD format for Asana
+// Format date as MM/DD/YYYY (Asana requirement)
+function formatDate(date) {
+  const d = new Date(date)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${mm}/${dd}/${yyyy}`
 }
 
-// ─── SECTION NAME CLEANUP ────────────────────────────────────────────────────
+function addDays(date, days) {
+  const d = new Date(date)
+  d.setDate(d.getDate() + days)
+  return d
+}
+
+// Build test checklist for description field
+function buildChecklist(tests, item) {
+  const lines = []
+  lines.push(`━━━ TESTS (${tests.length}) ━━━`)
+
+  // Group by level
+  const byLevel = {}
+  for (const [level, name] of tests) {
+    if (!byLevel[level]) byLevel[level] = []
+    byLevel[level].push(name)
+  }
+
+  for (const level of ['L1', 'L2', 'L3', 'L4', 'L5']) {
+    if (!byLevel[level]) continue
+    lines.push('')
+    lines.push(`${LEVEL_LABELS[level] || level}:`)
+    for (const name of byLevel[level]) {
+      lines.push(`☐ ${name}`)
+    }
+  }
+
+  lines.push('')
+  lines.push('━━━ INFO ━━━')
+  lines.push(`Equipment Type: ${getTypeName(item.type)}`)
+  if (WITNESS_TYPES.has(item.type)) lines.push('⚠️ CxA Witnessing Required')
+
+  return lines.join('\n')
+}
+
+// Clean section name for Asana
 function cleanSectionName(feederRef) {
-  // "MV Switchgear — 01A Incomer" → "01A Incomer"
-  // "Transformer Bay" → "Transformer Bay"
-  // "MV Switchgear — Overall" → "Switchgear Overall"
   const dashIdx = feederRef.indexOf(' \u2014 ')
   if (dashIdx >= 0) {
-    const section = feederRef.slice(0, dashIdx)
     const sub = feederRef.slice(dashIdx + 3)
-    if (sub === 'Overall') return `${section} - Overall`
+    if (sub === 'Overall') {
+      const section = feederRef.slice(0, dashIdx)
+      return `${section} — Overall`
+    }
     return sub
   }
   return feederRef
@@ -104,8 +173,9 @@ function cleanSectionName(feederRef) {
 export function generateAsanaCSV(equipmentData, projectName, projectConfig = {}) {
   if (!equipmentData || equipmentData.length === 0) return null
 
-  const baseDate = new Date()  // Start from today
-  
+  const startDate = new Date()  // Base: today
+  startDate.setDate(startDate.getDate() + 1) // Start tomorrow
+
   // Group equipment by feeder_ref
   const feederGroups = {}
   for (const item of equipmentData) {
@@ -122,123 +192,103 @@ export function generateAsanaCSV(equipmentData, projectName, projectConfig = {})
     'Assignee',
     'Start Date',
     'Due Date',
-    'Parent Task',
+    'Dependents',
     'Level',
     'Priority',
     'Status',
-    'Equipment',
-    'Section Group',
+    'Equipment Type',
+    'Witness Required',
+    '% Complete',
   ]
 
   const rows = []
-  let totalTests = 0
   let totalEquipment = 0
-  let dayOffset = 0  // Rolling day offset for timeline
+  let totalTests = 0
+  let currentDate = new Date(startDate)
 
-  // ─── MILESTONES (at top) ───
+  // ─── MILESTONES (first section) ───
+  const msSection = 'Milestones'
   const milestones = [
-    { name: '🏁 Commissioning Kickoff', dayOffset: 0 },
-    { name: '📋 All L2 Documentation Complete', dayOffset: 14 },
-    { name: '⚡ L3 SAT Complete', dayOffset: 56 },
-    { name: '🔗 L4 Integration Complete', dayOffset: 70 },
-    { name: '🟢 Ready for Energization (C2E)', dayOffset: 77 },
-    { name: '⚡ ENERGIZATION', dayOffset: 84 },
-    { name: '✅ Declaration of Fitness (DOF)', dayOffset: 91 },
+    { name: '🏁 Commissioning Kickoff', offset: 0 },
+    { name: '📋 L2 Pre-SAT Documentation Complete', offset: 14 },
+    { name: '⚡ L3 SAT Testing Complete', offset: 49 },
+    { name: '🔗 L4 Integration & FPT Complete', offset: 63 },
+    { name: '🟢 C2E — Ready for Energization', offset: 70 },
+    { name: '⚡ SUBSTATION ENERGIZED', offset: 77 },
+    { name: '✅ Declaration of Fitness (DOF)', offset: 84 },
   ]
 
-  // Add milestones section
   for (const ms of milestones) {
+    const msDate = addDays(startDate, ms.offset)
     rows.push({
       name: ms.name,
       description: '',
-      section: 'Milestones',
+      section: msSection,
       assignee: '',
-      startDate: '',
-      dueDate: dateOffset(baseDate, ms.dayOffset),
-      parentTask: '',
+      startDate: formatDate(msDate),
+      dueDate: formatDate(msDate),  // Same date = milestone diamond
+      dependents: '',
       level: '',
       priority: 'High',
       status: 'Not Started',
-      equipment: '',
-      sectionGroup: 'Milestones',
+      equipType: '',
+      witness: '',
+      percent: '0',
     })
   }
 
-  // ─── EQUIPMENT TASKS ───
+  // ─── EQUIPMENT TASKS (per section) ───
+  let sectionDayOffset = 0
+
   for (const [feederRef, items] of Object.entries(feederGroups)) {
     const sectionName = cleanSectionName(feederRef)
-    
-    // Determine section group (top-level section name before " — ")
-    const dashIdx = feederRef.indexOf(' \u2014 ')
-    const sectionGroup = dashIdx >= 0 ? feederRef.slice(0, dashIdx) : feederRef
-
-    // Level offsets for this section (stagger across timeline)
-    const levelStartDay = {
-      L1: dayOffset,
-      L2: dayOffset + 7,
-      L3: dayOffset + 14,
-      L4: dayOffset + 42,
-      L5: dayOffset + 56,
-    }
+    let taskDayOffset = sectionDayOffset
 
     for (const item of items) {
       const equipName = getEquipName(item)
       const tests = getTests(item)
-      const typeName = getTypeName(item.type)
+      const testCount = tests.length
+      const duration = getDuration(item, testCount)
+      const dominantLevel = getDominantLevel(tests)
       totalEquipment++
+      totalTests += testCount
 
-      // Count tests per level for duration calculation
-      const levelCounts = {}
-      for (const [lvl] of tests) {
-        levelCounts[lvl] = (levelCounts[lvl] || 0) + 1
-      }
+      const taskStart = addDays(startDate, taskDayOffset)
+      const taskEnd = addDays(startDate, taskDayOffset + duration)
 
-      // Parent task (equipment item)
-      const parentStartDay = Math.min(...Object.keys(levelCounts).map(l => levelStartDay[l] || dayOffset))
-      const parentEndDay = Math.max(...Object.keys(levelCounts).map(l => (levelStartDay[l] || dayOffset) + (levelCounts[l] || 1) * 2))
+      // Build rich description with test checklist
+      const description = buildChecklist(tests, item)
 
       rows.push({
         name: equipName,
-        description: `${typeName} — ${tests.length} tests across ${Object.keys(levelCounts).length} levels\nSection: ${sectionGroup}\nFeeder: ${sectionName}`,
+        description: description,
         section: sectionName,
         assignee: '',
-        startDate: dateOffset(baseDate, parentStartDay),
-        dueDate: dateOffset(baseDate, parentEndDay),
-        parentTask: '',
-        level: '',
-        priority: 'Medium',
+        startDate: formatDate(taskStart),
+        dueDate: formatDate(taskEnd),
+        dependents: '',
+        level: LEVEL_LABELS[dominantLevel] || dominantLevel,
+        priority: getPriority(item.type),
         status: 'Not Started',
-        equipment: typeName,
-        sectionGroup: sectionGroup,
+        equipType: getTypeName(item.type),
+        witness: WITNESS_TYPES.has(item.type) ? 'Yes' : 'No',
+        percent: '0',
       })
 
-      // Subtasks (individual tests)
-      let testIdx = 0
-      for (const [level, testName, testSheet] of tests) {
-        totalTests++
-        const testStartDay = (levelStartDay[level] || dayOffset) + testIdx * 2
-        const testDueDay = testStartDay + 1
-
-        rows.push({
-          name: `${LEVEL_SHORT[level] || level} │ ${testName}`,
-          description: testSheet ? `Test sheet: ${testSheet}` : '',
-          section: sectionName,
-          assignee: '',
-          startDate: dateOffset(baseDate, testStartDay),
-          dueDate: dateOffset(baseDate, testDueDay),
-          parentTask: equipName,
-          level: LEVEL_LABELS[level] || level,
-          priority: level === 'L5' ? 'High' : level === 'L4' ? 'Medium' : 'Low',
-          status: 'Not Started',
-          equipment: typeName,
-          sectionGroup: sectionGroup,
-        })
-        testIdx++
-      }
+      // Stagger next task (overlap slightly for parallel work)
+      taskDayOffset += Math.max(1, duration - 1)
     }
 
-    // Offset next section forward in timeline
-    dayOffset += 7
+    // Next section starts after current one (with 1 day gap)
+    sectionDayOffset = taskDayOffset + 1
+  }
+
+  // ─── Add dependencies between milestones ───
+  // (Milestones depend on prior milestone — creates timeline flow)
+  // Note: "Dependents" column = tasks that THIS task blocks (i.e. tasks below it that depend on it)
+  // So milestone 1 has dependent = milestone 2's name
+  for (let i = 0; i < milestones.length - 1; i++) {
+    rows[i].dependents = milestones[i + 1].name
   }
 
   // ─── BUILD CSV ───
@@ -251,12 +301,13 @@ export function generateAsanaCSV(equipmentData, projectName, projectConfig = {})
       escapeCsv(row.assignee),
       escapeCsv(row.startDate),
       escapeCsv(row.dueDate),
-      escapeCsv(row.parentTask),
+      escapeCsv(row.dependents),
       escapeCsv(row.level),
       escapeCsv(row.priority),
       escapeCsv(row.status),
-      escapeCsv(row.equipment),
-      escapeCsv(row.sectionGroup),
+      escapeCsv(row.equipType),
+      escapeCsv(row.witness),
+      escapeCsv(row.percent),
     ].join(','))
   }
 
@@ -279,5 +330,6 @@ export function generateAsanaCSV(equipmentData, projectName, projectConfig = {})
     totalRows: rows.length,
     sections: Object.keys(feederGroups).length,
     milestones: milestones.length,
+    timespan: `${sectionDayOffset} days`,
   }
 }

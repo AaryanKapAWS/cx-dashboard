@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Connecting to Asana...</title>
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #0f172a; color: #fff; }
+    .card { text-align: center; padding: 40px; background: #1e293b; border-radius: 12px; max-width: 400px; }
+    h2 { margin: 0 0 8px; font-size: 18px; }
+    p { color: #94a3b8; font-size: 13px; margin: 0; }
+    .success { color: #4ade80; }
+    .error { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="title">Connecting to Asana...</h2>
+    <p id="message">Please wait</p>
+  </div>
+  <script>
+    // Extract auth code from URL params
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+
+    if (error) {
+      document.getElementById('title').textContent = 'Connection Failed';
+      document.getElementById('title').className = 'error';
+      document.getElementById('message').textContent = error;
+    } else if (code) {
+      // Store code for the main app to pick up
+      localStorage.setItem('asana_auth_code', code);
+      document.getElementById('title').textContent = '✓ Connected!';
+      document.getElementById('title').className = 'success';
+      document.getElementById('message').textContent = 'You can close this tab and return to the dashboard.';
+      // Try to close this tab after a moment (may be blocked by browser)
+      setTimeout(() => { window.close(); }, 2000);
+    } else {
+      document.getElementById('title').textContent = 'No auth code received';
+      document.getElementById('title').className = 'error';
+      document.getElementById('message').textContent = 'Try connecting again from the dashboard.';
+    }
+  </script>
+</body>
+</html>
