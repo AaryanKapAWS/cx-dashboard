@@ -290,7 +290,7 @@ const ALLOWED_CHILDREN = {
 }
 
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
-export default function BayBuilder({ onSubmit, onSectionChange }) {
+export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }) {
   const [lines, setLines] = useState(() => {
     try { return JSON.parse(localStorage.getItem('bay_tree_v5')) || [] } catch { return [] }
   })
@@ -308,13 +308,31 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
 
   useEffect(() => { localStorage.setItem('bay_tree_v5', JSON.stringify(lines)) }, [lines])
 
-  // Notify parent of active section for Equipment Register filtering
+  // Auto-select first line on mount if none selected
+  useEffect(() => {
+    if (!selectedLine && lines.length > 0) setSelectedLine(lines[0].id)
+  }, [lines.length])
+
+  // Notify parent of active section
   useEffect(() => {
     if (onSectionChange) {
       const line = findInTree(lines, selectedLine)
       onSectionChange(line ? line.name : null)
     }
   }, [selectedLine, lines])
+
+  // Notify parent when a feeder is selected (so Equipment Register can sync tab)
+  useEffect(() => {
+    if (onFeederChange) {
+      if (selectedFeeder) {
+        const line = findInTree(lines, selectedLine)
+        const feeder = line && (line.feeders || []).find(f => f.id === selectedFeeder)
+        onFeederChange(feeder ? `${feeder.ref} ${feeder.name}`.trim() : null)
+      } else {
+        onFeederChange(null)
+      }
+    }
+  }, [selectedFeeder, selectedLine, lines])
 
   // Flatten → equipment list for COR
   useEffect(() => {
@@ -650,7 +668,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 0, background: '#fff', borderRadius: 10, border: '1px solid #e2e8f0', overflow: 'hidden', minWidth: 640, maxHeight: 'calc(100vh - 200px)' }}>
+    <div style={{ display: 'flex', gap: 0, background: '#fff', borderRadius: 10, border: '1px solid #e2e8f0', overflow: 'hidden', minWidth: 640, height: 'calc(100vh - 200px)' }}>
 
       {/* ═══ LEFT PANEL: TREE ═══ */}
       <div style={{ width: scopeCollapsed ? 44 : 380, minWidth: scopeCollapsed ? 44 : 320, flexShrink: 0, borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', transition: 'width 0.2s ease', overflow: 'hidden' }}>
@@ -721,7 +739,7 @@ export default function BayBuilder({ onSubmit, onSectionChange }) {
 
         {/* Add Line buttons */}
         {!scopeCollapsed && (
-        <div style={{ padding: '10px 14px', borderTop: '1px solid #e2e8f0', background: '#fafbfc', flexShrink: 0 }}>
+        <div style={{ padding: '10px 14px', borderTop: '1px solid #e2e8f0', background: '#fafbfc', flexShrink: 0, maxHeight: '45vh', overflowY: 'auto' }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Add Section</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {LINE_PRESETS.filter(p => p.id !== 'blank').map(p => (

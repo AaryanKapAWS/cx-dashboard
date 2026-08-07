@@ -65,7 +65,10 @@ export default function SLDViewer({ equipment }) {
       }
       if (!INLINE_TYPES.has(item.type)) return
 
-      if (!sectionMap[sectionName]) sectionMap[sectionName] = { name: sectionName, overall: [], feeders: {}, sectionType: item.section || '' }
+      if (!sectionMap[sectionName]) sectionMap[sectionName] = { name: sectionName, overall: [], feeders: {}, sectionType: '' }
+      // Prefer section type from overall items; fall back to feeder items
+      if (item.section && (!sectionMap[sectionName].sectionType || !feederName)) sectionMap[sectionName].sectionType = item.section
+
       if (feederName) {
         if (!sectionMap[sectionName].feeders[feederName]) sectionMap[sectionName].feeders[feederName] = []
         sectionMap[sectionName].feeders[feederName].push(item)
@@ -77,8 +80,12 @@ export default function SLDViewer({ equipment }) {
     const spines = []
     const switchgears = []
     Object.values(sectionMap).forEach(sec => {
-      if (Object.keys(sec.feeders).length > 0) switchgears.push(sec)
-      else if (sec.overall.length > 0) spines.push(sec)
+      const preset = sec.sectionType || ''
+      const isSwitchgearType = preset === 'switchgear' || preset === 'hv_switchgear_gis' || preset === 'panel_board'
+      // Switchgear-type sections with feeders → render as busbar + cubicles
+      if (isSwitchgearType && Object.keys(sec.feeders).length > 0) switchgears.push(sec)
+      // Everything with overall items → render as spine (transformer bays, line bays, standalone)
+      if (sec.overall.length > 0) spines.push(sec)
     })
     return { spines, switchgears, panelCounts }
   }, [equipment])

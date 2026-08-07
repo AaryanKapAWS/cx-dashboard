@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import testTemplates from '../data/test_templates.json'
 import TestCustomiser from './TestCustomiser'
 
@@ -45,8 +45,15 @@ function getDisplayName(item) {
   return item.name || TYPE_LABELS[item.type] || item.type
 }
 
-export default function EquipmentTable({ equipment, sectionName: sectionNameProp, selectedIndex, onSelect, onRemove, onUpdateTests, onRename }) {
+export default function EquipmentTable({ equipment, sectionName: sectionNameProp, activeFeederTab, selectedIndex, onSelect, onRemove, onUpdateTests, onRename }) {
   const [activeFeeder, setActiveFeeder] = useState({})
+
+  // Sync active tab when parent tells us which feeder was selected in scope tree
+  useEffect(() => {
+    if (activeFeederTab && sectionNameProp) {
+      setActiveFeeder(prev => ({ ...prev, [sectionNameProp]: activeFeederTab }))
+    }
+  }, [activeFeederTab, sectionNameProp])
 
   // ─── GROUPING LOGIC ───────────────────────────────────────────────────────────
   // Determine the "root" section — the common parent of all items in the list.
@@ -87,11 +94,15 @@ export default function EquipmentTable({ equipment, sectionName: sectionNameProp
       const ref = item.feeder_ref || ''
       const dashIdx = ref.indexOf(' \u2014 ')
       const feederPart = dashIdx >= 0 ? ref.slice(dashIdx + 3) : ''
-      
+
       if (feederPart) {
-        // Has a feeder part (MV Switchgear feeder OR "Overall" group)
-        if (!tabGroups[feederPart]) tabGroups[feederPart] = []
-        tabGroups[feederPart].push(enriched)
+        // "Overall" items belong flat under the section header, not as a tab
+        if (feederPart === 'Overall') {
+          overall.push(enriched)
+        } else {
+          if (!tabGroups[feederPart]) tabGroups[feederPart] = []
+          tabGroups[feederPart].push(enriched)
+        }
       } else {
         // Pure parent item, no sub-group
         overall.push(enriched)

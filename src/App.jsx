@@ -33,6 +33,7 @@ export default function App() {
   const [baySelectedRow, setBaySelectedRow] = useState(null)
   const [uploadMode, setUploadMode] = useState('section') // 'section' or 'individual'
   const [bayActiveSection, setBayActiveSection] = useState(null) // name of selected section for filtering register
+  const [bayActiveFeederTab, setBayActiveFeederTab] = useState(null) // feeder tab to sync in Equipment Register
 
   // ── Shared state ──
   const [toast, setToast] = useState(null)
@@ -52,18 +53,13 @@ export default function App() {
 
   // Get active equipment based on mode
   const activeEquipment = mode === 'bay'
-    ? (bayActiveSection
-      ? bayEquipment.filter(item => {
-          // Show items that:
-          // 1. Are top-level items of this section (no parent, feeder_ref starts with section name)
-          // 2. ARE this section (child_section matches — these are the section's own items when it's a child)
-          // 3. Are direct children of this section (parent_section === bayActiveSection)
-          const isTopLevelOwn = !item.parent_section && (item.feeder_ref || '').split(' \u2014 ')[0] === bayActiveSection
-          const isThisSection = item.child_section === bayActiveSection
-          const isDirectChild = item.parent_section === bayActiveSection
-          return isTopLevelOwn || isThisSection || isDirectChild
-        })
-      : bayEquipment)
+    ? bayEquipment.filter(item => {
+        if (!bayActiveSection) return false
+        // Show items that belong directly to the selected section (not its children)
+        const sectionPart = (item.feeder_ref || '').split(' \u2014 ')[0]
+        // Match: section's own items OR items whose child_section is this section (they ARE in this section)
+        return sectionPart === bayActiveSection || item.child_section === bayActiveSection
+      })
     : equipment
   const setActiveEquipment = mode === 'bay' ? setBayEquipment : setEquipment
   const activeSelectedRow = mode === 'bay' ? baySelectedRow : selectedRow
@@ -287,7 +283,7 @@ export default function App() {
               {mode === 'section' ? (
                 <SectionBuilder onSubmit={(items) => { setEquipment(items); setSelectedRow(null) }} />
               ) : (
-                <BayBuilder onSubmit={(items) => { setBayEquipment(items); setBaySelectedRow(null) }} onSectionChange={setBayActiveSection} />
+                <BayBuilder onSubmit={(items) => { setBayEquipment(items); setBaySelectedRow(null) }} onSectionChange={setBayActiveSection} onFeederChange={setBayActiveFeederTab} />
               )}
             </div>
 
@@ -296,6 +292,7 @@ export default function App() {
               <EquipmentTable
                 equipment={activeEquipment}
                 sectionName={mode === 'bay' ? bayActiveSection : null}
+                activeFeederTab={mode === 'bay' ? bayActiveFeederTab : null}
                 selectedIndex={activeSelectedRow}
                 onSelect={setActiveSelectedRow}
                 onUpdateTests={handleUpdateTests}
