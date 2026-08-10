@@ -7,14 +7,16 @@ const SECTIONS = [
     content: `
 **The HV Substation Commissioning Tool automates COR (Commissioning Outstanding Register) generation.**
 
-You define your scope → the tool generates a complete, formatted Excel COR in one click.
+You define your commissioning scope → the tool generates a COR, Procore upload, and Asana project.
 
 **Core Workflow:**
 
-1. **Add Sections** — Transformer Bay, Switchgear, Panel Board, Cables, etc.
-2. **Configure Equipment** — Select feeder types, tick/untick equipment per feeder
-3. **Customise Tests** — Click any item to expand and enable/disable individual tests
-4. **Generate COR** — Downloads a formatted .xlsx with all sheets, formulas, and a live Gantt
+1. **Add Sections** — Transformer Bay, Switchgear, Line Bay, Battery & DC, Earthing, etc. (13 presets)
+2. **Configure Equipment** — Add/remove equipment, set quantities, rename items
+3. **Customise Tests** — Click any item to expand and tick/untick individual tests
+4. **Generate COR** — Downloads formatted .xlsx with all sheets, formulas, and Gantt
+5. **View SLD** — Interactive single-line diagram with collapsible sections and test info
+6. **Export** — Procore .xlsm upload or Asana project with milestones and tasks
 
 **What the COR Contains:**
 
@@ -282,22 +284,22 @@ Detailed test results live in attached .xlsx foundational scripts (filled on sit
     content: `
 **Latest Changes:**
 
-• Cell-based Gantt (replaces static chart objects) — live formula-driven bars
-• Test customisation — tick/untick individual tests per equipment
+• Bay Builder is now the sole mode (Section Builder removed)
+• SLD Viewer v2 — collapsible sections, all equipment visible, test detail drill-down
+• GIS switchgear support (17 GIS equipment types, 7 feeder presets)
+• 56 equipment types, 234+ test definitions across L1–L5
+• Asana integration — OAuth flow + project builder (token pending)
+• Procore .xlsm generator (JSZip approach, preserves VBA + formatting)
+• Cell-based Gantt with live formulas
+• Test customisation per item (tick/untick individual tests)
 • Editable equipment names inline
-• Multiple section instances (add 3× Switchgear etc.)
-• COR format matched to NCL060HV standard (20 columns)
-• Procore upload generator (functional, .xlsm output)
-• Section-based feeder defaults auto-tick
 
 **Known Issues / TODO:**
 
-• Gantt chart titles may show numeric indices instead of section names (shared string resolution)
-• Procore sandbox bot not processing uploaded .xlsm files
-• Switchgear/Relay foundational scripts not yet finalised by CxP
-• Panel Board section templates need validation (IB-ROOM-A style)
-• Dashboard app styling needs professional colour pass
-• Git PAT may have expired (check before pushing)
+• Asana API token — ticket submitted, awaiting engineering (~3 weeks)
+• Procore upload testing — waiting on sandbox access
+• SLD Viewer — visual redesign in progress
+• Dashboard styling/branding pass pending
 
 **Test Template Sources:**
 

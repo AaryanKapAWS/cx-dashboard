@@ -191,6 +191,15 @@ const LINE_PRESETS = [
     ]
   },
   {
+    id: 'bus_section', label: 'Bus Section', colour: '#1a5276',
+    hasChildren: false,
+    defaults: [
+      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 4 },
+      { type: 'CT_HV', qty: 2 }, { type: 'BUSBAR', qty: 1 },
+      { type: 'ENERGIZATION', qty: 1 },
+    ]
+  },
+  {
     id: 'switchgear', label: 'Switchgear', colour: '#27ae60',
     hasChildren: true, // This one uses feeders (children)
     hasSubtype: true,  // Prompts for AIS/GIS when adding
@@ -278,6 +287,7 @@ const LINE_PRESETS = [
 const ALLOWED_CHILDREN = {
   transformer_bay: ['protection', 'cables', 'blank'],
   line_bay: ['protection', 'cables', 'blank'],
+  bus_section: ['blank'],
   switchgear: ['cables', 'blank'],
   panel_board: ['blank'],
   protection: ['blank'],

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import EquipmentTable from './components/EquipmentTable'
-import SectionBuilder from './components/SectionBuilder'
 import BayBuilder from './components/BayBuilder'
 import DocsReference from './components/DocsReference'
 import SLDViewer from './components/SLDViewer'
@@ -10,30 +9,17 @@ import { generateAsanaCSV } from './utils/asanaExporter'
 import { isConnected, openAsanaAuth, exchangeCode, clearToken, getStoredToken } from './utils/asanaAPI'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
 
-// ─── TOP-LEVEL MODES ────────────────────────────────────────────────────────
-const MODES = {
-  bay: { label: 'Option 1: Bay Builder', desc: 'Topology-based — add bays to busbar', colour: '#8e44ad' },
-  section: { label: 'Option 2: Section Builder', desc: 'Section-based — auto-populated defaults', colour: '#FF9900' },
-}
-
 export default function App() {
-  const [mode, setMode] = useState(() => localStorage.getItem('app_mode') || 'bay')
   const [tab, setTab] = useState('builder')
 
-  // ── Section Builder state (Option 2) ──
+  // ── Equipment state ──
   const [equipment, setEquipment] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cor_equipment')) || [] } catch { return [] }
-  })
-  const [selectedRow, setSelectedRow] = useState(null)
-
-  // ── Bay Builder state (Option 1) ──
-  const [bayEquipment, setBayEquipment] = useState(() => {
     try { return JSON.parse(localStorage.getItem('bay_equipment')) || [] } catch { return [] }
   })
-  const [baySelectedRow, setBaySelectedRow] = useState(null)
+  const [selectedRow, setSelectedRow] = useState(null)
   const [uploadMode, setUploadMode] = useState('section') // 'section' or 'individual'
-  const [bayActiveSection, setBayActiveSection] = useState(null) // name of selected section for filtering register
-  const [bayActiveFeederTab, setBayActiveFeederTab] = useState(null) // feeder tab to sync in Equipment Register
+  const [activeSection, setActiveSection] = useState(null) // name of selected section for filtering register
+  const [activeFeederTab, setActiveFeederTab] = useState(null) // feeder tab to sync in Equipment Register
 
   // ── Shared state ──
   const [toast, setToast] = useState(null)
@@ -43,58 +29,39 @@ export default function App() {
   const [projectRegion, setProjectRegion] = useState(() => localStorage.getItem('cor_region') || 'EMEA')
 
   // Auto-save
-  useEffect(() => { localStorage.setItem('app_mode', mode) }, [mode])
-  useEffect(() => { localStorage.setItem('cor_equipment', JSON.stringify(equipment)) }, [equipment])
-  useEffect(() => { localStorage.setItem('bay_equipment', JSON.stringify(bayEquipment)) }, [bayEquipment])
+  useEffect(() => { localStorage.setItem('bay_equipment', JSON.stringify(equipment)) }, [equipment])
   useEffect(() => { localStorage.setItem('cor_location', projectLocation) }, [projectLocation])
   useEffect(() => { localStorage.setItem('cor_fbnId', projectFbnId) }, [projectFbnId])
   useEffect(() => { localStorage.setItem('cor_projectName', projectName) }, [projectName])
   useEffect(() => { localStorage.setItem('cor_region', projectRegion) }, [projectRegion])
 
-  // Get active equipment based on mode
-  const activeEquipment = mode === 'bay'
-    ? bayEquipment.filter(item => {
-        if (!bayActiveSection) return false
-        // Show items that belong directly to the selected section (not its children)
-        const sectionPart = (item.feeder_ref || '').split(' \u2014 ')[0]
-        // Match: section's own items OR items whose child_section is this section (they ARE in this section)
-        return sectionPart === bayActiveSection || item.child_section === bayActiveSection
-      })
-    : equipment
-  const setActiveEquipment = mode === 'bay' ? setBayEquipment : setEquipment
-  const activeSelectedRow = mode === 'bay' ? baySelectedRow : selectedRow
-  const setActiveSelectedRow = mode === 'bay' ? setBaySelectedRow : setSelectedRow
-
-  function handleRename(equipIdx, newName) {
-    setActiveEquipment(prev => prev.map((item, i) =>
-      i === equipIdx ? { ...item, displayName: newName } : item
-    ))
-  }
+  // Get active equipment filtered by selected section
+  const activeEquipment = equipment.filter(item => {
+    if (!activeSection) return false
+    const sectionPart = (item.feeder_ref || '').split(' \u2014 ')[0]
+    return sectionPart === activeSection || item.child_section === activeSection
+  })
 
   function handleUpdateTests(equipIdx, newTests) {
-    setActiveEquipment(prev => prev.map((item, i) =>
+    setEquipment(prev => prev.map((item, i) =>
       i === equipIdx ? { ...item, customTests: newTests } : item
     ))
   }
 
   async function handleGenerateCOR() {
-    // Always use FULL equipment list (not filtered by selected section)
-    const allEquipment = mode === 'bay' ? bayEquipment : equipment
-    if (allEquipment.length === 0) {
-      setToast({ message: '⚠ No equipment to export — add items first' })
+    if (equipment.length === 0) {
+      setToast({ message: '\u26a0 No equipment to export \u2014 add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
-    const result = await generateCOR(allEquipment, projectName || 'HV Substation')
-    setToast({ message: `✓ COR exported — ${result.totalTests} tests across ${result.sections} sections` })
+    const result = await generateCOR(equipment, projectName || 'HV Substation')
+    setToast({ message: `\u2713 COR exported \u2014 ${result.totalTests} tests across ${result.sections} sections` })
     setTimeout(() => setToast(null), 5000)
   }
 
   async function handleGenerateUpload() {
-    // Always use FULL equipment list for upload too
-    const allEquipment = mode === 'bay' ? bayEquipment : equipment
-    if (allEquipment.length === 0) {
-      setToast({ message: '⚠ No equipment to export — add items first' })
+    if (equipment.length === 0) {
+      setToast({ message: '\u26a0 No equipment to export \u2014 add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
@@ -105,22 +72,20 @@ export default function App() {
       region: projectRegion,
       mode: uploadMode,
     }
-    const result = await generateInspectionUpload(allEquipment, projectConfig)
-    setToast({ message: `✓ Upload file exported — ${result.inspections} inspections` })
+    const result = await generateInspectionUpload(equipment, projectConfig)
+    setToast({ message: `\u2713 Upload file exported \u2014 ${result.inspections} inspections` })
     setTimeout(() => setToast(null), 5000)
   }
 
   // ─── ASANA INTEGRATION ───
   const [asanaConnected, setAsanaConnected] = useState(() => isConnected())
-  const [asanaProgress, setAsanaProgress] = useState(null) // { step, total, message }
+  const [asanaProgress, setAsanaProgress] = useState(null)
 
   function handleAsanaConnect() {
-    // Clear any old auth code
     localStorage.removeItem('asana_auth_code')
     openAsanaAuth()
-    setToast({ message: '🔗 Asana auth opened — approve and return here' })
+    setToast({ message: '\ud83d\udd17 Asana auth opened \u2014 approve and return here' })
     setTimeout(() => setToast(null), 5000)
-    // Poll for the auth code (stored by the /auth callback page)
     const pollInterval = setInterval(async () => {
       const code = localStorage.getItem('asana_auth_code')
       if (code) {
@@ -129,15 +94,14 @@ export default function App() {
         try {
           await exchangeCode(code)
           setAsanaConnected(true)
-          setToast({ message: '✓ Connected to Asana!' })
+          setToast({ message: '\u2713 Connected to Asana!' })
           setTimeout(() => setToast(null), 4000)
         } catch (err) {
-          setToast({ message: `⚠ Asana auth failed: ${err.message}` })
+          setToast({ message: `\u26a0 Asana auth failed: ${err.message}` })
           setTimeout(() => setToast(null), 6000)
         }
       }
     }, 1000)
-    // Stop polling after 5 minutes
     setTimeout(() => clearInterval(pollInterval), 300000)
   }
 
@@ -149,32 +113,30 @@ export default function App() {
   }
 
   async function handleAsanaCreateProject() {
-    const allEquipment = mode === 'bay' ? bayEquipment : equipment
-    if (allEquipment.length === 0) {
-      setToast({ message: '⚠ No equipment to export — add items first' })
+    if (equipment.length === 0) {
+      setToast({ message: '\u26a0 No equipment to export \u2014 add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
     if (!isConnected()) {
-      setToast({ message: '⚠ Connect to Asana first' })
+      setToast({ message: '\u26a0 Connect to Asana first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
     try {
       setAsanaProgress({ step: 0, total: 8, message: 'Starting...' })
       const result = await buildAsanaProject(
-        allEquipment,
+        equipment,
         projectName || 'HV Substation Commissioning',
         (progress) => setAsanaProgress(progress)
       )
       setAsanaProgress(null)
-      setToast({ message: `✓ Asana project created! ${result.totalTasks} tasks, ${result.sections} sections` })
+      setToast({ message: `\u2713 Asana project created! ${result.totalTasks} tasks, ${result.sections} sections` })
       setTimeout(() => setToast(null), 8000)
-      // Open project in new tab
       window.open(result.projectUrl, '_blank')
     } catch (err) {
       setAsanaProgress(null)
-      setToast({ message: `⚠ Asana error: ${err.message}` })
+      setToast({ message: `\u26a0 Asana error: ${err.message}` })
       setTimeout(() => setToast(null), 8000)
     }
   }
@@ -186,27 +148,9 @@ export default function App() {
         position: 'sticky', top: 0, zIndex: 1000,
         background: '#0f172a', borderBottom: '1px solid #1e293b',
       }}>
-        {/* Mode selector row */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: 44, borderBottom: '1px solid #1e293b', gap: 16 }}>
-          <div style={{ display: 'flex', gap: 0, background: '#1e293b', borderRadius: 6, padding: 3 }}>
-            {Object.entries(MODES).map(([key, m]) => (
-              <button key={key} onClick={() => { setMode(key); setTab('builder') }}
-                style={{
-                  padding: '6px 20px', fontSize: 12, fontWeight: 700,
-                  border: 'none',
-                  borderRadius: 4, background: mode === key ? m.colour : 'transparent',
-                  color: mode === key ? '#fff' : '#94a3b8',
-                  cursor: 'pointer', transition: 'all 0.2s',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#475569', fontSize: 10 }}>
-            HV Substation Commissioning Tool
-          </div>
+        {/* Title row */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: 44, borderBottom: '1px solid #1e293b' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>HV Substation Commissioning Tool</div>
         </div>
 
         {/* Sub-tabs row */}
@@ -214,7 +158,7 @@ export default function App() {
           <div style={{ display: 'flex', gap: 2 }}>
             <button onClick={() => setTab('builder')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
-              border: 'none', borderBottom: tab === 'builder' ? `2px solid ${MODES[mode].colour}` : '2px solid transparent',
+              border: 'none', borderBottom: tab === 'builder' ? '2px solid #FF9900' : '2px solid transparent',
               background: 'transparent', color: tab === 'builder' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>⚡ Scope & Export</button>
@@ -280,24 +224,20 @@ export default function App() {
           <div style={{ display: 'flex', margin: '16px 24px 16px 24px', gap: 16 }}>
             {/* Left: Builder */}
             <div style={{ flex: '1 1 50%', minWidth: 0, overflow: 'hidden' }}>
-              {mode === 'section' ? (
-                <SectionBuilder onSubmit={(items) => { setEquipment(items); setSelectedRow(null) }} />
-              ) : (
-                <BayBuilder onSubmit={(items) => { setBayEquipment(items); setBaySelectedRow(null) }} onSectionChange={setBayActiveSection} onFeederChange={setBayActiveFeederTab} />
-              )}
+              <BayBuilder onSubmit={(items) => { setEquipment(items); setSelectedRow(null) }} onSectionChange={setActiveSection} onFeederChange={setActiveFeederTab} />
             </div>
 
             {/* Right: Equipment Register + Export */}
             <div style={{ flex: '1 1 35%', minWidth: 0, overflow: 'hidden' }}>
               <EquipmentTable
                 equipment={activeEquipment}
-                sectionName={mode === 'bay' ? bayActiveSection : null}
-                activeFeederTab={mode === 'bay' ? bayActiveFeederTab : null}
-                selectedIndex={activeSelectedRow}
-                onSelect={setActiveSelectedRow}
+                sectionName={activeSection}
+                activeFeederTab={activeFeederTab}
+                selectedIndex={selectedRow}
+                onSelect={setSelectedRow}
                 onUpdateTests={handleUpdateTests}
-                onRename={mode === 'section' ? handleRename : null}
-                onRemove={mode === 'section' ? (idx) => setActiveEquipment(prev => prev.filter((_, i) => i !== idx)) : null}
+                onRename={null}
+                onRemove={null}
               />
 
               {/* Export buttons */}
@@ -360,7 +300,7 @@ export default function App() {
 
       {/* ═══ SLD VIEW TAB ═══ */}
       {tab === 'sld' && (
-        <SLDViewer equipment={mode === 'bay' ? bayEquipment : equipment} />
+        <SLDViewer equipment={equipment} />
       )}
 
       {/* ═══ DOCS TAB ═══ */}
