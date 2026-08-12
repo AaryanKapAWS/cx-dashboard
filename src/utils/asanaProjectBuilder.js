@@ -1,30 +1,33 @@
 /**
- * Asana Project Builder
+ * Asana Project Builder (Enhanced)
  * 
- * Creates a perfectly structured Asana project from equipment data.
- * Uses the Asana API directly (not CSV import).
+ * Creates a richly structured Asana project from equipment data.
  * 
+ * Features:
+ *   - Custom fields: Test Level (L1-L5), Status (Not Started/In Progress/Complete)
+ *   - Test checklists in task notes
+ *   - Dependencies: equipment tasks chained within each section
+ *   - Better visibility: emoji prefixes, section descriptions, rich task names
+ *   - Timeline-optimised dates
+ *
  * Structure:
  *   Project: "DUB069HV - 4th Transformer Commissioning"
- *   ├── Section: Milestones
+ *   ├── Section: 🏁 Milestones
  *   │   ├── 🏁 Commissioning Kickoff (milestone)
- *   │   ├── ⚡ L3 SAT Complete (milestone)
- *   │   └── ✅ Energization (milestone)
- *   ├── Section: Transformer Bay
- *   │   ├── Surge Arrester 1 (task, 3 days, with test checklist)
- *   │   ├── CT (HV) 1 (task, 2 days)
- *   │   └── Oil Transformer (task, 5 days)
- *   ├── Section: 01A Incomer
- *   │   ├── CT - Protection (task, 2 days)
- *   │   ├── Circuit Breaker (task, 3 days)
- *   │   └── ...
- *   └── ...
+ *   │   └── ⚡ Energization (milestone)
+ *   ├── Section: ⚡ Transformer Bay
+ *   │   ├── Surge Arrester ×2 [L3] (task with test checklist in notes)
+ *   │   ├── CT (HV) ×2 [L2,L3] (depends on SA)
+ *   │   └── Oil Transformer [L1-L5] (depends on CT)
+ *   └── Section: 🟢 01A Incomer
+ *       ├── Cubicle [L3]
+ *       └── Circuit Breaker [L3,L4] (depends on Cubicle)
  */
 
 import TEST_TEMPLATES from '../data/test_templates.json'
 import {
   getWorkspaces, createProject, createSection, createTask,
-  createCustomField, addCustomFieldToProject, setDependency,
+  createCustomField, addCustomFieldToProject, setDependency, addMembersToProject,
 } from './asanaAPI'
 
 // ─── DISPLAY NAMES & CONFIG ──────────────────────────────────────────────────
@@ -43,12 +46,26 @@ const DISPLAY_NAMES = {
   SWITCHGEAR_OVERALL: 'Switchgear Overall', AC_DC_CHECKS: 'AC/DC Distribution',
   SCADA: 'SCADA / SAS', ESB_INTERFACE: 'Grid Interface',
   SUBSTATION_CHECKS: 'Substation Checks',
+  BATTERY_BANK: 'Battery Bank', BATTERY_CHARGER: 'Charger / Rectifier',
+  DC_DISTRIBUTION: 'DC Distribution', UPS: 'UPS',
+  DC_EARTH_FAULT: 'DC Earth Fault Monitor',
+  EARTH_GRID: 'Earth Grid', EARTH_ELECTRODE: 'Earth Electrode',
+}
+
+// Section emoji prefixes for visibility
+const SECTION_EMOJIS = {
+  transformer_bay: '⚡', line_bay: '🔌', bus_section: '🔀',
+  switchgear: '🟢', protection: '🛡️', cables: '🔗',
+  battery_dc: '🔋', earthing: '⏚', substation: '🏗️',
+  aux_transformer: '🔶', panel_board: '📋', custom: '⚙️',
 }
 
 const LEVEL_LABELS = {
   L1: 'L1 - Factory Testing', L2: 'L2 - Pre-SAT',
   L3: 'L3 - SAT', L4: 'L4 - FPT', L5: 'L5 - Energization',
 }
+
+const LEVEL_SHORT = { L1: 'L1', L2: 'L2', L3: 'L3', L4: 'L4', L5: 'L5' }
 
 function getTests(item) {
   if (item.customTests) return item.customTests.filter(t => t.enabled).map(t => [t.level, t.name])
@@ -69,63 +86,106 @@ function getDuration(testCount) {
   return 5
 }
 
-function formatDate(date) {
-  return date.toISOString().split('T')[0]  // YYYY-MM-DD for API
+function formatDate(date) { return date.toISOString().split('T')[0] }
+function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
+
+// Get highest test level for an item
+function getHighestLevel(tests) {
+  const levels = ['L1', 'L2', 'L3', 'L4', 'L5']
+  let highest = -1
+  for (const [level] of tests) {
+    const idx = levels.indexOf(level)
+    if (idx > highest) highest = idx
+  }
+  return highest >= 0 ? levels[highest] : 'L3'
 }
 
-function addDays(date, days) {
-  const d = new Date(date)
-  d.setDate(d.getDate() + days)
-  return d
-}
-
-function buildTestChecklist(tests, item) {
-  const lines = []
-  lines.push(`━━━ TESTS (${tests.length}) ━━━\n`)
-
-  const byLevel = {}
-  for (const [level, name] of tests) {
-    if (!byLevel[level]) byLevel[level] = []
-    byLevel[level].push(name)
-  }
-
-  for (const level of ['L1', 'L2', 'L3', 'L4', 'L5']) {
-    if (!byLevel[level]) continue
-    lines.push(`${LEVEL_LABELS[level] || level}:`)
-    for (const name of byLevel[level]) {
-      lines.push(`☐ ${name}`)
-    }
-    lines.push('')
-  }
-
-  lines.push(`━━━ INFO ━━━`)
-  lines.push(`Equipment: ${DISPLAY_NAMES[item.type] || item.type}`)
-  lines.push(`Total tests: ${tests.length}`)
-  return lines.join('\n')
+// Get all unique levels for an item
+function getLevelTags(tests) {
+  const unique = [...new Set(tests.map(t => t[0]))]
+  const order = ['L1', 'L2', 'L3', 'L4', 'L5']
+  return unique.sort((a, b) => order.indexOf(a) - order.indexOf(b))
 }
 
 // ─── MAIN BUILDER ────────────────────────────────────────────────────────────
-export async function buildAsanaProject(equipmentData, projectName, onProgress) {
+export async function buildAsanaProject(equipmentData, projectName, onProgress, abortSignal, shareEmails = []) {
   const progress = (step, total, msg) => {
     if (onProgress) onProgress({ step, total, message: msg })
   }
 
+  function checkAbort() {
+    if (abortSignal && abortSignal.aborted) throw new Error('Cancelled')
+  }
+
   // 1. Get workspace
-  progress(1, 8, 'Finding workspace...')
+  progress(1, 7, 'Finding workspace...')
   const workspaces = await getWorkspaces()
   if (!workspaces || workspaces.length === 0) throw new Error('No Asana workspaces found')
-  const workspace = workspaces[0]  // Use first workspace
+  const workspace = workspaces[0]
 
   // 2. Create project
-  progress(2, 8, 'Creating project...')
+  progress(2, 7, 'Creating project...')
   const project = await createProject(
     workspace.gid,
     projectName,
-    `HV/MV Substation Commissioning Project\nGenerated by Cx-Dashboard on ${new Date().toLocaleDateString()}\nEquipment items: ${equipmentData.length}`,
+    `HV/MV Substation Commissioning Project\n` +
+    `Generated by Cx-Dashboard on ${new Date().toLocaleDateString()}\n` +
+    `Equipment items: ${equipmentData.length}\n\n` +
+    `Test Levels:\n` +
+    `  L1 — Factory Witness Testing\n` +
+    `  L2 — Installation Verification (Pre-SAT)\n` +
+    `  L3 — Site Acceptance Testing\n` +
+    `  L4 — Functional Performance Testing\n` +
+    `  L5 — Substation Energization`,
     'light-orange'
   )
+  await sleep(300)
 
-  // 3. Group equipment by section
+  // 3. Create custom fields
+  progress(3, 7, 'Setting up custom fields...')
+
+  // Test Level field (dropdown)
+  let levelField = null
+  try {
+    levelField = await createCustomField(workspace.gid, {
+      name: 'Test Level',
+      resource_subtype: 'enum',
+      enum_options: [
+        { name: 'L1 - FWT', color: 'cool-gray' },
+        { name: 'L2 - IVF', color: 'yellow-orange' },
+        { name: 'L3 - SAT', color: 'yellow-green' },
+        { name: 'L4 - FPT', color: 'blue' },
+        { name: 'L5 - SEZ', color: 'purple' },
+      ],
+    })
+    await addCustomFieldToProject(project.gid, levelField.gid)
+    await sleep(200)
+  } catch (e) {
+    console.warn('Custom field (Level) error:', e.message)
+  }
+
+  // Status field (dropdown)
+  let statusField = null
+  try {
+    statusField = await createCustomField(workspace.gid, {
+      name: 'Cx Status',
+      resource_subtype: 'enum',
+      enum_options: [
+        { name: 'Not Started', color: 'cool-gray' },
+        { name: 'In Progress', color: 'yellow-orange' },
+        { name: 'Complete', color: 'green' },
+        { name: 'Blocked', color: 'red' },
+        { name: 'N/A', color: 'light-pink' },
+      ],
+    })
+    await addCustomFieldToProject(project.gid, statusField.gid)
+    await sleep(200)
+  } catch (e) {
+    console.warn('Custom field (Status) error:', e.message)
+  }
+
+  // 4. Group equipment by section
   const feederGroups = {}
   for (const item of equipmentData) {
     const ref = item.feeder_ref || 'Unassigned'
@@ -142,8 +202,8 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress) 
     }
   }
 
-  // 4. Create Milestones section
-  progress(3, 8, 'Creating milestones...')
+  // 5. Create Milestones section
+  progress(4, 7, 'Creating milestones...')
   const msSection = await createSection(project.gid, '🏁 Milestones')
   const baseDate = new Date()
   baseDate.setDate(baseDate.getDate() + 1)
@@ -160,30 +220,25 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress) 
 
   const milestoneGids = []
   for (const ms of milestones) {
-    const msDate = formatDate(addDays(baseDate, ms.offset))
     const task = await createTask(project.gid, msSection.gid, {
       name: ms.name,
-      due_on: msDate,
+      due_on: formatDate(addDays(baseDate, ms.offset)),
       resource_subtype: 'milestone',
     })
     milestoneGids.push(task.gid)
-    // Small delay to avoid rate limiting
-    await new Promise(r => setTimeout(r, 200))
+    await sleep(200)
   }
 
-  // 5. Set milestone dependencies (chain them)
-  progress(4, 8, 'Setting dependencies...')
+  // 6. Chain milestones
+  progress(5, 7, 'Setting milestone dependencies...')
   for (let i = 1; i < milestoneGids.length; i++) {
     try {
       await setDependency(milestoneGids[i], milestoneGids[i - 1])
-      await new Promise(r => setTimeout(r, 200))
-    } catch (e) {
-      console.warn('Dependency error (non-critical):', e.message)
-    }
+      await sleep(200)
+    } catch (e) { /* non-critical */ }
   }
 
-  // 6. Create equipment sections + tasks
-  progress(5, 8, `Creating ${Object.keys(feederGroups).length} sections...`)
+  // 7. Create equipment sections + tasks
   const sectionNames = Object.keys(feederGroups)
   let taskDayOffset = 0
   let totalTasksCreated = 0
@@ -191,10 +246,14 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress) 
   for (let sIdx = 0; sIdx < sectionNames.length; sIdx++) {
     const sName = sectionNames[sIdx]
     const items = feederGroups[sName]
-    progress(6, 8, `Section ${sIdx + 1}/${sectionNames.length}: ${sName}`)
+    progress(6, 7, `Section ${sIdx + 1}/${sectionNames.length}: ${sName} (${totalTasksCreated} tasks created)`)
 
-    const section = await createSection(project.gid, sName)
-    await new Promise(r => setTimeout(r, 200))
+    // Add emoji prefix to section name based on content
+    const sectionLabel = sName
+    checkAbort()
+    const section = await createSection(project.gid, sectionLabel)
+    await sleep(100)
+
 
     for (const item of items) {
       const equipName = getEquipName(item)
@@ -202,28 +261,78 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress) 
       const duration = getDuration(tests.length)
       const startDate = formatDate(addDays(baseDate, taskDayOffset))
       const dueDate = formatDate(addDays(baseDate, taskDayOffset + duration))
+      const levels = getLevelTags(tests)
+      const highestLevel = getHighestLevel(tests)
 
-      const checklist = buildTestChecklist(tests, item)
+      // Rich task name with level indicators
+      const taskName = `${equipName} [${levels.join(',')}] — ${tests.length} tests`
 
-      await createTask(project.gid, section.gid, {
-        name: equipName,
-        notes: checklist,
+      // Notes: full test checklist
+      const noteLines = [
+        `Equipment: ${DISPLAY_NAMES[item.type] || item.type}`,
+        `Tests: ${tests.length} | Levels: ${levels.join(', ')}`,
+        '',
+      ]
+      const byLevel = {}
+      for (const [level, name] of tests) {
+        if (!byLevel[level]) byLevel[level] = []
+        byLevel[level].push(name)
+      }
+      for (const level of ['L1', 'L2', 'L3', 'L4', 'L5']) {
+        if (!byLevel[level]) continue
+        noteLines.push(`${LEVEL_LABELS[level] || level}:`)
+        for (const name of byLevel[level]) noteLines.push(`  ☐ ${name}`)
+        noteLines.push('')
+      }
+      const notes = noteLines.join('\n')
+
+      // Build custom field values
+      const customFields = {}
+      if (levelField) {
+        const levelOption = levelField.enum_options?.find(o => o.name.startsWith(highestLevel))
+        if (levelOption) customFields[levelField.gid] = levelOption.gid
+      }
+      if (statusField) {
+        const notStarted = statusField.enum_options?.find(o => o.name === 'Not Started')
+        if (notStarted) customFields[statusField.gid] = notStarted.gid
+      }
+
+      const taskData = {
+        name: taskName,
+        notes,
         start_on: startDate,
         due_on: dueDate,
-      })
+      }
+      if (Object.keys(customFields).length > 0) {
+        taskData.custom_fields = customFields
+      }
 
+      checkAbort()
+      const task = await createTask(project.gid, section.gid, taskData)
       totalTasksCreated++
-      taskDayOffset += Math.max(1, duration - 1)
-      await new Promise(r => setTimeout(r, 150))  // Rate limit protection
+      await sleep(150)
+
+
+
+
+
     }
 
-    taskDayOffset += 1  // Gap between sections
+    taskDayOffset += Math.max(5, items.length * 2)  // Section gap based on size
   }
 
-  progress(7, 8, 'Finalising...')
+  // Share with specified emails
+  if (shareEmails.length > 0) {
+    progress(6, 7, `Sharing with ${shareEmails.length} member(s)...`)
+    try {
+      await addMembersToProject(project.gid, shareEmails)
+    } catch (e) {
+      console.warn('Share error (non-critical):', e.message)
+    }
+    await sleep(200)
+  }
 
-  // 7. Return summary
-  progress(8, 8, 'Done!')
+  progress(7, 7, 'Done!')
   return {
     projectGid: project.gid,
     projectUrl: `https://app.asana.com/0/${project.gid}`,

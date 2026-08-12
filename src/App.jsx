@@ -6,7 +6,6 @@ import SLDViewer from './components/SLDViewer'
 import { generateCOR } from './utils/corGenerator'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
-import { isConnected, openAsanaAuth, exchangeCode, clearToken, getStoredToken } from './utils/asanaAPI'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
 
 export default function App() {
@@ -78,66 +77,44 @@ export default function App() {
   }
 
   // ─── ASANA INTEGRATION ───
-  const [asanaConnected, setAsanaConnected] = useState(() => isConnected())
   const [asanaProgress, setAsanaProgress] = useState(null)
+  const [asanaCancelled, setAsanaCancelled] = useState(false)
+  const [asanaAbort, setAsanaAbort] = useState(null)
+  const [shareEmail, setShareEmail] = useState('')
 
-  function handleAsanaConnect() {
-    localStorage.removeItem('asana_auth_code')
-    openAsanaAuth()
-    setToast({ message: '\ud83d\udd17 Asana auth opened \u2014 approve and return here' })
-    setTimeout(() => setToast(null), 5000)
-    const pollInterval = setInterval(async () => {
-      const code = localStorage.getItem('asana_auth_code')
-      if (code) {
-        clearInterval(pollInterval)
-        localStorage.removeItem('asana_auth_code')
-        try {
-          await exchangeCode(code)
-          setAsanaConnected(true)
-          setToast({ message: '\u2713 Connected to Asana!' })
-          setTimeout(() => setToast(null), 4000)
-        } catch (err) {
-          setToast({ message: `\u26a0 Asana auth failed: ${err.message}` })
-          setTimeout(() => setToast(null), 6000)
-        }
-      }
-    }, 1000)
-    setTimeout(() => clearInterval(pollInterval), 300000)
-  }
-
-  function handleAsanaDisconnect() {
-    clearToken()
-    setAsanaConnected(false)
-    setToast({ message: 'Disconnected from Asana' })
-    setTimeout(() => setToast(null), 3000)
-  }
-
-  async function handleAsanaCreateProject() {
+  async function handleAsanaCreate() {
+    setAsanaCancelled(false)
+    const controller = new AbortController()
+    setAsanaAbort(controller)
     if (equipment.length === 0) {
-      setToast({ message: '\u26a0 No equipment to export \u2014 add items first' })
-      setTimeout(() => setToast(null), 4000)
-      return
-    }
-    if (!isConnected()) {
-      setToast({ message: '\u26a0 Connect to Asana first' })
+      setToast({ message: '⚠ No equipment to export — add items first' })
       setTimeout(() => setToast(null), 4000)
       return
     }
     try {
-      setAsanaProgress({ step: 0, total: 8, message: 'Starting...' })
+      setAsanaProgress({ step: 0, total: 10, message: 'Starting...' })
+      const emails = shareEmail.trim() ? shareEmail.split(',').map(e => e.trim()).filter(Boolean) : []
       const result = await buildAsanaProject(
         equipment,
         projectName || 'HV Substation Commissioning',
-        (progress) => setAsanaProgress(progress)
+        (progress) => setAsanaProgress(progress),
+        controller.signal,
+        emails
       )
       setAsanaProgress(null)
-      setToast({ message: `\u2713 Asana project created! ${result.totalTasks} tasks, ${result.sections} sections` })
+      setAsanaAbort(null)
+      setToast({ message: `✓ Asana project created! ${result.totalTasks} tasks across ${result.sections} sections` })
       setTimeout(() => setToast(null), 8000)
       window.open(result.projectUrl, '_blank')
     } catch (err) {
       setAsanaProgress(null)
-      setToast({ message: `\u26a0 Asana error: ${err.message}` })
-      setTimeout(() => setToast(null), 8000)
+      setAsanaAbort(null)
+      if (err.message === 'Cancelled') {
+        setToast({ message: '⚠ Asana export cancelled' })
+      } else {
+        setToast({ message: `⚠ Asana error: ${err.message}` })
+      }
+      setTimeout(() => setToast(null), 6000)
     }
   }
 
@@ -249,31 +226,34 @@ export default function App() {
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: '#FF9900', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer'
                 }}>📋 Generate COR</button>
+                {/* Asana integration */}
+                <input
+                  type="text"
+                  placeholder="Share with email(s)"
+                  value={shareEmail}
+                  onChange={e => setShareEmail(e.target.value)}
+                  style={{
+                    padding: '8px 12px', fontSize: 11, width: 180,
+                    background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
+                    borderRadius: 6, outline: 'none',
+                  }}
+                />
+                <button onClick={handleAsanaCreate} disabled={!!asanaProgress} style={{
+                  padding: '10px 20px', fontSize: 12, fontWeight: 700,
+                  background: asanaProgress ? '#6b21a8' : '#4a148c', color: '#fff', border: 'none',
+                  borderRadius: 6, cursor: asanaProgress ? 'wait' : 'pointer', opacity: asanaProgress ? 0.8 : 1,
+                }}>{asanaProgress ? `⏳ ${asanaProgress.message}` : '📊 Create Asana Project'}</button>
+                {asanaProgress && (
+                  <button onClick={() => { if (asanaAbort) asanaAbort.abort(); setAsanaCancelled(true); setAsanaProgress(null) }} style={{
+                    padding: '8px 12px', fontSize: 11, fontWeight: 600,
+                    background: '#dc2626', color: '#fff', border: 'none',
+                    borderRadius: 6, cursor: 'pointer',
+                  }}>✕ Cancel</button>
+                )}
                 <button onClick={handleGenerateUpload} style={{
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer'
                }}>📤 Procore Upload File</button>
-                {/* Asana integration */}
-                {!asanaConnected ? (
-                  <button onClick={handleAsanaConnect} style={{
-                    padding: '8px 16px', fontSize: 12, fontWeight: 600,
-                    background: '#6a1b9a', color: '#fff', border: 'none',
-                    borderRadius: 6, cursor: 'pointer',
-                  }}>🔗 Connect Asana</button>
-                ) : (
-                  <button onClick={handleAsanaCreateProject} style={{
-                    padding: '8px 16px', fontSize: 12, fontWeight: 600,
-                    background: '#4a148c', color: '#fff', border: 'none',
-                    borderRadius: 6, cursor: 'pointer',
-                  }}>{asanaProgress ? `⏳ ${asanaProgress.message}` : '📊 Create Asana Project'}</button>
-                )}
-                {asanaConnected && (
-                  <button onClick={handleAsanaDisconnect} style={{
-                    padding: '6px 10px', fontSize: 10, fontWeight: 500,
-                    background: 'transparent', color: '#94a3b8', border: '1px solid #e2e8f0',
-                    borderRadius: 4, cursor: 'pointer',
-                  }}>✕</button>
-                )}
                 {/* Upload mode toggle switch */}
                 <div onClick={() => setUploadMode(uploadMode === 'section' ? 'individual' : 'section')}
                   style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginLeft: 8 }}>
