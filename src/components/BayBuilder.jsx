@@ -161,6 +161,7 @@ function generateId() { return Date.now().toString(36) + Math.random().toString(
 
 // ─── LINE PRESETS ────────────────────────────────────────────────────────────
 const LINE_PRESETS = [
+  // ─── HV PRIMARY (Main Power Path) ────────────────────────────────────────
   {
     id: 'transformer_bay', label: 'Transformer Bay', colour: '#d35400',
     hasChildren: false,
@@ -169,24 +170,30 @@ const LINE_PRESETS = [
       { id: 'oil', label: 'Oil Transformer' },
       { id: 'dry', label: 'Dry Transformer' },
     ],
-    defaults: [  // Oil (default)
-      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
-      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 1 },
-      { type: 'TRANSFORMER', qty: 1 }, { type: 'NER_CT', qty: 2 }, { type: 'NER', qty: 1 },
-      { type: 'MK_OLTC_PANEL', qty: 1 }, { type: 'PROTECTION_PANEL', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
+    defaults: [
+      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'EARTH_SWITCH', qty: 1 },
+      { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
+      { type: 'CIRCUIT_BREAKER', qty: 1 },
+      { type: 'TRANSFORMER', qty: 1 },
+      { type: 'NER_CT', qty: 2 }, { type: 'NER', qty: 1 },
+      { type: 'MK_OLTC_PANEL', qty: 1 }, { type: 'PROTECTION_PANEL', qty: 1 },
+      { type: 'ENERGIZATION', qty: 1 },
     ],
-    defaultsDry: [  // Dry transformer (no oil, no OLTC, no NER)
-      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
-      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 1 },
-      { type: 'DRY_TRANSFORMER', qty: 1 }, { type: 'PROTECTION_PANEL', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
+    defaultsDry: [
+      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'EARTH_SWITCH', qty: 1 },
+      { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
+      { type: 'CIRCUIT_BREAKER', qty: 1 },
+      { type: 'DRY_TRANSFORMER', qty: 1 },
+      { type: 'PROTECTION_PANEL', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
     ],
   },
   {
     id: 'line_bay', label: 'Line Bay', colour: '#2980b9',
     hasChildren: false,
     defaults: [
-      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
-      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 2 },
+      { type: 'SURGE_ARRESTER', qty: 2 }, { type: 'EARTH_SWITCH', qty: 2 },
+      { type: 'CT_HV', qty: 2 }, { type: 'VT_HV', qty: 1 },
+      { type: 'CIRCUIT_BREAKER', qty: 1 },
       { type: 'HV_CABLE', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
     ]
   },
@@ -194,40 +201,12 @@ const LINE_PRESETS = [
     id: 'bus_section', label: 'Bus Section', colour: '#1a5276',
     hasChildren: false,
     defaults: [
-      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'EARTH_SWITCH', qty: 4 },
-      { type: 'CT_HV', qty: 2 }, { type: 'BUSBAR', qty: 1 },
+      { type: 'EARTH_SWITCH', qty: 4 }, { type: 'CT_HV', qty: 2 },
+      { type: 'CIRCUIT_BREAKER', qty: 1 }, { type: 'BUSBAR', qty: 1 },
       { type: 'ENERGIZATION', qty: 1 },
     ]
   },
-  {
-    id: 'switchgear', label: 'Switchgear', colour: '#27ae60',
-    hasChildren: true, // This one uses feeders (children)
-    hasSubtype: true,  // Prompts for AIS/GIS when adding
-    subtypes: [
-      { id: 'ais', label: 'AIS (Air Insulated)' },
-      { id: 'gis', label: 'GIS (Gas Insulated)' },
-    ],
-    feederTypes: [
-      { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE','CT','CT_METER','NCT','CIRCUIT_BREAKER','VT','EARTH_SWITCH','BUSBAR','PQM','EPMS','RELAY','L4_INTEGRATION','ENERGIZATION'] },
-      { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE','CT','CT_METER','NCT','CIRCUIT_BREAKER','VT','EARTH_SWITCH','BUSBAR','PQM','EPMS','RELAY','CABLE_DIFF','L4_INTEGRATION','ENERGIZATION'] },
-      { id: 'bus_coupler', label: 'Bus Coupler', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','VT','BUSBAR','PQM','RELAY','SYNCH_CHECK','L4_INTEGRATION','ENERGIZATION'] },
-      { id: 'bus_vt', label: 'Bus Bar VT', defaults: ['VT','BUSBAR','PQM'] },
-      { id: 'transformer_feeder', label: 'Transformer Feeder', defaults: ['CUBICLE','CT','CT_METER','NCT','CIRCUIT_BREAKER','VT','EARTH_SWITCH','BUSBAR','PQM','EPMS','RELAY','L4_INTEGRATION','ENERGIZATION'] },
-      { id: 'aux_tx_feeder', label: 'Aux Transformer Feeder', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','BUSBAR','PQM','EPMS','RELAY','L4_INTEGRATION','ENERGIZATION'] },
-      { id: 'bb_earth_switch', label: 'BB Earth Switch', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','EARTH_SWITCH','BUSBAR','PQM','RELAY','ENERGIZATION'] },
-      { id: 'spare', label: 'Spare', defaults: ['CUBICLE','CT','CIRCUIT_BREAKER','BUSBAR','PQM','EPMS','RELAY','ENERGIZATION'] },
-    ],
-    feederTypesGIS: [
-      { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
-      { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
-      { id: 'bus_coupler', label: 'Bus Coupler', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','LCC_GIS','IED_OC_GIS','ENERGIZATION_GIS'] },
-      { id: 'bus_section', label: 'Bus Section', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','DS_ES_GIS','ES_GIS','LCC_GIS','IED_87B_GIS','ENERGIZATION_GIS'] },
-      { id: 'bus_vt', label: 'Bus Bar VT', defaults: ['VT_GIS','LCC_GIS'] },
-      { id: 'transformer_feeder', label: 'Transformer Feeder', defaults: ['CUBICLE_GIS','CT_GIS','RING_CT_GIS','CB_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','HV_CABLE_GIS','LCC_GIS','IED_87T_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
-      { id: 'spare', label: 'Spare', defaults: ['CUBICLE_GIS','CT_GIS','CB_GIS','DS_ES_GIS','LCC_GIS','ENERGIZATION_GIS'] },
-    ],
-    defaults: [ { type: 'SWITCHGEAR_OVERALL', qty: 1 }, { type: 'AC_DC_CHECKS', qty: 1 } ] // Overall items
-  },
+  // ─── HV SECONDARY (Protection & Cables) ──────────────────────────────────
   {
     id: 'protection', label: 'Protection & Stability', colour: '#8e44ad',
     hasChildren: false,
@@ -240,11 +219,59 @@ const LINE_PRESETS = [
     hasChildren: false,
     defaults: [ { type: 'HV_CABLE', qty: 1 }, { type: 'MV_CABLE', qty: 1 } ]
   },
+  // ─── MV (Switchgear & Panels) ────────────────────────────────────────────
+  {
+    id: 'switchgear', label: 'Switchgear', colour: '#27ae60',
+    hasChildren: true,
+    hasSubtype: true,
+    subtypes: [
+      { id: 'ais', label: 'AIS (Air Insulated)' },
+      { id: 'gis', label: 'GIS (Gas Insulated)' },
+    ],
+    feederTypes: [
+      { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','CT_METER','NCT','VT','EARTH_SWITCH','BUSBAR','RELAY','PQM','EPMS','L4_INTEGRATION','ENERGIZATION'] },
+      { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','CT_METER','NCT','VT','EARTH_SWITCH','BUSBAR','RELAY','PQM','EPMS','CABLE_DIFF','L4_INTEGRATION','ENERGIZATION'] },
+      { id: 'bus_coupler', label: 'Bus Coupler', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','VT','BUSBAR','RELAY','PQM','SYNCH_CHECK','L4_INTEGRATION','ENERGIZATION'] },
+      { id: 'bus_vt', label: 'Bus Bar VT', defaults: ['VT','BUSBAR','PQM'] },
+      { id: 'transformer_feeder', label: 'Transformer Feeder', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','CT_METER','NCT','VT','EARTH_SWITCH','BUSBAR','RELAY','PQM','EPMS','L4_INTEGRATION','ENERGIZATION'] },
+      { id: 'aux_tx_feeder', label: 'Aux Transformer Feeder', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','BUSBAR','RELAY','PQM','EPMS','L4_INTEGRATION','ENERGIZATION'] },
+      { id: 'bb_earth_switch', label: 'BB Earth Switch', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','EARTH_SWITCH','BUSBAR','RELAY','PQM','ENERGIZATION'] },
+      { id: 'spare', label: 'Spare', defaults: ['CUBICLE','CIRCUIT_BREAKER','CT','BUSBAR','RELAY','PQM','EPMS','ENERGIZATION'] },
+    ],
+    feederTypesGIS: [
+      { id: 'incomer', label: 'Incomer', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','RING_CT_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'outgoing', label: 'Outgoing Feeder', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','RING_CT_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','LCC_GIS','IED_OC_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_coupler', label: 'Bus Coupler', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','VT_GIS','DS_ES_GIS','LCC_GIS','IED_OC_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_section', label: 'Bus Section', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','DS_ES_GIS','ES_GIS','LCC_GIS','IED_87B_GIS','ENERGIZATION_GIS'] },
+      { id: 'bus_vt', label: 'Bus Bar VT', defaults: ['VT_GIS','LCC_GIS'] },
+      { id: 'transformer_feeder', label: 'Transformer Feeder', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','RING_CT_GIS','VT_GIS','DS_ES_GIS','ES_GIS','SA_GIS','HV_CABLE_GIS','LCC_GIS','IED_87T_GIS','EPMS_GIS','ENERGIZATION_GIS'] },
+      { id: 'spare', label: 'Spare', defaults: ['CUBICLE_GIS','CB_GIS','CT_GIS','DS_ES_GIS','LCC_GIS','ENERGIZATION_GIS'] },
+    ],
+    defaults: [ { type: 'SWITCHGEAR_OVERALL', qty: 1 }, { type: 'AC_DC_CHECKS', qty: 1 } ]
+  },
+  {
+    id: 'panel_board', label: 'Panel Board', colour: '#7f8c8d',
+    hasChildren: true,
+    feederTypes: [
+      { id: 'pb_incomer', label: 'Incomer', defaults: ['CT','CT_METER','CIRCUIT_BREAKER','BUSBAR','RELAY','PQM','EPMS','ENERGIZATION'] },
+      { id: 'pb_feeder', label: 'Feeder', defaults: ['CT','CT_METER','BUSBAR','RELAY','PQM','EPMS','ENERGIZATION'] },
+      { id: 'pb_spare', label: 'Spare', defaults: ['CT','BUSBAR','ENERGIZATION'] },
+    ],
+    defaults: [ { type: 'BUSBAR', qty: 1 }, { type: 'ENERGIZATION', qty: 1 } ]
+  },
+  {
+    id: 'aux_transformer', label: 'Aux Transformer', colour: '#e67e22',
+    hasChildren: false,
+    defaults: [
+      { type: 'DRY_TRANSFORMER', qty: 1 }, { type: 'MV_CABLE', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
+    ]
+  },
+  // ─── AUXILIARY SYSTEMS (Not on power path) ────────────────────────────────
   {
     id: 'battery_dc', label: 'Battery & DC System', colour: '#f39c12',
     hasChildren: false,
     defaults: [
-      { type: 'BATTERY_BANK', qty: 1 }, { type: 'CHARGER', qty: 1 },
+      { type: 'BATTERY_BANK', qty: 1 }, { type: 'BATTERY_CHARGER', qty: 1 },
       { type: 'DC_DISTRIBUTION', qty: 1 }, { type: 'UPS', qty: 1 }, { type: 'DC_EARTH_FAULT', qty: 1 },
     ]
   },
@@ -256,25 +283,9 @@ const LINE_PRESETS = [
   {
     id: 'substation', label: 'Substation Checks', colour: '#34495e',
     hasChildren: false,
-    defaults: [ { type: 'SUBSTATION_CHECKS', qty: 1 }, { type: 'ESB_INTERFACE', qty: 1 }, { type: 'SCADA', qty: 1 } ]
+    defaults: [ { type: 'SCADA', qty: 1 }, { type: 'ESB_INTERFACE', qty: 1 }, { type: 'SUBSTATION_CHECKS', qty: 1 } ]
   },
-  {
-    id: 'aux_transformer', label: 'Aux Transformer', colour: '#e67e22',
-    hasChildren: false,
-    defaults: [
-      { type: 'DRY_TRANSFORMER', qty: 1 }, { type: 'MV_CABLE', qty: 1 }, { type: 'ENERGIZATION', qty: 1 },
-    ]
-  },
-  {
-    id: 'panel_board', label: 'Panel Board', colour: '#7f8c8d',
-    hasChildren: true,
-    feederTypes: [
-      { id: 'pb_feeder', label: 'Feeder', defaults: ['CT','CT_METER','BUSBAR','PQM','EPMS','RELAY','ENERGIZATION'] },
-      { id: 'pb_incomer', label: 'Incomer', defaults: ['CT','CT_METER','CIRCUIT_BREAKER','BUSBAR','PQM','EPMS','RELAY','ENERGIZATION'] },
-      { id: 'pb_spare', label: 'Spare', defaults: ['CT','BUSBAR','ENERGIZATION'] },
-    ],
-    defaults: [ { type: 'BUSBAR', qty: 1 }, { type: 'ENERGIZATION', qty: 1 } ]
-  },
+  // ─── CUSTOM ───────────────────────────────────────────────────────────────
   {
     id: 'blank', label: 'Custom', colour: '#95a5a6',
     hasChildren: false, defaults: []

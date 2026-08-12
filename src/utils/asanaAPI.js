@@ -15,7 +15,7 @@ export function isConfigured() {
 
 // ─── API HELPERS ────────────────────────────────────────────────────────────────
 async function apiCall(method, path, body = null) {
-  if (!PAT) throw new Error('VITE_ASANA_PAT not set in .env.local')
+  if (!PAT) throw new Error('Asana integration not configured. Contact Aaryan for access.')
 
   const opts = {
     method,

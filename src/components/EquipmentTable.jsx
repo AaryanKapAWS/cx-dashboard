@@ -210,7 +210,7 @@ export default function EquipmentTable({ equipment, sectionName: sectionNameProp
           <div key={sn}>
             <div style={{ padding: '8px 20px', background: '#1B3A5C', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>{sn}</span>
-              <span style={{ fontSize: 10, color: '#93BEDC' }}>{items.length} items \u00b7 {items.reduce((s, it) => s + getTestCount(it), 0)} tests</span>
+              <span style={{ fontSize: 10, color: '#93BEDC' }}>{items.length} items · {items.reduce((s, it) => s + getTestCount(it), 0)} tests</span>
             </div>
             {items.map((item, i) => renderRow(item, i))}
           </div>
