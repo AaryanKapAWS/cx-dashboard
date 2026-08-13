@@ -80,7 +80,6 @@ export default function App() {
   const [asanaProgress, setAsanaProgress] = useState(null)
   const [asanaCancelled, setAsanaCancelled] = useState(false)
   const [asanaAbort, setAsanaAbort] = useState(null)
-  const [shareEmail, setShareEmail] = useState('')
 
   async function handleAsanaCreate() {
     setAsanaCancelled(false)
@@ -93,7 +92,7 @@ export default function App() {
     }
     try {
       setAsanaProgress({ step: 0, total: 10, message: 'Starting...' })
-      const emails = shareEmail.trim() ? shareEmail.split(',').map(e => e.trim()).filter(Boolean) : []
+      const emails = []
       const result = await buildAsanaProject(
         equipment,
         projectName || 'HV Substation Commissioning',
@@ -227,17 +226,6 @@ export default function App() {
                   background: '#FF9900', color: '#000', border: 'none', borderRadius: 6, cursor: 'pointer'
                 }}>📋 Generate COR</button>
                 {/* Asana integration */}
-                <input
-                  type="text"
-                  placeholder="Share with email(s)"
-                  value={shareEmail}
-                  onChange={e => setShareEmail(e.target.value)}
-                  style={{
-                    padding: '8px 12px', fontSize: 11, width: 180,
-                    background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
-                    borderRadius: 6, outline: 'none',
-                  }}
-                />
                 <button onClick={handleAsanaCreate} disabled={!!asanaProgress} style={{
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: asanaProgress ? '#6b21a8' : '#4a148c', color: '#fff', border: 'none',
@@ -250,6 +238,12 @@ export default function App() {
                     borderRadius: 6, cursor: 'pointer',
                   }}>✕ Cancel</button>
                 )}
+                <button onClick={() => window.open('https://app.asana.com/-/oauth_authorize?client_id=1217191412887386&redirect_uri=https%3A%2F%2Faaryankapaws.github.io%2Fcx-dashboard%2Fauth&response_type=code', '_self')} style={{
+                  padding: '10px 16px', fontSize: 12, fontWeight: 700,
+                  background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
+                  borderRadius: 6, cursor: 'pointer',
+                }}>🔗 Connect Asana (OAuth)</button>
+
                 <button onClick={handleGenerateUpload} style={{
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: '#2c3e50', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer'
