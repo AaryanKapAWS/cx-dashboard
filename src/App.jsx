@@ -7,6 +7,7 @@ import { generateCOR } from './utils/corGenerator'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
+import { isAuthenticated, startOAuthFlow, exchangeCodeForToken } from './utils/asanaAPI'
 
 export default function App() {
   const [tab, setTab] = useState('builder')
@@ -33,6 +34,28 @@ export default function App() {
   useEffect(() => { localStorage.setItem('cor_fbnId', projectFbnId) }, [projectFbnId])
   useEffect(() => { localStorage.setItem('cor_projectName', projectName) }, [projectName])
   useEffect(() => { localStorage.setItem('cor_region', projectRegion) }, [projectRegion])
+
+  // ── OAuth callback handler ──
+  const [asanaConnected, setAsanaConnected] = useState(isAuthenticated())
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      // Remove code from URL
+      window.history.replaceState({}, '', window.location.pathname)
+      // Exchange code for token
+      exchangeCodeForToken(code)
+        .then(() => {
+          setAsanaConnected(true)
+          setToast({ message: '\u2713 Connected to Asana!' })
+          setTimeout(() => setToast(null), 5000)
+        })
+        .catch(err => {
+          setToast({ message: `\u26a0 Asana connection failed: ${err.message}` })
+          setTimeout(() => setToast(null), 6000)
+        })
+    }
+  }, [])
 
   // Get active equipment filtered by selected section
   const activeEquipment = equipment.filter(item => {
@@ -85,6 +108,13 @@ export default function App() {
     setAsanaCancelled(false)
     const controller = new AbortController()
     setAsanaAbort(controller)
+
+    // If not connected, redirect to OAuth
+    if (!isAuthenticated()) {
+      startOAuthFlow()
+      return
+    }
+
     if (equipment.length === 0) {
       setToast({ message: '⚠ No equipment to export — add items first' })
       setTimeout(() => setToast(null), 4000)
@@ -230,7 +260,7 @@ export default function App() {
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
                   background: asanaProgress ? '#6b21a8' : '#4a148c', color: '#fff', border: 'none',
                   borderRadius: 6, cursor: asanaProgress ? 'wait' : 'pointer', opacity: asanaProgress ? 0.8 : 1,
-                }}>{asanaProgress ? `⏳ ${asanaProgress.message}` : '📊 Create Asana Project'}</button>
+                }}>{asanaProgress ? `⏳ ${asanaProgress.message}` : asanaConnected ? '📊 Create Asana Project' : '🔗 Connect & Create Asana Project'}</button>
                 {asanaProgress && (
                   <button onClick={() => { if (asanaAbort) asanaAbort.abort(); setAsanaCancelled(true); setAsanaProgress(null) }} style={{
                     padding: '8px 12px', fontSize: 11, fontWeight: 600,
@@ -238,11 +268,6 @@ export default function App() {
                     borderRadius: 6, cursor: 'pointer',
                   }}>✕ Cancel</button>
                 )}
-                <button onClick={() => window.open('https://app.asana.com/-/oauth_authorize?client_id=1217191412887386&redirect_uri=https%3A%2F%2Faaryankapaws.github.io%2Fcx-dashboard%2Fauth&response_type=code', '_self')} style={{
-                  padding: '10px 16px', fontSize: 12, fontWeight: 700,
-                  background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155',
-                  borderRadius: 6, cursor: 'pointer',
-                }}>🔗 Connect Asana (OAuth)</button>
 
                 <button onClick={handleGenerateUpload} style={{
                   padding: '10px 20px', fontSize: 12, fontWeight: 700,
