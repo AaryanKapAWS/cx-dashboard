@@ -278,19 +278,20 @@ Detailed test results live in attached .xlsx foundational scripts (filled on sit
 **Latest Changes:**
 
 • Bay Builder is now the sole mode (Section Builder removed)
-• SLD Viewer v2 — collapsible sections, all equipment visible, test detail drill-down
+• Section presets reordered by power flow (HV Primary → HV Secondary → MV → Aux → Custom)
 • GIS switchgear support (17 GIS equipment types, 7 feeder presets)
 • 56 equipment types, 234+ test definitions across L1–L5
-• Asana integration — OAuth flow + project builder (token pending)
+• Asana integration — OAuth flow working (each user authenticates with their own Asana account)
 • Procore .xlsm generator (JSZip approach, preserves VBA + formatting)
 • Cell-based Gantt with live formulas
 • Test customisation per item (tick/untick individual tests)
 • Editable equipment names inline
+• Custom fields on Asana projects (Test Level L1-L5, Cx Status)
+• Retry logic for Asana API resilience (auto-retries on 504/429 errors)
 
 **Known Issues / TODO:**
 
-• Asana API token — ticket submitted, awaiting engineering (~3 weeks)
-• Procore upload testing — waiting on sandbox access
+• Procore upload testing — waiting on CxP intake access
 • SLD Viewer — visual redesign in progress
 • Dashboard styling/branding pass pending
 
