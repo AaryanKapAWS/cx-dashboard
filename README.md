@@ -17,7 +17,7 @@ Automates the HV substation commissioning pipeline: **Scope Definition → COR G
 - **React 18** + **Vite** (client-side SPA)
 - **ExcelJS** — COR Excel generation
 - **JSZip** — Procore .xlsm template manipulation (preserves VBA + formatting)
-- **Asana API** — OAuth flow for project creation (pending admin approval)
+- **Asana API** — OAuth flow for project creation (each user authenticates with their own account)
 - **GitHub Pages** — deployment via `gh-pages` branch
 
 ## Section Presets (13 types)

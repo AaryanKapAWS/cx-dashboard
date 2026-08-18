@@ -88,7 +88,7 @@ function getDuration(testCount) {
 
 function formatDate(date) { return date.toISOString().split('T')[0] }
 function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms * 3)) }
 
 // Get highest test level for an item
 function getHighestLevel(tests) {

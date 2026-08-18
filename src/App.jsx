@@ -8,6 +8,8 @@ import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
 import { isAuthenticated, startOAuthFlow, exchangeCodeForToken } from './utils/asanaAPI'
+import SettingsPanel from './components/SettingsPanel'
+import ProgressTracker from './components/ProgressTracker'
 
 export default function App() {
   const [tab, setTab] = useState('builder')
@@ -79,6 +81,10 @@ export default function App() {
     const result = await generateCOR(equipment, projectName || 'HV Substation')
     setToast({ message: `\u2713 COR exported \u2014 ${result.totalTests} tests across ${result.sections} sections` })
     setTimeout(() => setToast(null), 5000)
+    // Log to export history
+    const history = JSON.parse(localStorage.getItem('export_history') || '[]')
+    history.unshift({ id: Date.now(), type: 'COR', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.totalTests, status: 'success' })
+    localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
   }
 
   async function handleGenerateUpload() {
@@ -97,6 +103,10 @@ export default function App() {
     const result = await generateInspectionUpload(equipment, projectConfig)
     setToast({ message: `\u2713 Upload file exported \u2014 ${result.inspections} inspections` })
     setTimeout(() => setToast(null), 5000)
+    // Log to export history
+    const history = JSON.parse(localStorage.getItem('export_history') || '[]')
+    history.unshift({ id: Date.now(), type: 'Procore', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.inspections, status: 'success' })
+    localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
   }
 
   // ─── ASANA INTEGRATION ───
@@ -135,6 +145,10 @@ export default function App() {
       setToast({ message: `✓ Asana project created! ${result.totalTasks} tasks across ${result.sections} sections` })
       setTimeout(() => setToast(null), 8000)
       window.open(result.projectUrl, '_blank')
+      // Log to export history
+      const history = JSON.parse(localStorage.getItem('export_history') || '[]')
+      history.unshift({ id: Date.now(), type: 'Asana', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation Commissioning', itemCount: equipment.length, testCount: result.totalTasks, status: 'success' })
+      localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
     } catch (err) {
       setAsanaProgress(null)
       setAsanaAbort(null)
@@ -174,6 +188,30 @@ export default function App() {
               background: 'transparent', color: tab === 'sld' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>⚡ SLD View</button>
+            <button onClick={() => setTab('docs')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'progress' ? '2px solid #3b82f6' : '2px solid transparent',
+              background: 'transparent', color: tab === 'progress' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }} onClick={() => setTab('progress')}>📊 Progress</button>
+            <button onClick={() => setTab('schedule')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'schedule' ? '2px solid #14b8a6' : '2px solid transparent',
+              background: 'transparent', color: tab === 'schedule' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>📅 Schedule</button>
+            <button onClick={() => setTab('history')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'history' ? '2px solid #64748b' : '2px solid transparent',
+              background: 'transparent', color: tab === 'history' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>📋 History</button>
+            <button onClick={() => setTab('settings')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'settings' ? '2px solid #a855f7' : '2px solid transparent',
+              background: 'transparent', color: tab === 'settings' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>⚙️ Settings</button>
             <button onClick={() => setTab('docs')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'docs' ? '2px solid #38bdf8' : '2px solid transparent',
@@ -306,6 +344,35 @@ export default function App() {
       {tab === 'docs' && (
         <DocsReference />
       )}
+
+      {/* ═══ PROGRESS TAB ═══ */}
+      {tab === 'progress' && (
+        <ProgressTracker equipment={equipment} />
+      )}
+
+      {/* ═══ SETTINGS TAB ═══ */}
+      {tab === 'settings' && (
+        <SettingsPanel />
+      )}
+
+      {/* ═══ SCHEDULE TAB ═══ */}
+      {tab === 'schedule' && (
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: '#64748b' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>📅</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>Schedule & Timeline</div>
+          <div style={{ fontSize: 13 }}>Visual commissioning schedule with section dependencies and milestones. Coming soon.</div>
+        </div>
+      )}
+
+      {/* ═══ HISTORY TAB ═══ */}
+      {tab === 'history' && (
+        <div style={{ padding: '40px 24px', textAlign: 'center', color: '#64748b' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>Export History</div>
+          <div style={{ fontSize: 13 }}>Log of all COR, Asana, and Procore exports. Coming soon.</div>
+        </div>
+      )}
+
     </div>
   )
 }
