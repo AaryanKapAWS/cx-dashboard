@@ -61,9 +61,19 @@ function styleHeader(row, color = C.navy) {
   })
 }
 
-// ─── MAIN EXPORT ────────────────────────────────────────────────────
+
+// Progress key matching ProgressTracker.jsx
+function makeProgressKey(item, testIdx) {
+  return `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${testIdx}`
+}
+
+function loadProgressData() {
+  try { return JSON.parse(localStorage.getItem('test_progress') || '{}') } catch { return {} }
+}
+
 export async function generateCOR(equipmentData, projectName) {
   const wb = new ExcelJS.Workbook()
+  const progressData = loadProgressData()
   wb.creator = 'HV Substation Commissioning Tool'
   wb.created = new Date()
   wb.calcProperties = { fullCalcOnLoad: true }
@@ -760,13 +770,26 @@ export async function generateCOR(equipmentData, projectName) {
       }
       lastEquipName = equipName
 
-      for (const [level, testName] of tests) {
+      for (let testIdx = 0; testIdx < tests.length; testIdx++) {
+        const [level, testName] = tests[testIdx]
         const levelLabel = LEVEL_LABELS[level] || level
         const rowNum = ws.lastRow ? ws.lastRow.number + 1 : dataStartRow
 
+        // Look up progress data
+        const pKey = makeProgressKey(item, testIdx)
+        const p = progressData[pKey] || {}
+        const satVal = p.tested ? 'YES' : ''
+        const cxaVal = p.witnessed ? 'YES' : ''
+        const doneVal = (p.tested && p.witnessed && p.closed) ? 'YES' : ''
+        const reportVal = p.closed ? 'YES' : ''
+        const procoreVal = p.closed ? 'YES' : ''
+        const reviewedVal = p.closed ? 'YES' : ''
+        const closedVal = p.closed ? 'YES' : ''
+
         const row = ws.addRow([
           sNo, '', levelLabel, level, testName,
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+          '', '', '', '',
+          satVal, cxaVal, doneVal, reportVal, procoreVal, reviewedVal, '', '', closedVal, '', ''
         ])
 
         row.eachCell((cell, col) => {
@@ -807,7 +830,7 @@ sNo++
 
     // Data validation on YES/NO columns
     const lastRow = ws.lastRow ? ws.lastRow.number : dataStartRow
-    const yesNoCols = [10, 11, 12, 14, 15, 16, 18]
+    const yesNoCols = [10, 11, 12, 13, 14, 15, 16, 18]
     for (const col of yesNoCols) {
       for (let r = dataStartRow; r <= lastRow; r++) {
         ws.getCell(r, col).dataValidation = yesNoValidation

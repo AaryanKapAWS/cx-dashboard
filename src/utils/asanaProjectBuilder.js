@@ -88,7 +88,13 @@ function getDuration(testCount) {
 
 function formatDate(date) { return date.toISOString().split('T')[0] }
 function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms * 3)) }
+function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal && signal.aborted) { reject(new Error('Cancelled')); return }
+    const timer = setTimeout(resolve, ms * 3)
+    if (signal) signal.addEventListener('abort', () => { clearTimeout(timer); reject(new Error('Cancelled')) }, { once: true })
+  })
+}
 
 // Get highest test level for an item
 function getHighestLevel(tests) {
@@ -140,7 +146,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
     `  L5 — Substation Energization`,
     'light-orange'
   )
-  await sleep(300)
+  await sleep(300, abortSignal)
 
   // 3. Create custom fields
   progress(3, 7, 'Setting up custom fields...')
@@ -160,7 +166,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
       ],
     })
     await addCustomFieldToProject(project.gid, levelField.gid)
-    await sleep(200)
+    await sleep(200, abortSignal)
   } catch (e) {
     console.warn('Custom field (Level) error:', e.message)
   }
@@ -180,7 +186,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
       ],
     })
     await addCustomFieldToProject(project.gid, statusField.gid)
-    await sleep(200)
+    await sleep(200, abortSignal)
   } catch (e) {
     console.warn('Custom field (Status) error:', e.message)
   }
@@ -226,7 +232,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
       resource_subtype: 'milestone',
     })
     milestoneGids.push(task.gid)
-    await sleep(200)
+    await sleep(200, abortSignal)
   }
 
   // 6. Chain milestones
@@ -234,7 +240,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
   for (let i = 1; i < milestoneGids.length; i++) {
     try {
       await setDependency(milestoneGids[i], milestoneGids[i - 1])
-      await sleep(200)
+      await sleep(200, abortSignal)
     } catch (e) { /* non-critical */ }
   }
 
@@ -252,7 +258,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
     const sectionLabel = sName
     checkAbort()
     const section = await createSection(project.gid, sectionLabel)
-    await sleep(100)
+    await sleep(100, abortSignal)
 
 
     for (const item of items) {
@@ -310,7 +316,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
       checkAbort()
       const task = await createTask(project.gid, section.gid, taskData)
       totalTasksCreated++
-      await sleep(150)
+      await sleep(150, abortSignal)
 
 
 
@@ -329,7 +335,7 @@ export async function buildAsanaProject(equipmentData, projectName, onProgress, 
     } catch (e) {
       console.warn('Share error (non-critical):', e.message)
     }
-    await sleep(200)
+    await sleep(200, abortSignal)
   }
 
   progress(7, 7, 'Done!')

@@ -10,9 +10,11 @@ import { buildAsanaProject } from './utils/asanaProjectBuilder'
 import { isAuthenticated, startOAuthFlow, exchangeCodeForToken } from './utils/asanaAPI'
 import SettingsPanel from './components/SettingsPanel'
 import ProgressTracker from './components/ProgressTracker'
+import ExportHistory from './components/ExportHistory'
+import LandingPage from './components/LandingPage'
 
 export default function App() {
-  const [tab, setTab] = useState('builder')
+  const [tab, setTab] = useState('home')
 
   // ── Equipment state ──
   const [equipment, setEquipment] = useState(() => {
@@ -83,7 +85,15 @@ export default function App() {
     setTimeout(() => setToast(null), 5000)
     // Log to export history
     const history = JSON.parse(localStorage.getItem('export_history') || '[]')
-    history.unshift({ id: Date.now(), type: 'COR', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.totalTests, status: 'success' })
+    const startTime = Date.now()
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1)
+    // Progress snapshot — count completed entries from progress tracker
+    const pd = JSON.parse(localStorage.getItem('test_progress') || '{}')
+    const allKeys = Object.keys(pd)
+    const relevantKeys = allKeys.filter(k => equipment.some(item => k.startsWith((item.feeder_ref || '').replace(/\s/g, '_'))))
+    const doneCount = relevantKeys.filter(k => { const p = pd[k]; return p && p.tested && p.witnessed && p.closed }).length
+    const progressPct = result.totalTests > 0 ? Math.round((doneCount / result.totalTests) * 100) : 0
+    history.unshift({ id: Date.now(), type: 'COR', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.totalTests, sections: result.sections, location: projectLocation || '-', region: projectRegion || 'EMEA', duration: `${duration}s`, progressPct, status: 'success' })
     localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
   }
 
@@ -105,7 +115,7 @@ export default function App() {
     setTimeout(() => setToast(null), 5000)
     // Log to export history
     const history = JSON.parse(localStorage.getItem('export_history') || '[]')
-    history.unshift({ id: Date.now(), type: 'Procore', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.inspections, status: 'success' })
+    history.unshift({ id: Date.now(), type: 'Procore', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.inspections, sections: Object.keys(result).length || '-', location: projectLocation || '-', duration: '-', status: 'success' })
     localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
   }
 
@@ -130,8 +140,10 @@ export default function App() {
       setTimeout(() => setToast(null), 4000)
       return
     }
+
     try {
       setAsanaProgress({ step: 0, total: 10, message: 'Starting...' })
+      const asanaStartTime = Date.now()
       const emails = []
       const result = await buildAsanaProject(
         equipment,
@@ -147,7 +159,7 @@ export default function App() {
       window.open(result.projectUrl, '_blank')
       // Log to export history
       const history = JSON.parse(localStorage.getItem('export_history') || '[]')
-      history.unshift({ id: Date.now(), type: 'Asana', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation Commissioning', itemCount: equipment.length, testCount: result.totalTasks, status: 'success' })
+      history.unshift({ id: Date.now(), type: 'Asana', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation Commissioning', itemCount: equipment.length, testCount: result.totalTasks, sections: result.sections, location: projectLocation || '-', duration: `${((Date.now() - asanaStartTime) / 1000).toFixed(0)}s`, status: 'success' })
       localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
     } catch (err) {
       setAsanaProgress(null)
@@ -174,32 +186,38 @@ export default function App() {
         </div>
 
         {/* Sub-tabs row */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '0 24px', height: 40 }}>
+        <div style={{ display: 'flex', padding: '0 24px' }}>
           <div style={{ display: 'flex', gap: 2 }}>
+            <button onClick={() => setTab('home')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'home' ? '2px solid #FF9900' : '2px solid transparent',
+              background: 'transparent', color: tab === 'home' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>🏠 Home</button>
             <button onClick={() => setTab('builder')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'builder' ? '2px solid #FF9900' : '2px solid transparent',
               background: 'transparent', color: tab === 'builder' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>⚡ Scope & Export</button>
-            <button onClick={() => setTab('sld')} style={{
-              padding: '8px 20px', fontSize: 12, fontWeight: 600,
-              border: 'none', borderBottom: tab === 'sld' ? '2px solid #27ae60' : '2px solid transparent',
-              background: 'transparent', color: tab === 'sld' ? '#fff' : '#94a3b8',
-              cursor: 'pointer'
-            }}>⚡ SLD View</button>
-            <button onClick={() => setTab('docs')} style={{
+            <button onClick={() => setTab('progress')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'progress' ? '2px solid #3b82f6' : '2px solid transparent',
               background: 'transparent', color: tab === 'progress' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
-            }} onClick={() => setTab('progress')}>📊 Progress</button>
+            }}>📊 Progress</button>
             <button onClick={() => setTab('schedule')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'schedule' ? '2px solid #14b8a6' : '2px solid transparent',
               background: 'transparent', color: tab === 'schedule' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>📅 Schedule</button>
+            <button onClick={() => setTab('sld')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'sld' ? '2px solid #27ae60' : '2px solid transparent',
+              background: 'transparent', color: tab === 'sld' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>🔌 SLD View</button>
             <button onClick={() => setTab('history')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'history' ? '2px solid #64748b' : '2px solid transparent',
@@ -229,6 +247,11 @@ export default function App() {
           background: '#1e293b', color: '#fff', padding: '12px 20px',
           borderRadius: 8, fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
         }}>{toast.message}</div>
+      )}
+
+      {/* ═══ HOME / LANDING TAB ═══ */}
+      {tab === 'home' && (
+        <LandingPage onNavigate={setTab} />
       )}
 
       {/* ═══ SCOPE & EXPORT TAB ═══ */}
@@ -366,11 +389,7 @@ export default function App() {
 
       {/* ═══ HISTORY TAB ═══ */}
       {tab === 'history' && (
-        <div style={{ padding: '40px 24px', textAlign: 'center', color: '#64748b' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>Export History</div>
-          <div style={{ fontSize: 13 }}>Log of all COR, Asana, and Procore exports. Coming soon.</div>
-        </div>
+        <ExportHistory />
       )}
 
     </div>
