@@ -62,7 +62,7 @@ export default function App() {
   }, [])
 
   // Get active equipment filtered by selected section
-  const activeEquipment = equipment.filter(item => {
+  const activeEquipment = equipment.map((item, i) => ({ ...item, _globalIdx: i })).filter(item => {
     if (!activeSection) return false
     const sectionPart = (item.feeder_ref || '').split(' \u2014 ')[0]
     return sectionPart === activeSection || item.child_section === activeSection
@@ -291,7 +291,29 @@ export default function App() {
           <div style={{ display: 'flex', margin: '16px 24px 16px 24px', gap: 16 }}>
             {/* Left: Builder */}
             <div style={{ flex: '1 1 50%', minWidth: 0, overflow: 'hidden' }}>
-              <BayBuilder onSubmit={(items) => { setEquipment(items); setSelectedRow(null) }} onSectionChange={setActiveSection} onFeederChange={setActiveFeederTab} />
+              <BayBuilder onSubmit={(items) => {
+                setEquipment(prev => {
+                  // Build lookup of previous customTests by type+feeder_ref+displayName
+                  const lookup = {}
+                  prev.forEach(e => {
+                    if (e.customTests) {
+                      const key = `${e.type}||${e.feeder_ref}||${e.displayName || e.name}`
+                      lookup[key] = e.customTests
+                    }
+                  })
+                  // Merge: carry over customTests for items that match exactly
+                  return items.map(item => {
+                    const key = `${item.type}||${item.feeder_ref}||${item.displayName || item.name}`
+                    if (lookup[key]) return { ...item, customTests: lookup[key] }
+                    // Fallback for duplicated sections: match by type+displayName only
+                    const fallbackKey = Object.keys(lookup).find(k =>
+                      k.startsWith(item.type + '||') && k.endsWith('||' + (item.displayName || item.name))
+                    )
+                    return fallbackKey ? { ...item, customTests: [...lookup[fallbackKey]] } : item
+                  })
+                })
+                setSelectedRow(null)
+              }} onSectionChange={setActiveSection} onFeederChange={setActiveFeederTab} />
             </div>
 
             {/* Right: Equipment Register + Export */}

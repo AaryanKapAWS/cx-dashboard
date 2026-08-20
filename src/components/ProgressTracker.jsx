@@ -15,6 +15,8 @@ const LEVEL_COLOURS = {
 }
 
 const ZONE_ORDER = ['HV', 'MV', 'Aux']
+const ZONE_COLOURS = { HV: '#1e3a5f', MV: '#1a4d3e', Aux: '#1e293b' }
+
 
 function classifyZone(item) {
   const sec = item.section || ''
@@ -399,7 +401,7 @@ export default function ProgressTracker({ equipment }) {
           <div key={zone} style={{ marginBottom: 16 }}>
             {/* Zone Header */}
             <div onClick={() => toggleZone(zone)} style={{ display: 'flex', alignItems: 'center',
-              gap: 8, padding: '10px 12px', background: '#1f2937', borderRadius: 8,
+              gap: 8, padding: '10px 12px', background: ZONE_COLOURS[zone] || '#1f2937', borderRadius: 8,
               cursor: 'pointer', marginBottom: 8 }}>
               <span style={{ color: '#fff', fontSize: 12 }}>
                 {expandedZones[zone] ? '▼' : '▶'}
@@ -409,8 +411,8 @@ export default function ProgressTracker({ equipment }) {
 
             {expandedZones[zone] && zoneSections.map(([section, feeders]) => {
               const sectionKey = `${zone}_${section}`
-              const isSecExpanded = expandedSections[sectionKey] !== false
-              const borderColour = SECTION_COLOURS[section] || '#6b7280'
+              const isSecExpanded = expandedSections[sectionKey] === true
+              const borderColour = SECTION_COLOURS[section] || ZONE_COLOURS[zone] || '#6b7280'
 
               return (
                 <div key={sectionKey} style={{ marginLeft: 12, marginBottom: 8,

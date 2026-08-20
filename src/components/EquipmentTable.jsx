@@ -81,7 +81,7 @@ export default function EquipmentTable({ equipment, sectionName: sectionNameProp
   const tabGroups = {}
 
   equipment.forEach((item, idx) => {
-    const enriched = { ...item, _idx: idx }
+    const enriched = { ...item, _idx: item._globalIdx !== undefined ? item._globalIdx : idx }
     
     // If child_section matches the section we're viewing, this IS the section's own item → always flat
     if (item.child_section === sectionHeader) {

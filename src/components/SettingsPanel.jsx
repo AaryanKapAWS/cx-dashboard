@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
+import ExcelJS from 'exceljs'
 import ExportHistory from './ExportHistory'
 
 export default function SettingsPanel() {
@@ -17,6 +18,17 @@ export default function SettingsPanel() {
   // ── Sub-section toggle ──
   const [showExportHistory, setShowExportHistory] = useState(false)
 
+  // ── Project Presets ──
+  const [presets, setPresets] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('saved_projects')) || [] } catch { return [] }
+  })
+  const importFileRef = useRef(null)
+
+  // ── COR Import ──
+  const corFileRef = useRef(null)
+  const [corImportStatus, setCorImportStatus] = useState(null)
+  const [corParsedData, setCorParsedData] = useState(null)
+
   function handleDisconnect() {
     localStorage.removeItem('asana_token')
     localStorage.removeItem('asana_email')
@@ -32,6 +44,220 @@ export default function SettingsPanel() {
     setTimeout(() => setSaved(false), 2500)
   }
 
+  // ════════════════════════════════════════════════════
+  // PROJECT PRESET FUNCTIONS
+  // ════════════════════════════════════════════════════
+  function handleSaveProject() {
+    const defaultName = localStorage.getItem('cor_projectName') || localStorage.getItem('bay_project_name') || 'Untitled Project'
+    const name = prompt('Save project as:', defaultName)
+    if (!name) return
+
+    const bayTree = localStorage.getItem('bay_tree_v5') || '[]'
+    const equipment = localStorage.getItem('bay_equipment') || '[]'
+
+    let treeData, equipData
+    try { treeData = JSON.parse(bayTree) } catch { treeData = [] }
+    try { equipData = JSON.parse(equipment) } catch { equipData = [] }
+
+    const preset = {
+      id: Date.now(),
+      name,
+      bayTree: treeData,
+      equipment: equipData,
+      projectName: defaultName,
+      location: localStorage.getItem('cor_location') || '',
+      fbnId: localStorage.getItem('cor_fbnId') || '',
+      region: localStorage.getItem('cor_region') || 'EMEA',
+      savedAt: new Date().toISOString(),
+    }
+
+    const updated = [...presets, preset]
+    setPresets(updated)
+    localStorage.setItem('saved_projects', JSON.stringify(updated))
+    alert(`Project "${name}" saved! (${treeData.length} sections, ${equipData.length} equipment items)`)
+  }
+
+  function handleLoadProject(preset) {
+    if (!confirm(`Load "${preset.name}"? This will replace your current scope.`)) return
+    localStorage.setItem('bay_tree_v5', JSON.stringify(preset.bayTree))
+    localStorage.setItem('bay_equipment', JSON.stringify(preset.equipment))
+    if (preset.location) localStorage.setItem('cor_location', preset.location)
+    if (preset.fbnId) localStorage.setItem('cor_fbnId', preset.fbnId)
+    if (preset.region) localStorage.setItem('cor_region', preset.region)
+    if (preset.projectName) localStorage.setItem('cor_projectName', preset.projectName)
+    window.location.reload()
+  }
+
+  function handleDeleteProject(id) {
+    if (!confirm('Delete this saved project?')) return
+    const updated = presets.filter(p => p.id !== id)
+    setPresets(updated)
+    localStorage.setItem('saved_projects', JSON.stringify(updated))
+  }
+
+  function handleExportProject(preset) {
+    const json = JSON.stringify(preset, null, 2)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${preset.name.replace(/[^a-zA-Z0-9]/g, '_')}_preset.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  function handleImportProject(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      try {
+        const preset = JSON.parse(reader.result)
+        if (!preset.bayTree || !preset.equipment) {
+          alert('Invalid preset file — missing bayTree or equipment data.')
+          return
+        }
+        preset.id = Date.now()
+        preset.savedAt = new Date().toISOString()
+        const updated = [...presets, preset]
+        setPresets(updated)
+        localStorage.setItem('saved_projects', JSON.stringify(updated))
+        alert(`Imported "${preset.name}" successfully!`)
+      } catch (err) {
+        alert('Failed to parse JSON file: ' + err.message)
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  // ════════════════════════════════════════════════════
+  // COR IMPORT FUNCTIONS
+  // ════════════════════════════════════════════════════
+  async function handleCorUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCorImportStatus('Parsing...')
+    setCorParsedData(null)
+
+    try {
+      const buffer = await file.arrayBuffer()
+      const wb = new ExcelJS.Workbook()
+      await wb.xlsx.load(buffer)
+
+      const parsed = {}
+      let totalTests = 0
+      let sheetsWithData = 0
+
+      for (const ws of wb.worksheets) {
+        // Skip non-data sheets
+        if (['Project Overview', 'Cx Programme', 'Cx Charts', 'Certificate of Readiness', 'Revision History'].includes(ws.name)) continue
+
+        const sheetData = []
+        ws.eachRow((row, rowNum) => {
+          if (rowNum < 4) return // Skip header rows
+          const testName = row.getCell(5).value // Col E: Test Description
+          if (!testName || typeof testName !== 'string') return
+
+          const rowData = { test: testName.trim(), row: rowNum }
+
+          // Dates (cols F-I = 6-9)
+          const plannedStart = row.getCell(6).value
+          const plannedFinish = row.getCell(7).value
+          const actualStart = row.getCell(8).value
+          const actualFinish = row.getCell(9).value
+          if (plannedStart) rowData.plannedStart = plannedStart
+          if (plannedFinish) rowData.plannedFinish = plannedFinish
+          if (actualStart) rowData.actualStart = actualStart
+          if (actualFinish) rowData.actualFinish = actualFinish
+
+          // YES/NO columns
+          const satCompleted = row.getCell(10).value
+          const witnessed = row.getCell(11).value
+          const completed = row.getCell(12).value
+          const reportReceived = row.getCell(13).value
+          const reportProcore = row.getCell(14).value
+          const reportReviewed = row.getCell(15).value
+          const reportClosed = row.getCell(18).value
+
+          if (satCompleted) rowData.satCompleted = String(satCompleted).toUpperCase()
+          if (witnessed) rowData.witnessed = String(witnessed).toUpperCase()
+          if (completed) rowData.completed = String(completed).toUpperCase()
+          // Only write report columns if SAT is confirmed
+          if (satCompleted && String(satCompleted).toUpperCase() === 'YES') {
+            if (reportReceived) rowData.reportReceived = String(reportReceived).toUpperCase()
+            if (reportProcore) rowData.reportProcore = String(reportProcore).toUpperCase()
+            if (reportReviewed) rowData.reportReviewed = String(reportReviewed).toUpperCase()
+            if (reportClosed) rowData.reportClosed = String(reportClosed).toUpperCase()
+          }
+
+          // Text columns
+          const obs = row.getCell(17).value
+          const comments = row.getCell(19).value
+          if (obs) rowData.obs = String(obs)
+          if (comments) rowData.comments = String(comments)
+
+          // Only add if there's actual data
+          const hasData = Object.keys(rowData).length > 2 // more than just test+row
+          if (hasData) {
+            sheetData.push(rowData)
+            totalTests++
+          }
+        })
+
+        if (sheetData.length > 0) {
+          parsed[ws.name] = sheetData
+          sheetsWithData++
+        }
+      }
+
+      setCorParsedData(parsed)
+      setCorImportStatus(`Found ${totalTests} tests with data across ${sheetsWithData} sheets`)
+    } catch (err) {
+      setCorImportStatus(`Error: ${err.message}`)
+      setCorParsedData(null)
+    }
+    e.target.value = ''
+  }
+
+  function handleCorLoadNow() {
+    if (!corParsedData) return
+    localStorage.setItem('cor_imported_data', JSON.stringify(corParsedData))
+    setCorImportStatus('✓ Data loaded — will apply on next COR export')
+  }
+
+  function handleCorSaveWithProject() {
+    if (!corParsedData) return
+    const defaultName = localStorage.getItem('cor_projectName') || 'Untitled'
+    const bayTree = localStorage.getItem('bay_tree_v5') || '[]'
+    const equipment = localStorage.getItem('bay_equipment') || '[]'
+
+    let treeData, equipData
+    try { treeData = JSON.parse(bayTree) } catch { treeData = [] }
+    try { equipData = JSON.parse(equipment) } catch { equipData = [] }
+
+    const preset = {
+      id: Date.now(),
+      name: defaultName + ' (with COR data)',
+      bayTree: treeData,
+      equipment: equipData,
+      corData: corParsedData,
+      projectName: defaultName,
+      location: localStorage.getItem('cor_location') || '',
+      fbnId: localStorage.getItem('cor_fbnId') || '',
+      region: localStorage.getItem('cor_region') || 'EMEA',
+      savedAt: new Date().toISOString(),
+    }
+
+    const updated = [...presets, preset]
+    setPresets(updated)
+    localStorage.setItem('saved_projects', JSON.stringify(updated))
+    setCorImportStatus(`✓ Saved as "${preset.name}"`)
+  }
+
+  // ════════════════════════════════════════════════════
+  // STYLES
+  // ════════════════════════════════════════════════════
   const cardStyle = {
     background: '#fff',
     border: '1px solid #e2e8f0',
@@ -58,6 +284,36 @@ export default function SettingsPanel() {
     width: '100%',
     maxWidth: 280,
     color: '#0f172a',
+  }
+
+  const sectionHeaderStyle = {
+    background: '#232F3E',
+    color: '#fff',
+    padding: '10px 16px',
+    borderRadius: '6px 6px 0 0',
+    fontSize: 12,
+    fontWeight: 700,
+    margin: '0 -24px -20px -24px',
+    marginBottom: 16,
+    fontFamily: 'Times New Roman, serif',
+  }
+
+  const btnPrimary = {
+    padding: '8px 16px', fontSize: 11, fontWeight: 600,
+    background: '#FF9900', color: '#000', border: 'none',
+    borderRadius: 6, cursor: 'pointer',
+  }
+
+  const btnSecondary = {
+    padding: '7px 14px', fontSize: 11, fontWeight: 600,
+    background: '#f8fafc', color: '#334155', border: '1px solid #e2e8f0',
+    borderRadius: 6, cursor: 'pointer',
+  }
+
+  const btnDanger = {
+    padding: '6px 10px', fontSize: 10, fontWeight: 600,
+    background: '#fff', color: '#dc2626', border: '1px solid #fecaca',
+    borderRadius: 4, cursor: 'pointer',
   }
 
   return (
@@ -158,6 +414,109 @@ export default function SettingsPanel() {
         </div>
       </div>
 
+      {/* ═══ PROJECT PRESETS ═══ */}
+      <div style={cardStyle}>
+        <div style={sectionHeaderStyle}>PROJECT PRESETS</div>
+        <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 16px' }}>
+          Save your current scope (sections, feeders, equipment, custom tests) as a named preset. Load it back anytime.
+        </p>
+
+        {/* Preset List */}
+        {presets.length > 0 && (
+          <div style={{ marginBottom: 16, border: '1px solid #e2e8f0', borderRadius: 6, overflow: 'hidden' }}>
+            {presets.map((p, idx) => (
+              <div key={p.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', borderBottom: idx < presets.length - 1 ? '1px solid #f1f5f9' : 'none',
+                background: idx % 2 === 0 ? '#fff' : '#fafbfc',
+              }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#0f172a' }}>{p.name}</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
+                    {p.bayTree?.length || 0} sections · {p.equipment?.length || 0} items · {new Date(p.savedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {p.corData ? ' · 📊 COR data' : ''}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => handleLoadProject(p)} style={btnPrimary}>Load</button>
+                  <button onClick={() => handleExportProject(p)} style={btnSecondary} title="Export as JSON">⬇</button>
+                  <button onClick={() => handleDeleteProject(p.id)} style={btnDanger}>✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {presets.length === 0 && (
+          <div style={{ padding: '20px', textAlign: 'center', color: '#94a3b8', fontSize: 12, border: '1px dashed #e2e8f0', borderRadius: 6, marginBottom: 16 }}>
+            No saved projects yet. Save your current scope below.
+          </div>
+        )}
+
+        {/* Save / Import buttons */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button onClick={handleSaveProject} style={btnPrimary}>
+            💾 Save Current Project
+          </button>
+          <button onClick={() => importFileRef.current?.click()} style={btnSecondary}>
+            📁 Import JSON
+          </button>
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".json"
+            onChange={handleImportProject}
+            style={{ display: 'none' }}
+          />
+        </div>
+      </div>
+
+      {/* ═══ COR DATA IMPORT ═══ */}
+      <div style={cardStyle}>
+        <div style={sectionHeaderStyle}>COR DATA IMPORT</div>
+        <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 16px' }}>
+          Upload an existing COR (.xlsx) to import dates, checkmarks, and comments. Matches tests by name and populates your scope.
+        </p>
+
+        {/* Upload button */}
+        <div style={{ marginBottom: 16 }}>
+          <button onClick={() => corFileRef.current?.click()} style={btnSecondary}>
+            📄 Upload COR File (.xlsx / .xlsm)
+          </button>
+          <input
+            ref={corFileRef}
+            type="file"
+            accept=".xlsx,.xlsm"
+            onChange={handleCorUpload}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* Status */}
+        {corImportStatus && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 6, fontSize: 12, marginBottom: 16,
+            background: corImportStatus.startsWith('Error') ? '#fef2f2' : corImportStatus.startsWith('✓') ? '#f0fdf4' : '#f8fafc',
+            color: corImportStatus.startsWith('Error') ? '#991b1b' : corImportStatus.startsWith('✓') ? '#166534' : '#334155',
+            border: `1px solid ${corImportStatus.startsWith('Error') ? '#fecaca' : corImportStatus.startsWith('✓') ? '#bbf7d0' : '#e2e8f0'}`,
+          }}>
+            {corImportStatus}
+          </div>
+        )}
+
+        {/* Action buttons (shown after successful parse) */}
+        {corParsedData && !corImportStatus?.startsWith('✓') && (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={handleCorLoadNow} style={btnPrimary}>
+              ⚡ Load Now
+            </button>
+            <button onClick={handleCorSaveWithProject} style={btnSecondary}>
+              💾 Save with Project
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* ═══ EXPORT HISTORY (sub-section) ═══ */}
       <div style={cardStyle}>
         <div
@@ -197,12 +556,12 @@ export default function SettingsPanel() {
               <td style={{ padding: '4px 16px 4px 0', fontWeight: 600, color: '#64748b' }}>GitHub</td>
               <td style={{ padding: '4px 0' }}>
                 <a
-                  href="https://github.com/amazon/hvss-cx-dashboard"
+                  href="https://github.com/AaryanKapAWS/cx-dashboard"
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: '#2563eb', textDecoration: 'none' }}
                 >
-                  github.com/amazon/hvss-cx-dashboard
+                  github.com/AaryanKapAWS/cx-dashboard
                 </a>
               </td>
             </tr>

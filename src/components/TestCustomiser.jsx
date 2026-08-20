@@ -37,19 +37,22 @@ export default function TestCustomiser({ equipmentType, selectedTests, onUpdate 
   }
 
   function toggleTest(idx) {
-    const updated = tests.map((t, i) => i === idx ? { ...t, enabled: !t.enabled } : t)
+    const current = selectedTests && selectedTests.length > 0 ? selectedTests : getDefaultTests(equipmentType)
+    const updated = current.map((t, i) => i === idx ? { ...t, enabled: !t.enabled } : t)
     onUpdate(updated)
   }
 
   function addCustomTest() {
     if (!newTestName.trim()) return
-    const updated = [...tests, { level: newTestLevel, name: newTestName.trim(), testSheet: '', enabled: true, custom: true }]
+    const current = selectedTests && selectedTests.length > 0 ? selectedTests : getDefaultTests(equipmentType)
+    const updated = [...current, { level: newTestLevel, name: newTestName.trim(), testSheet: '', enabled: true, custom: true }]
     onUpdate(updated)
     setNewTestName('')
   }
 
   function removeTest(idx) {
-    const updated = tests.filter((_, i) => i !== idx)
+    const current = selectedTests && selectedTests.length > 0 ? selectedTests : getDefaultTests(equipmentType)
+    const updated = current.filter((_, i) => i !== idx)
     onUpdate(updated)
   }
 
@@ -65,13 +68,13 @@ export default function TestCustomiser({ equipmentType, selectedTests, onUpdate 
         </span>
         <div style={{ display: 'flex', gap: 6 }}>
           <button
-            onClick={() => onUpdate(tests.map(t => ({ ...t, enabled: true })))}
+            onClick={() => { const c = selectedTests && selectedTests.length > 0 ? selectedTests : getDefaultTests(equipmentType); onUpdate(c.map(t => ({ ...t, enabled: true }))) }}
             style={{ fontSize: 10, padding: '3px 8px', border: '1px solid #e2e8f0', borderRadius: 4, background: '#fff', cursor: 'pointer' }}
           >
             Select All
           </button>
           <button
-            onClick={() => onUpdate(tests.map(t => ({ ...t, enabled: false })))}
+            onClick={() => { const c = selectedTests && selectedTests.length > 0 ? selectedTests : getDefaultTests(equipmentType); onUpdate(c.map(t => ({ ...t, enabled: false }))) }}
             style={{ fontSize: 10, padding: '3px 8px', border: '1px solid #e2e8f0', borderRadius: 4, background: '#fff', cursor: 'pointer' }}
           >
             Deselect All

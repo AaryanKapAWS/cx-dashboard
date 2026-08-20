@@ -3,47 +3,97 @@
     [
       "L3",
       "Substation Check Sheet",
-      "Substation_Checksheet"
+      ""
     ],
     [
       "L3",
       "Busbar Ductor Test",
-      "Busbar_Ductor_Test_Sheet"
+      ""
     ],
     [
       "L3",
       "Busbar Megger Test (Insulation Resistance)",
-      "Busbar_Megger_Test_Sheet"
+      ""
     ],
     [
       "L3",
       "Switchgear High Voltage Withstand Test",
-      "High_Voltage_Withstand_Test_Sheet"
+      ""
     ],
     [
       "L3",
       "Castel Key Interlock Test",
-      "Switchgear_Castel_Key_Interlock_Test_Sheet"
+      ""
     ],
     [
       "L3",
       "Protection Trip Matrix Test",
-      "Protection_Trip_Matrix_Test_Sheet"
+      ""
     ],
     [
-      "L5",
+      "L3",
       "Pre Energisation Check",
-      "Pre_Energisation_Check_Sheet"
+      ""
     ],
     [
-      "L5",
+      "L3",
       "Post Energisation Check",
-      "Post_Energisation_Checksheet"
+      ""
     ],
     [
-      "L5",
+      "L3",
       "Declaration of Fitness (DOF)",
-      "DOF_Declaration_of_Fitness"
+      ""
+    ],
+    [
+      "L3",
+      "HV Test Configuration 1",
+      ""
+    ],
+    [
+      "L3",
+      "HV Test Configuration 2",
+      ""
+    ],
+    [
+      "L3",
+      "HV Test Configuration 3",
+      ""
+    ],
+    [
+      "L3",
+      "Busbar Insulation Resistance Test",
+      ""
+    ],
+    [
+      "L3",
+      "Busbar Contact Resistance",
+      ""
+    ],
+    [
+      "L3",
+      "Main AC Check",
+      ""
+    ],
+    [
+      "L3",
+      "Main DC Check",
+      ""
+    ],
+    [
+      "L3",
+      "BB VT Secondary Injection Test",
+      ""
+    ],
+    [
+      "L4",
+      "BB Voltage Transformer Loop Distribution Check",
+      ""
+    ],
+    [
+      "L4",
+      "Earth Bar Contact Resistance Measurement",
+      ""
     ]
   ],
   "AC_DC_CHECKS": [
@@ -571,6 +621,66 @@
     [
       "L4",
       "Cable End - Torque and CRM",
+      ""
+    ],
+    [
+      "L3",
+      "Exciting Current Test",
+      ""
+    ],
+    [
+      "L3",
+      "Dynamic OLTC Scan (DRM)",
+      ""
+    ],
+    [
+      "L3",
+      "DC Winding Resistance - LV",
+      ""
+    ],
+    [
+      "L3",
+      "DC Winding Resistance - HV",
+      ""
+    ],
+    [
+      "L3",
+      "Winding DF and Capacitance",
+      ""
+    ],
+    [
+      "L3",
+      "Bushing DF and Capacitance - C1",
+      ""
+    ],
+    [
+      "L3",
+      "Demagnetization",
+      ""
+    ],
+    [
+      "L3",
+      "SFRA Sweep Frequency Response Analysis",
+      ""
+    ],
+    [
+      "L3",
+      "Short-Circuit Impedance Test",
+      ""
+    ],
+    [
+      "L3",
+      "Report of Impact Recorders",
+      ""
+    ],
+    [
+      "L3",
+      "Checks Before Assembly",
+      ""
+    ],
+    [
+      "L3",
+      "MK Box Scheme Check (AC and DC Circuit)",
       ""
     ]
   ],
@@ -1203,43 +1313,8 @@
   ],
   "MK_OLTC_PANEL": [
     [
-      "L3",
-      "MK Box Scheme Check (AC and DC Circuit)",
-      ""
-    ],
-    [
-      "L3",
+      "L2",
       "MCB Checks (OLTC/MK)",
-      ""
-    ],
-    [
-      "L3",
-      "Cooling System Functional Check - Fan, Current, Direction, Group Operation",
-      ""
-    ],
-    [
-      "L3",
-      "OLTC - Local and Remote Operation and Respective Interlocks",
-      ""
-    ],
-    [
-      "L3",
-      "OLTC Auto Change Over and Respective Interlocks",
-      ""
-    ],
-    [
-      "L3",
-      "All Mechanical Trips and Alarm - Set Point Verification",
-      ""
-    ],
-    [
-      "L3",
-      "AC and DC Power Supply Validation for MK and OLTC",
-      ""
-    ],
-    [
-      "L3",
-      "Aux Relay and Set Point Validation",
       ""
     ],
     [
@@ -1249,17 +1324,112 @@
     ],
     [
       "L3",
-      "Verification of Buchholz Relay Contacts - Cable Box",
+      "Verification of OLTC Protective Relay (97QC)",
       ""
     ],
     [
       "L3",
-      "Verification of 97QC OLTC Protective Relay Contacts",
+      "Verification of Rapid Pressure Rise Relay (66QT)",
       ""
     ],
     [
       "L3",
-      "Verification of 66QT Rapid Pressure Rise Relay Contacts",
+      "Verification of Pressure Relief Relay - Main Tank",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Pressure Relief Relay - OLTC",
+      ""
+    ],
+    [
+      "L3",
+      "Protection Relay for OLTC",
+      ""
+    ],
+    [
+      "L3",
+      "Sudden Pressure Relay for Main Tank",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Annunciator",
+      ""
+    ],
+    [
+      "L3",
+      "Dehydrating Breather - Main Tank",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Oil Level Indicator - Main Tank",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Oil Level Indicator - OLTC Tank",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Winding Thermometer - HV",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Winding Thermometer - LV",
+      ""
+    ],
+    [
+      "L3",
+      "U1 Device Commissioning",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Tap Changer",
+      ""
+    ],
+    [
+      "L3",
+      "Verification of Tap Changer Alarm Checks",
+      ""
+    ],
+    [
+      "L3",
+      "PF2/PF3 Commissioning",
+      ""
+    ],
+    [
+      "L3",
+      "Alarms and Protection Signals",
+      ""
+    ],
+    [
+      "L3",
+      "Result of Oil Analysis",
+      ""
+    ],
+    [
+      "L3",
+      "Dielectric Strength Test - Transformer Oil",
+      ""
+    ],
+    [
+      "L3",
+      "Dielectric Strength Test - OLTC Oil",
+      ""
+    ],
+    [
+      "L3",
+      "Oil Sampling and Gas Analysis",
+      ""
+    ],
+    [
+      "L4",
+      "No Load Test and Performance Observation",
       ""
     ]
   ],
@@ -2501,86 +2671,161 @@
   ],
   "DC_DISTRIBUTION": [
     [
-      "L2",
-      "RIF"
-    ],
-    [
-      "L2",
-      "IVF"
+      "L3",
+      "General Inspection",
+      ""
     ],
     [
       "L3",
-      "Visual Inspection"
+      "MCBs Characteristic and Voltage Check on Outgoing Terminals",
+      ""
     ],
     [
       "L3",
-      "MCB / Fuse Coordination Check"
+      "MCB Trip Remote Status Check (Auxiliary Contact)",
+      ""
     ],
     [
       "L3",
-      "Bus Voltage Measurement"
+      "Testing and Settings of Voltmeters",
+      ""
     ],
     [
       "L3",
-      "Insulation Resistance"
+      "Testing and Settings of Ammeters",
+      ""
     ],
     [
       "L3",
-      "Circuit Continuity Verification"
+      "Testing and Settings of Voltage Control Relays",
+      ""
     ],
     [
       "L3",
-      "Load Distribution Check (per circuit)"
+      "Testing and Settings of Earth Fault Relay",
+      ""
     ],
     [
       "L3",
-      "Labelling and Schedule Verification"
+      "Testing and Operation of Auto Changeover Switch",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Operation of Push Button Test Lamps",
+      ""
+    ],
+    [
+      "L3",
+      "Test Telecontrol - Signals and Alarms Verification",
+      ""
     ],
     [
       "L4",
-      "DC Supply to Protection / SCADA Verification"
+      "SAS Signal Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal Check",
+      ""
     ]
   ],
   "UPS": [
     [
-      "L2",
-      "RIF"
-    ],
-    [
-      "L2",
-      "IVF"
+      "L3",
+      "Visual and Mechanical Inspection",
+      ""
     ],
     [
       "L3",
-      "Visual Inspection"
+      "Record Nameplate of Equipment",
+      ""
     ],
     [
       "L3",
-      "Input/Output Voltage Measurement"
+      "Check Tightness of Terminal Connections",
+      ""
     ],
     [
       "L3",
-      "Transfer Time Test (mains \u2192 battery)"
+      "Check Grounding",
+      ""
     ],
     [
       "L3",
-      "Transfer Time Test (battery \u2192 mains)"
+      "Pre-Startup Verification",
+      ""
     ],
     [
       "L3",
-      "Battery Autonomy Under Load"
+      "Start-Up Testing",
+      ""
     ],
     [
       "L3",
-      "Alarm Function Test"
+      "UPS Metering Calibration",
+      ""
     ],
     [
       "L3",
-      "Bypass Operation Check"
+      "Burn-In Test",
+      ""
     ],
     [
       "L3",
-      "Output Waveform and THD Check"
+      "Battery Discharge Test",
+      ""
+    ],
+    [
+      "L4",
+      "Normal Operating Condition Check",
+      ""
+    ],
+    [
+      "L4",
+      "Steady State Load Test",
+      ""
+    ],
+    [
+      "L4",
+      "Transient State Load Test",
+      ""
+    ],
+    [
+      "L4",
+      "UPS Bypass Mode",
+      ""
+    ],
+    [
+      "L4",
+      "UPS Generator Mode",
+      ""
+    ],
+    [
+      "L4",
+      "Overload Test",
+      ""
+    ],
+    [
+      "L4",
+      "Maintenance Bypass Transfer",
+      ""
+    ],
+    [
+      "L4",
+      "Utility Failure and Battery Discharge Test",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal Check",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check",
+      ""
     ]
   ],
   "DC_EARTH_FAULT": [
@@ -2655,6 +2900,1368 @@
     [
       "L3",
       "Connection Torque and Condition Check"
+    ]
+  ],
+  "BUSBAR_PROTECTION_RELAY": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "Busbar Differential Check",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "50N Neutral Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51N Neutral Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "50G Ground Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51G Ground Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "Busbar 1 Stability Test",
+      ""
+    ],
+    [
+      "L4",
+      "Busbar 2 Stability Test",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "BUSBAR_PROTECTION_CENTRAL": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "Communication Check for All Bay Units",
+      ""
+    ],
+    [
+      "L3",
+      "Logic Check",
+      ""
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "BBP_PANEL": [
+    [
+      "L3",
+      "Visual Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "AC MCBs",
+      ""
+    ],
+    [
+      "L3",
+      "DC MCBs",
+      ""
+    ],
+    [
+      "L3",
+      "Cubicle AC Power Up and Scheme Check",
+      ""
+    ],
+    [
+      "L3",
+      "Cubicle DC Power Up and Scheme Check",
+      ""
+    ],
+    [
+      "L3",
+      "Inter Panel Wiring Checks",
+      ""
+    ],
+    [
+      "L3",
+      "Alarms and Indication Check",
+      ""
+    ],
+    [
+      "L3",
+      "Switch/Push Button Operation",
+      ""
+    ],
+    [
+      "L3",
+      "Test Switch",
+      ""
+    ],
+    [
+      "L3",
+      "Auxiliary Relay Check",
+      ""
+    ],
+    [
+      "L3",
+      "All Spare Contact Healthiness Check",
+      ""
+    ]
+  ],
+  "LOCKOUT_RELAY": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Operation Check",
+      ""
+    ]
+  ],
+  "IED_87T": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "87T Transformer Differential Protection",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "50N Neutral Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51N Neutral Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "50G Ground Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51G Ground Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "81O Overfrequency",
+      ""
+    ],
+    [
+      "L3",
+      "81U Underfrequency",
+      ""
+    ],
+    [
+      "L3",
+      "59 Overvoltage",
+      ""
+    ],
+    [
+      "L3",
+      "27 Undervoltage",
+      ""
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "IED_REF": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "64REF Restricted Earth Fault - HV",
+      ""
+    ],
+    [
+      "L3",
+      "64REF Restricted Earth Fault - MV",
+      ""
+    ],
+    [
+      "L3",
+      "SBEF",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "50N Neutral Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51N Neutral Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "50G Ground Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51G Ground Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "IED_AVR": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "AVR Relay Testing",
+      ""
+    ],
+    [
+      "L3",
+      "AVR Remote/Manual Operation Check",
+      ""
+    ],
+    [
+      "L3",
+      "AVR Interlock",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "AVR Functional Check",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "IED_87L": [
+    [
+      "L3",
+      "Wiring Check",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Power On Test",
+      ""
+    ],
+    [
+      "L3",
+      "Relay Configuration Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Measurement Validation",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Inputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "Digital Outputs Test",
+      ""
+    ],
+    [
+      "L3",
+      "LED Test",
+      ""
+    ],
+    [
+      "L3",
+      "Time Sync Check",
+      ""
+    ],
+    [
+      "L3",
+      "87L Line Differential Protection",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent HV",
+      ""
+    ],
+    [
+      "L3",
+      "50 Phase Instantaneous Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "51 Phase Time Overcurrent MV",
+      ""
+    ],
+    [
+      "L3",
+      "50N Neutral Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51N Neutral Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "50G Ground Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "51G Ground Time Overcurrent",
+      ""
+    ],
+    [
+      "L3",
+      "59 Overvoltage",
+      ""
+    ],
+    [
+      "L3",
+      "27 Undervoltage",
+      ""
+    ],
+    [
+      "L3",
+      "Disturbance Recorder Check",
+      ""
+    ],
+    [
+      "L3",
+      "Event Check",
+      ""
+    ],
+    [
+      "L3",
+      "Trip Validation - Lockout",
+      ""
+    ],
+    [
+      "L3",
+      "OCC File Attached",
+      ""
+    ],
+    [
+      "L4",
+      "RJ45 EPMS Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "EPMS Signal/Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Signal Check / Screenshot Validation",
+      ""
+    ],
+    [
+      "L4",
+      "Final Setting Verification",
+      ""
+    ]
+  ],
+  "B_WATCH_3": [
+    [
+      "L3",
+      "Visual Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "Pressure and Temperature Sensor Installation Check",
+      ""
+    ],
+    [
+      "L3",
+      "Temperature Fail Check",
+      ""
+    ],
+    [
+      "L3",
+      "Current Sensor",
+      ""
+    ],
+    [
+      "L3",
+      "Phase L1 - Threshold Test for Level 1, 2 and 3",
+      ""
+    ],
+    [
+      "L3",
+      "Phase L2 - Threshold Test for Level 1, 2 and 3",
+      ""
+    ],
+    [
+      "L3",
+      "Phase L3 - Threshold Test for Level 1, 2 and 3",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm Check in Relay",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm Check in HMI",
+      ""
+    ],
+    [
+      "L4",
+      "Signal Check with SAS",
+      ""
+    ]
+  ],
+  "VPIS": [
+    [
+      "L3",
+      "Visual Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "VPIS Functional Test",
+      ""
+    ],
+    [
+      "L3",
+      "VPIS Auxiliary Contact Output Check",
+      ""
+    ]
+  ],
+  "ARC_FLASH_DETECTION": [
+    [
+      "L3",
+      "Visual Inspection and Equipment Details Validation",
+      ""
+    ],
+    [
+      "L3",
+      "DC Supply Check",
+      ""
+    ],
+    [
+      "L3",
+      "Arc Flash Sensor Loop Continuity Check",
+      ""
+    ],
+    [
+      "L4",
+      "AFD Relay - Light-Only Trip Test",
+      ""
+    ],
+    [
+      "L4",
+      "AFD Relay - Overcurrent-Only Trip Test",
+      ""
+    ],
+    [
+      "L4",
+      "AFD Trip Output Verification - TC1 and TC2",
+      ""
+    ],
+    [
+      "L4",
+      "AFD Alarm Output Check",
+      ""
+    ],
+    [
+      "L4",
+      "AFD Integration with CB Trip Matrix",
+      ""
+    ]
+  ],
+  "AC_POWER_PANEL": [
+    [
+      "L3",
+      "General Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "MCBs Characteristic, Voltage and Phase Sequence Check",
+      ""
+    ],
+    [
+      "L3",
+      "MCB Trip Remote Status Check (Auxiliary Contact)",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Voltmeters",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Powermeters",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Ammeters",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Measurement",
+      ""
+    ],
+    [
+      "L3",
+      "Communication Check",
+      ""
+    ],
+    [
+      "L3",
+      "MCB Remote/Manual Operation",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm and Indication Check",
+      ""
+    ],
+    [
+      "L4",
+      "ATS Integration Check",
+      ""
+    ]
+  ],
+  "AC_UPS_PANEL": [
+    [
+      "L3",
+      "General Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "MCBs Characteristic, Voltage and Phase Sequence Check",
+      ""
+    ],
+    [
+      "L3",
+      "MCB Trip Remote Status Check (Auxiliary Contact)",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Voltmeters",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Powermeters",
+      ""
+    ],
+    [
+      "L3",
+      "Testing and Settings of Ammeters",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Measurement",
+      ""
+    ],
+    [
+      "L3",
+      "Communication Check",
+      ""
+    ],
+    [
+      "L3",
+      "MCB Remote/Manual Operation",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm and Indication Check",
+      ""
+    ],
+    [
+      "L4",
+      "UPS Changeover Test",
+      ""
+    ]
+  ],
+  "SAS_PANEL": [
+    [
+      "L3",
+      "General Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "MCBs Voltage and Phase Sequence Check",
+      ""
+    ],
+    [
+      "L3",
+      "MCB Trip Remote Status Check (Auxiliary Contact)",
+      ""
+    ],
+    [
+      "L3",
+      "Hardware Check",
+      ""
+    ],
+    [
+      "L3",
+      "System Boot",
+      ""
+    ],
+    [
+      "L3",
+      "Network Configuration",
+      ""
+    ],
+    [
+      "L3",
+      "Communication Check",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm and Indication Check",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Integration Test",
+      ""
+    ]
+  ],
+  "ATS": [
+    [
+      "L4",
+      "ATS Scheme Check",
+      ""
+    ],
+    [
+      "L4",
+      "Incoming-1 Fail - Changeover Verified",
+      ""
+    ],
+    [
+      "L4",
+      "Incoming-2 Fail - Changeover Verified",
+      ""
+    ],
+    [
+      "L4",
+      "Incoming 1 and 2 Fail",
+      ""
+    ],
+    [
+      "L4",
+      "UPS Mode",
+      ""
+    ],
+    [
+      "L4",
+      "Return to Normal Operation",
+      ""
+    ]
+  ],
+  "DIESEL_GENERATOR": [
+    [
+      "L3",
+      "Visual and Mechanical Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "Record Nameplate of Equipment",
+      ""
+    ],
+    [
+      "L3",
+      "Check Tightness of Terminal Connections",
+      ""
+    ],
+    [
+      "L3",
+      "Check Grounding",
+      ""
+    ],
+    [
+      "L3",
+      "Check Fuel, Oil and Coolant Levels",
+      ""
+    ],
+    [
+      "L3",
+      "Battery and Starter Motor Check",
+      ""
+    ],
+    [
+      "L3",
+      "Pre-Start Verification",
+      ""
+    ],
+    [
+      "L3",
+      "Engine Start Test (Manual)",
+      ""
+    ],
+    [
+      "L3",
+      "Engine Start Test (Auto)",
+      ""
+    ],
+    [
+      "L3",
+      "Load Bank Test",
+      ""
+    ],
+    [
+      "L3",
+      "Safety Shutdown Tests (High Temp, Low Oil)",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm and Indication Check",
+      ""
+    ],
+    [
+      "L3",
+      "Communication Check",
+      ""
+    ],
+    [
+      "L4",
+      "Auto Start on Mains Failure",
+      ""
+    ],
+    [
+      "L4",
+      "ATS Integration Test",
+      ""
+    ],
+    [
+      "L4",
+      "Full Load Run Test",
+      ""
+    ]
+  ],
+  "DGA_MONITOR": [
+    [
+      "L3",
+      "Visual and Mechanical Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "Record Nameplate of Equipment",
+      ""
+    ],
+    [
+      "L3",
+      "Check Tightness of Terminal Connections",
+      ""
+    ],
+    [
+      "L3",
+      "Check Grounding",
+      ""
+    ],
+    [
+      "L3",
+      "Communication between DGA and Transformers",
+      ""
+    ],
+    [
+      "L3",
+      "Sensor Calibration Verification",
+      ""
+    ],
+    [
+      "L3",
+      "Alarm Threshold Configuration",
+      ""
+    ],
+    [
+      "L4",
+      "SAS Integration Check",
+      ""
+    ]
+  ],
+  "LV_CONTROL_CABLE": [
+    [
+      "L3",
+      "Tag Verification / Continuity and Polarity Check",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Test",
+      ""
+    ],
+    [
+      "L3",
+      "RJ45 / FO Cable Test",
+      ""
+    ]
+  ],
+  "LV_POWER_CABLE": [
+    [
+      "L3",
+      "Tag Verification / Continuity and Phase Order Check",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Test",
+      ""
+    ]
+  ],
+  "NER_STANDALONE": [
+    [
+      "L3",
+      "Visual and Mechanical Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Test",
+      ""
+    ],
+    [
+      "L3",
+      "Ohmic Resistance Measurement",
+      ""
+    ],
+    [
+      "L3",
+      "CT Insulation Resistance Test",
+      ""
+    ],
+    [
+      "L3",
+      "CT Ohmic Resistance Measurement",
+      ""
+    ],
+    [
+      "L3",
+      "CT Ratio Test",
+      ""
+    ],
+    [
+      "L3",
+      "CT Polarity Test",
+      ""
+    ],
+    [
+      "L3",
+      "CT Burden Test",
+      ""
+    ],
+    [
+      "L3",
+      "CT Primary Injection",
+      ""
+    ],
+    [
+      "L4",
+      "NER Protection Trip Test",
+      ""
+    ],
+    [
+      "L4",
+      "NER EPMS Integration",
+      ""
+    ]
+  ],
+  "AUX_TRANSFORMER_ENHANCED": [
+    [
+      "L3",
+      "Visual and Mechanical Inspection",
+      ""
+    ],
+    [
+      "L3",
+      "Insulation Resistance Test",
+      ""
+    ],
+    [
+      "L3",
+      "Winding Resistance Test HV and LV",
+      ""
+    ],
+    [
+      "L3",
+      "Voltage Ratio on All Taps",
+      ""
+    ],
+    [
+      "L3",
+      "Vector Group Test",
+      ""
+    ],
+    [
+      "L3",
+      "No Load Current and Losses",
+      ""
+    ],
+    [
+      "L3",
+      "Impedance Voltage and Load Losses",
+      ""
+    ],
+    [
+      "L3",
+      "Energization Check",
+      ""
     ]
   ]
 }

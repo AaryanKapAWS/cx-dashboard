@@ -109,6 +109,37 @@ const EQUIPMENT_GROUPS = [
       { type: 'EPMS_GIS', label: 'EPMS (GIS)' },
     ]
   },
+  {
+    label: 'Protection Relays & BBP',
+    items: [
+      { type: 'IED_87T', label: '87T Transformer Differential' },
+      { type: 'IED_REF', label: 'REF Protection Relay' },
+      { type: 'IED_AVR', label: 'AVR (Voltage Regulator)' },
+      { type: 'IED_87L', label: '87L Line Differential' },
+      { type: 'BUSBAR_PROTECTION_RELAY', label: 'Busbar Protection Relay' },
+      { type: 'BUSBAR_PROTECTION_CENTRAL', label: 'Busbar Protection Central Unit' },
+      { type: 'BBP_PANEL', label: 'BBP Panel Functional' },
+      { type: 'LOCKOUT_RELAY', label: 'Lockout Relay (86)' },
+      { type: 'ARC_FLASH_DETECTION', label: 'Arc Flash Detection' },
+      { type: 'VPIS', label: 'VPIS (Voltage Presence)' },
+    ]
+  },
+  {
+    label: 'Auxiliary & Infrastructure',
+    items: [
+      { type: 'AC_POWER_PANEL', label: 'AC Power Panel' },
+      { type: 'AC_UPS_PANEL', label: 'AC UPS Panel' },
+      { type: 'SAS_PANEL', label: 'SAS / SCADA Panel' },
+      { type: 'ATS', label: 'ATS (Auto Transfer Switch)' },
+      { type: 'DIESEL_GENERATOR', label: 'Diesel Generator' },
+      { type: 'DGA_MONITOR', label: 'DGA Monitoring Panel' },
+      { type: 'NER_STANDALONE', label: 'NER (Standalone)' },
+      { type: 'AUX_TRANSFORMER_ENHANCED', label: 'Auxiliary Transformer' },
+      { type: 'LV_CONTROL_CABLE', label: 'LV Control Cable' },
+      { type: 'LV_POWER_CABLE', label: 'LV Power Cable' },
+      { type: 'B_WATCH_3', label: 'B-Watch 3 (GIS Monitor)' },
+    ]
+  },
 ]
 
 // ─── TYPE BADGE COLOURS (matching Option 2 EquipmentTable) ──────────────────
@@ -426,6 +457,28 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
     setSelectedLine(newLine.id)
     setSelectedFeeder(null)
     setAddChildFor(null)
+  }
+
+  function duplicateLine(id) {
+    const source = lines.find(l => l.id === id)
+    if (!source) return
+    const newLine = {
+      ...source,
+      id: generateId(),
+      name: (() => {
+        const baseName = source.name.replace(/ \(Copy( \d+)?\)$/, '')
+        const existing = lines.filter(l => l.name.startsWith(baseName + ' (Copy')).length
+        return existing === 0 ? baseName + ' (Copy)' : baseName + ` (Copy ${existing + 1})`
+      })(),
+      equipment: source.equipment.map(e => ({ ...e, id: generateId() })),
+      feeders: (source.feeders || []).map(f => ({
+        ...f,
+        id: generateId(),
+        equipment: f.equipment.map(e => ({ ...e, id: generateId() })),
+      })),
+      children: [],
+    }
+    setLines([...lines, newLine])
   }
 
   function removeLine(id) {
@@ -848,6 +901,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                 <>
                   <button onClick={() => moveLine(activeLine.id, -1)} style={moveBtn}>▲</button>
                   <button onClick={() => moveLine(activeLine.id, 1)} style={moveBtn}>▼</button>
+                  <button onClick={() => duplicateLine(activeLine.id)} style={{ ...moveBtn, color: '#3b82f6', borderColor: '#bfdbfe' }} title="Duplicate section">📋</button>
                   <button onClick={() => removeLine(activeLine.id)} style={{ ...moveBtn, color: '#ef4444', borderColor: '#fecaca' }}>✕</button>
                 </>
               )}
@@ -1103,7 +1157,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                       const tc = getTypeColour(item.type)
                       return (
                         <button key={item.type}
-                          onClick={() => { addEquipment(paletteTarget.lineId, paletteTarget.feederId, item.type); setPaletteOpen(false); setPaletteFilter('') }}
+                          onClick={() => { addEquipment(paletteTarget.lineId, paletteTarget.feederId, item.type) }}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left',
                             padding: '7px 8px', fontSize: 12, border: 'none', background: 'transparent',
