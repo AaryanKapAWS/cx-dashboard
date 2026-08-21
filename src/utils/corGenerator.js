@@ -160,13 +160,13 @@ export async function generateCOR(equipmentData, projectName) {
 
   wsCover.getColumn(1).width = 2
   wsCover.getColumn(2).width = 2.43
-  wsCover.getColumn(3).width = 42
-  wsCover.getColumn(4).width = 26
-  wsCover.getColumn(5).width = 20
-  wsCover.getColumn(6).width = 14
-  wsCover.getColumn(7).width = 14
-  wsCover.getColumn(8).width = 20
-  wsCover.getColumn(9).width = 20
+  wsCover.getColumn(3).width = 32
+  wsCover.getColumn(4).width = 24
+  wsCover.getColumn(5).width = 8
+  wsCover.getColumn(6).width = 22
+  wsCover.getColumn(7).width = 18
+  wsCover.getColumn(8).width = 12
+  wsCover.getColumn(9).width = 12
 
   const FIELD_BORDER = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
   const SECTION_FILL = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.navy } }
