@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import testTemplates from '../data/test_templates.json'
+import { getCustomTemplates } from '../utils/customTemplates'
 import TestCustomiser from './TestCustomiser'
 
 const TYPE_LABELS = {
@@ -37,7 +38,11 @@ const TYPE_COLORS = {
 function getTestCount(item) {
   if (item.customTests) return item.customTests.filter(t => t.enabled).length
   const tmpl = testTemplates[item.type]
-  return tmpl ? tmpl.length : 0
+  if (tmpl) return tmpl.length
+  // Fallback: check custom templates in localStorage
+  const ct = getCustomTemplates().find(t => t.id === item.type)
+  if (ct) return ct.tests.length
+  return 0
 }
 
 function getDisplayName(item) {

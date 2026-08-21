@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import ExcelJS from 'exceljs'
 import ExportHistory from './ExportHistory'
+import TemplateManager from './TemplateManager'
+import TEST_TEMPLATES from '../data/test_templates.json'
 
 export default function SettingsPanel() {
   // ── Asana connection ──
@@ -17,6 +19,7 @@ export default function SettingsPanel() {
 
   // ── Sub-section toggle ──
   const [showExportHistory, setShowExportHistory] = useState(false)
+  const [showTemplateManager, setShowTemplateManager] = useState(false)
 
   // ── Project Presets ──
   const [presets, setPresets] = useState(() => {
@@ -154,10 +157,20 @@ export default function SettingsPanel() {
         if (['Project Overview', 'Cx Programme', 'Cx Charts', 'Certificate of Readiness', 'Revision History'].includes(ws.name)) continue
 
         const sheetData = []
-        ws.eachRow((row, rowNum) => {
-          if (rowNum < 4) return // Skip header rows
-          const testName = row.getCell(5).value // Col E: Test Description
-          if (!testName || typeof testName !== 'string') return
+        const rowCount = ws.rowCount || 500
+        for (let rowNum = 4; rowNum <= rowCount; rowNum++) {
+          const row = ws.getRow(rowNum)
+          let testName = row.getCell(5).value // Col E: Test Description
+          if (!testName) continue
+          // Handle ExcelJS rich text objects, formulas, etc.
+          if (typeof testName === 'object') {
+            if (testName.richText) testName = testName.richText.map(r => r.text).join('')
+            else if (testName.result) testName = String(testName.result)
+            else testName = String(testName)
+          } else {
+            testName = String(testName)
+          }
+          if (!testName.trim()) continue
 
           const rowData = { test: testName.trim(), row: rowNum }
 
@@ -172,23 +185,33 @@ export default function SettingsPanel() {
           if (actualFinish) rowData.actualFinish = actualFinish
 
           // YES/NO columns
-          const satCompleted = row.getCell(10).value
-          const witnessed = row.getCell(11).value
-          const completed = row.getCell(12).value
-          const reportReceived = row.getCell(13).value
-          const reportProcore = row.getCell(14).value
-          const reportReviewed = row.getCell(15).value
-          const reportClosed = row.getCell(18).value
+          function cellStr(col) {
+            const v = row.getCell(col).value
+            if (!v) return ''
+            if (typeof v === 'object') {
+              if (v.richText) return v.richText.map(r => r.text).join('').trim()
+              if (v.result !== undefined) return String(v.result).trim()
+              return String(v).trim()
+            }
+            return String(v).trim()
+          }
+          const satCompleted = cellStr(10)
+          const witnessed = cellStr(11)
+          const completed = cellStr(12)
+          const reportReceived = cellStr(13)
+          const reportProcore = cellStr(14)
+          const reportReviewed = cellStr(15)
+          const reportClosed = cellStr(18)
 
-          if (satCompleted) rowData.satCompleted = String(satCompleted).toUpperCase()
-          if (witnessed) rowData.witnessed = String(witnessed).toUpperCase()
-          if (completed) rowData.completed = String(completed).toUpperCase()
+          if (satCompleted) rowData.satCompleted = satCompleted.toUpperCase()
+          if (witnessed) rowData.witnessed = witnessed.toUpperCase()
+          if (completed) rowData.completed = completed.toUpperCase()
           // Only write report columns if SAT is confirmed
-          if (satCompleted && String(satCompleted).toUpperCase() === 'YES') {
-            if (reportReceived) rowData.reportReceived = String(reportReceived).toUpperCase()
-            if (reportProcore) rowData.reportProcore = String(reportProcore).toUpperCase()
-            if (reportReviewed) rowData.reportReviewed = String(reportReviewed).toUpperCase()
-            if (reportClosed) rowData.reportClosed = String(reportClosed).toUpperCase()
+          if (satCompleted === 'YES') {
+            if (reportReceived) rowData.reportReceived = reportReceived.toUpperCase()
+            if (reportProcore) rowData.reportProcore = reportProcore.toUpperCase()
+            if (reportReviewed) rowData.reportReviewed = reportReviewed.toUpperCase()
+            if (reportClosed) rowData.reportClosed = reportClosed.toUpperCase()
           }
 
           // Text columns
@@ -197,13 +220,9 @@ export default function SettingsPanel() {
           if (obs) rowData.obs = String(obs)
           if (comments) rowData.comments = String(comments)
 
-          // Only add if there's actual data
-          const hasData = Object.keys(rowData).length > 2 // more than just test+row
-          if (hasData) {
-            sheetData.push(rowData)
-            totalTests++
-          }
-        })
+          sheetData.push(rowData)
+          totalTests++
+        }
 
         if (sheetData.length > 0) {
           parsed[ws.name] = sheetData
@@ -222,8 +241,56 @@ export default function SettingsPanel() {
 
   function handleCorLoadNow() {
     if (!corParsedData) return
+    
+    // Build test_progress directly from parsed COR data
+    // Since the COR was generated by this tool, we can build progress keys
+    // from the sheet structure: sheet name → feeder_ref, equipment separators → displayName
+    const progress = JSON.parse(localStorage.getItem('test_progress') || '{}')
+    let matched = 0
+    let total = 0
+
+    // For each sheet in parsed COR data
+    for (const [sheetName, sheetTests] of Object.entries(corParsedData)) {
+      // Track current equipment group (from separator rows)
+      let currentEquipment = sheetName
+      let testIdx = 0
+      
+      for (const corTest of sheetTests) {
+        const testName = (corTest.test || '').trim()
+        if (!testName) continue
+        
+        // Check if this is an equipment separator row (no level, typically bold equipment name)
+        // Equipment separators don't have satCompleted/witnessed/etc and have no level
+        if (!corTest.satCompleted && !corTest.witnessed && !corTest.completed && 
+            !corTest.plannedStart && !corTest.plannedFinish && !corTest.actualStart && !corTest.actualFinish &&
+            !corTest.reportReceived && !corTest.reportClosed) {
+          // This might be an equipment separator — use as current equipment name
+          currentEquipment = testName
+          testIdx = 0
+          continue
+        }
+        
+        total++
+        const tested = corTest.satCompleted === 'YES'
+        const witnessed = corTest.witnessed === 'YES'
+        const closed = corTest.reportClosed === 'YES'
+        
+        if (tested || witnessed || closed) {
+          // Build progress key: feeder_ref_equipmentName_testIdx
+          // Use sheetName as a proxy for feeder_ref, currentEquipment for displayName
+          const key = `${sheetName.replace(/\s/g, '_')}_${currentEquipment.replace(/\s/g, '_')}_${testIdx}`
+          progress[key] = { tested, witnessed, closed }
+          matched++
+        }
+        testIdx++
+      }
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('test_progress', JSON.stringify(progress))
     localStorage.setItem('cor_imported_data', JSON.stringify(corParsedData))
-    setCorImportStatus('✓ Data loaded — will apply on next COR export')
+    
+    setCorImportStatus(`✓ Loaded! ${matched} tests with progress data saved (${total} total parsed). Check the Progress tab.`)
   }
 
   function handleCorSaveWithProject() {
@@ -261,9 +328,9 @@ export default function SettingsPanel() {
   const cardStyle = {
     background: '#fff',
     border: '1px solid #e2e8f0',
-    borderRadius: 8,
-    padding: '20px 24px',
-    marginBottom: 16,
+    borderRadius: 10,
+    padding: '28px 32px',
+    marginBottom: 24,
   }
 
   const labelStyle = {
@@ -282,20 +349,20 @@ export default function SettingsPanel() {
     borderRadius: 6,
     fontSize: 12,
     width: '100%',
-    maxWidth: 280,
+    maxWidth: 360,
     color: '#0f172a',
   }
 
   const sectionHeaderStyle = {
     background: '#232F3E',
     color: '#fff',
-    padding: '10px 16px',
+    padding: '12px 20px',
     borderRadius: '6px 6px 0 0',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 700,
-    margin: '0 -24px -20px -24px',
-    marginBottom: 16,
+    margin: '-28px -32px 20px -32px',
     fontFamily: 'Times New Roman, serif',
+    letterSpacing: '0.5px',
   }
 
   const btnPrimary = {
@@ -317,8 +384,8 @@ export default function SettingsPanel() {
   }
 
   return (
-    <div style={{ padding: '24px', maxWidth: 720, margin: '0 auto' }}>
-      <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', margin: '0 0 20px' }}>⚙️ Settings</h2>
+    <div style={{ padding: '40px 60px', maxWidth: 1000, margin: '0 auto' }}>
+      <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 32px' }}>⚙️ Settings</h2>
 
       {/* ═══ ASANA CONNECTION ═══ */}
       <div style={cardStyle}>
@@ -513,6 +580,24 @@ export default function SettingsPanel() {
             <button onClick={handleCorSaveWithProject} style={btnSecondary}>
               💾 Save with Project
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ CUSTOM EQUIPMENT TEMPLATES ═══ */}
+      <div style={cardStyle}>
+        <div
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+          onClick={() => setShowTemplateManager(!showTemplateManager)}
+        >
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', margin: 0 }}>⚙️ Custom Equipment Templates</h3>
+          <span style={{ fontSize: 12, color: '#64748b', transform: showTemplateManager ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+            ▼
+          </span>
+        </div>
+        {showTemplateManager && (
+          <div style={{ marginTop: 16 }}>
+            <TemplateManager />
           </div>
         )}
       </div>

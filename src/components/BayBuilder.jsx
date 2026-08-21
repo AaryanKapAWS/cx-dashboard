@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getCustomTemplates, getAllTemplatesWithCustom } from '../utils/customTemplates'
 import TEST_TEMPLATES from '../data/test_templates.json'
 
 // ─── EQUIPMENT PALETTE ───────────────────────────────────────────────────────
@@ -180,8 +181,16 @@ const TYPE_COLOURS = {
 const DEFAULT_COLOUR = { bg: '#F5F5F5', text: '#424242', border: '#E0E0E0' }
 
 function getTypeColour(type) { return TYPE_COLOURS[type] || DEFAULT_COLOUR }
-function getTestCount(type) { return TEST_TEMPLATES[type]?.length || 0 }
+function getTestCount(type) {
+  const custom = getCustomTemplates()
+  const ct = custom.find(t => t.id === type)
+  if (ct) return ct.tests.length
+  return TEST_TEMPLATES[type]?.length || 0
+}
 function getLabel(type) {
+  const custom = getCustomTemplates()
+  const ct = custom.find(t => t.id === type)
+  if (ct) return ct.label
   for (const group of EQUIPMENT_GROUPS) {
     const found = group.items.find(i => i.type === type)
     if (found) return found.label
@@ -351,6 +360,8 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteTarget, setPaletteTarget] = useState(null) // { lineId, feederId? }
   const [paletteFilter, setPaletteFilter] = useState('')
+  const [customRefresh, setCustomRefresh] = useState(0)
+  const [customCreateOpen, setCustomCreateOpen] = useState(false)
   const [addChildFor, setAddChildFor] = useState(null)
   const [scopeCollapsed, setScopeCollapsed] = useState(false)
   const [subtypePrompt, setSubtypePrompt] = useState(null) // { presetId, parentId } when awaiting AIS/GIS choice
@@ -398,6 +409,12 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
           for (let q = 0; q < (eq.qty || 1); q++) {
             const suffix = (eq.qty || 1) > 1 ? ` ${q + 1}` : ''
             const feederLabel = parentName ? line.name : (hasFeeders ? 'Overall' : '')
+            // Attach custom tests for custom equipment types
+            let customTests = null
+            if (eq.type && eq.type.startsWith('custom_')) {
+              const ct = getCustomTemplates().find(t => t.id === eq.type)
+              if (ct) customTests = ct.tests.map(t => ({ level: t[0], name: t[1], enabled: true }))
+            }
             items.push({
               type: eq.type, name: (eq.names && eq.names[q]) || (eq.name ? `${eq.name}${suffix}` : `${getLabel(eq.type)}${suffix}`),
               displayName: (eq.names && eq.names[q]) || (eq.name ? `${eq.name}${suffix}` : `${getLabel(eq.type)}${suffix}`),
@@ -406,6 +423,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
               feeder_type_label: feederLabel || sectionName, section: line.preset || 'custom',
               child_section: parentName ? line.name : null,
               parent_section: parentName || null,
+              ...(customTests ? { customTests } : {}),
             })
           }
         }
@@ -413,6 +431,12 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
           for (const eq of feeder.equipment) {
             for (let q = 0; q < (eq.qty || 1); q++) {
               const suffix = (eq.qty || 1) > 1 ? ` ${q + 1}` : ''
+              // Attach custom tests for custom equipment types in feeders
+              let customTestsF = null
+              if (eq.type && eq.type.startsWith('custom_')) {
+                const ct = getCustomTemplates().find(t => t.id === eq.type)
+                if (ct) customTestsF = ct.tests.map(t => ({ level: t[0], name: t[1], enabled: true }))
+              }
               items.push({
                 type: eq.type, name: (eq.names && eq.names[q]) || (eq.name ? `${eq.name}${suffix}` : `${getLabel(eq.type)}${suffix}`),
                 displayName: (eq.names && eq.names[q]) || (eq.name ? `${eq.name}${suffix}` : `${getLabel(eq.type)}${suffix}`),
@@ -421,6 +445,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                 section: line.preset || 'switchgear',
                 child_section: parentName ? line.name : null,
                 parent_section: parentName || null,
+                ...(customTestsF ? { customTests: customTestsF } : {}),
               })
             }
           }
@@ -1137,7 +1162,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
       {paletteOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(2px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => { setPaletteOpen(false); setPaletteFilter('') }}>
-          <div style={{ background: '#fff', borderRadius: 14, width: '90vw', maxWidth: 1200, height: '92vh', boxShadow: '0 25px 50px rgba(0,0,0,0.25)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+          <div style={{ position: 'relative', background: '#fff', borderRadius: 14, width: '90vw', maxWidth: 1200, height: '92vh', boxShadow: '0 25px 50px rgba(0,0,0,0.25)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
             onClick={e => e.stopPropagation()}>
             {/* Search header */}
             <div style={{ padding: '16px 24px 14px', background: '#232F3E' }}>
@@ -1175,10 +1200,142 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                   </div>
                 )
               })}
+
+              {/* ─── CUSTOM EQUIPMENT SECTION ─── */}
+              {(() => {
+                const customTemplates = getCustomTemplates()
+                const filteredCustom = customTemplates.filter(t =>
+                  t.label.toLowerCase().includes(paletteFilter.toLowerCase()) ||
+                  t.id.toLowerCase().includes(paletteFilter.toLowerCase())
+                )
+                if (filteredCustom.length === 0 && !paletteFilter) {
+                  return (
+                    <div style={{ width: '23%', minWidth: 180, paddingRight: 16, marginBottom: 20 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 4, borderBottom: '2px solid #60a5fa' }}>Custom Equipment</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', padding: '8px 0', fontStyle: 'italic' }}>No custom types yet</div>
+                      <button
+                        onClick={() => setCustomCreateOpen(true)}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', textAlign: 'left', padding: '7px 8px', fontSize: 12, border: '1px dashed #60a5fa', background: 'transparent', cursor: 'pointer', color: '#60a5fa', borderRadius: 4, marginTop: 4 }}
+                      >
+                        <span>+</span><span>Create Custom</span>
+                      </button>
+                    </div>
+                  )
+                }
+                if (filteredCustom.length === 0 && paletteFilter) return null
+                return (
+                  <div style={{ width: '23%', minWidth: 180, paddingRight: 16, marginBottom: 20 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 4, borderBottom: '2px solid #60a5fa' }}>Custom Equipment</div>
+                    {filteredCustom.map(ct => (
+                      <button key={ct.id}
+                        onClick={() => { addEquipment(paletteTarget.lineId, paletteTarget.feederId, ct.id) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', textAlign: 'left', padding: '7px 8px', fontSize: 12, border: 'none', background: 'transparent', cursor: 'pointer', color: '#1e293b', borderRadius: 4, transition: 'background 0.1s' }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa', flexShrink: 0 }} />
+                        <span style={{ flex: 1 }}>{ct.label}</span>
+                        <span style={{ fontSize: 10, color: '#b0b0b0' }}>{ct.tests.length}</span>
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCustomCreateOpen(true)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', textAlign: 'left', padding: '7px 8px', fontSize: 12, border: '1px dashed #60a5fa', background: 'transparent', cursor: 'pointer', color: '#60a5fa', borderRadius: 4, marginTop: 4 }}
+                    >
+                      <span>+</span><span>Create Custom</span>
+                    </button>
+                  </div>
+                )
+              })()}
             </div>
+
+            {/* ─── QUICK-CREATE CUSTOM EQUIPMENT MODAL (inside palette) ─── */}
+            {customCreateOpen && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,20,25,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
+                onClick={() => setCustomCreateOpen(false)}>
+                <div style={{ background: '#0f1419', border: '1px solid #2d3748', borderRadius: 10, width: 460, maxHeight: '70vh', overflow: 'auto', padding: 24 }}
+                  onClick={e => e.stopPropagation()}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#e2e8f0', marginBottom: 16 }}>Quick Create Custom Equipment</div>
+                  <QuickCustomCreate onCreated={() => { setCustomCreateOpen(false); setCustomRefresh(r => r + 1) }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── QUICK CUSTOM CREATE (inline in palette) ─────────────────────────────────
+function QuickCustomCreate({ onCreated }) {
+  const [name, setName] = useState('')
+  const [tests, setTests] = useState([['L3', '']])
+  const LEVELS = ['L1', 'L2', 'L3', 'L4', 'L5']
+
+  function handleSave() {
+    const trimName = name.trim()
+    if (!trimName) { alert('Equipment name is required'); return }
+    const validTests = tests.filter(t => t[1].trim() !== '')
+    if (validTests.length === 0) { alert('At least one test is required'); return }
+
+    const template = {
+      id: 'custom_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      label: trimName,
+      tests: validTests.map(t => [t[0], t[1].trim()]),
+      createdAt: new Date().toISOString()
+    }
+    const templates = getCustomTemplates()
+    templates.push(template)
+    localStorage.setItem('cx_custom_templates', JSON.stringify(templates))
+    if (onCreated) onCreated()
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4, textTransform: 'uppercase' }}>Equipment Name</div>
+        <input
+          value={name} onChange={e => setName(e.target.value)}
+          placeholder="e.g. Fire Suppression Panel"
+          autoFocus
+          style={{ width: '100%', padding: '9px 12px', fontSize: 13, background: '#1a2332', border: '1px solid #2d3748', borderRadius: 6, color: '#e2e8f0', outline: 'none' }}
+        />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 6, textTransform: 'uppercase' }}>Tests ({tests.length})</div>
+        {tests.map((t, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+            <select
+              value={t[0]} onChange={e => { const nt = [...tests]; nt[idx] = [e.target.value, nt[idx][1]]; setTests(nt) }}
+              style={{ padding: '7px 8px', fontSize: 12, background: '#1a2332', border: '1px solid #2d3748', borderRadius: 5, color: '#e2e8f0', outline: 'none' }}
+            >
+              {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <input
+              value={t[1]} onChange={e => { const nt = [...tests]; nt[idx] = [nt[idx][0], e.target.value]; setTests(nt) }}
+              placeholder="Test name..."
+              style={{ flex: 1, padding: '7px 10px', fontSize: 12, background: '#1a2332', border: '1px solid #2d3748', borderRadius: 5, color: '#e2e8f0', outline: 'none' }}
+            />
+            <button onClick={() => setTests(tests.filter((_, i) => i !== idx))}
+              style={{ padding: '5px 8px', fontSize: 11, background: '#7f1d1d', color: '#fecaca', border: 'none', borderRadius: 4, cursor: 'pointer' }}>✕</button>
+          </div>
+        ))}
+        <button onClick={() => setTests([...tests, ['L3', '']])}
+          style={{ padding: '5px 12px', fontSize: 11, border: '1px dashed #60a5fa', background: 'transparent', color: '#60a5fa', borderRadius: 5, cursor: 'pointer', marginTop: 2 }}>
+          + Add Test
+        </button>
+      </div>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <button onClick={onCreated}
+          style={{ padding: '7px 16px', fontSize: 12, background: '#2d3748', color: '#e2e8f0', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+          Cancel
+        </button>
+        <button onClick={handleSave}
+          style={{ padding: '7px 16px', fontSize: 12, fontWeight: 600, background: '#FF9900', color: '#0f1419', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+          Create
+        </button>
+      </div>
     </div>
   )
 }

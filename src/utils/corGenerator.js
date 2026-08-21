@@ -726,6 +726,9 @@ export async function generateCOR(equipmentData, projectName) {
   // ═══════════════════════════════════════════════════════════════════
   // SHEETS 4+: SECTION DATA SHEETS
   // ═══════════════════════════════════════════════════════════════════
+  // Read schedule data from localStorage
+  const scheduleData = JSON.parse(localStorage.getItem('test_schedule') || '{}');
+
   const DATA_HEADERS = [
     'S.No', 'Feeder Ref', 'Equipment', 'Level', 'Test Description',
     'Planned Start', 'Planned Finish', 'Actual Start', 'Actual Finish',
@@ -783,9 +786,17 @@ export async function generateCOR(equipmentData, projectName) {
         const levelLabel = LEVEL_LABELS[level] || level
         const rowNum = ws.lastRow ? ws.lastRow.number + 1 : dataStartRow
 
+        // Look up schedule dates for this equipment
+        const schedKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+        const sched = scheduleData[schedKey] || {}
+        const pStart = sched.plannedStart ? new Date(sched.plannedStart) : ''
+        const pFinish = sched.plannedFinish ? new Date(sched.plannedFinish) : ''
+        const aStart = sched.actualStart ? new Date(sched.actualStart) : ''
+        const aFinish = sched.actualFinish ? new Date(sched.actualFinish) : ''
+
         const row = ws.addRow([
           sNo, '', levelLabel, level, testName,
-          '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''
+          pStart, pFinish, aStart, aFinish, '', '', '', '', '', '', '', '', '', '', ''
         ])
 
         row.eachCell((cell, col) => {

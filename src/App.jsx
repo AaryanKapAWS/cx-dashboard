@@ -10,6 +10,7 @@ import { buildAsanaProject } from './utils/asanaProjectBuilder'
 import { isAuthenticated, startOAuthFlow, exchangeCodeForToken } from './utils/asanaAPI'
 import SettingsPanel from './components/SettingsPanel'
 import ProgressTracker from './components/ProgressTracker'
+import ScheduleTracker from './components/ScheduleTracker'
 import ExportHistory from './components/ExportHistory'
 import LandingPage from './components/LandingPage'
 
@@ -402,11 +403,7 @@ export default function App() {
 
       {/* ═══ SCHEDULE TAB ═══ */}
       {tab === 'schedule' && (
-        <div style={{ padding: '40px 24px', textAlign: 'center', color: '#64748b' }}>
-          <div style={{ fontSize: 36, marginBottom: 12 }}>📅</div>
-          <div style={{ fontSize: 16, fontWeight: 600, color: '#1e293b', marginBottom: 8 }}>Schedule & Timeline</div>
-          <div style={{ fontSize: 13 }}>Visual commissioning schedule with section dependencies and milestones. Coming soon.</div>
-        </div>
+        <ScheduleTracker equipment={equipment} />
       )}
 
       {/* ═══ HISTORY TAB ═══ */}

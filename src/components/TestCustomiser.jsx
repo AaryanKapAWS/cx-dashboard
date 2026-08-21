@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import testTemplates from '../data/test_templates.json'
+import { getCustomTemplates } from '../utils/customTemplates'
 
 const LEVEL_COLORS = {
   'L1': { bg: '#FCE4EC', color: '#880e4f' },
@@ -29,7 +30,12 @@ export default function TestCustomiser({ equipmentType, selectedTests, onUpdate 
 
   function getDefaultTests(type) {
     const tmpl = testTemplates[type]
-    if (!tmpl) return []
+    if (!tmpl) {
+      // Check custom templates in localStorage
+      const ct = getCustomTemplates().find(t => t.id === type)
+      if (ct) return ct.tests.map(t => ({ level: t[0], name: t[1], testSheet: '', enabled: true }))
+      return []
+    }
     return tmpl.map(t => {
       const [level, name, testSheet] = Array.isArray(t) ? t : [t.level, t.test, '']
       return { level, name, testSheet: testSheet || '', enabled: true }

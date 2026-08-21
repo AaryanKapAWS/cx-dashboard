@@ -1,630 +1,626 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-const sections = [
-  { id: 'overview', icon: '🏠', title: 'Overview' },
-  { id: 'quick-start', icon: '🚀', title: 'Quick Start' },
-  { id: 'bay-builder', icon: '🏗️', title: 'Bay Builder', children: [
-    { id: 'adding-bays', title: 'Adding Bays & Feeders' },
-    { id: 'presets', title: 'Presets' },
-    { id: 'sub-sections', title: 'Sub-Sections & Feeders' },
-    { id: 'custom-equipment', title: 'Custom Equipment' },
-  ]},
-  { id: 'equipment-tests', icon: '⚡', title: 'Equipment & Tests', children: [
-    { id: 'equipment-reference', title: 'Equipment Reference (77 Types)' },
-    { id: 'levels', title: 'L1–L5 Commissioning Levels' },
-    { id: 'template-structure', title: 'Template Structure' },
-  ]},
-  { id: 'progress-tracker', icon: '📊', title: 'Progress Tracker', children: [
-    { id: 'status-columns', title: 'Status Columns' },
-    { id: 'dates-checkboxes', title: 'Dates & Checkboxes' },
-  ]},
-  { id: 'cor-export', icon: '📤', title: 'COR Export', children: [
-    { id: 'sheet-structure', title: 'Sheet Structure' },
-    { id: 'cx-programme', title: 'Cx Programme & Charts' },
-    { id: 'certificate', title: 'Certificate of Readiness' },
-  ]},
-  { id: 'sld-viewer', icon: '🔌', title: 'SLD Viewer' },
-  { id: 'asana-integration', icon: '🔗', title: 'Asana Integration' },
-  { id: 'faq', icon: '❓', title: 'FAQ' },
+// ═══════════════════════════════════════════════════════════════════════════════
+// DocsReference.jsx — Comprehensive Wiki / Reference Guide for cx-dashboard
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const COLORS = {
+  bg: '#0f1419',
+  sidebar: '#141a22',
+  card: '#1a2332',
+  border: '#1e293b',
+  accent: '#60a5fa',
+  accentHover: '#93c5fd',
+  text: '#e2e8f0',
+  textSecondary: '#94a3b8',
+  textMuted: '#64748b',
+  tableHeader: '#1a2332',
+  tableRowAlt: '#151d2a',
+  success: '#34d399',
+  warning: '#fbbf24',
+  info: '#38bdf8',
+  l1: '#f472b6',
+  l2: '#fb923c',
+  l3: '#60a5fa',
+  l4: '#a78bfa',
+  l5: '#34d399',
+};
+
+// ─── Navigation Structure ────────────────────────────────────────────────────
+const NAV_SECTIONS = [
+  { id: 'overview', label: 'Overview', icon: '📋' },
+  { id: 'quick-start', label: 'Quick Start', icon: '🚀' },
+  {
+    id: 'section-types', label: 'Section Types', icon: '📂',
+    children: [
+      { id: 'sec-oil-transformer', label: 'Oil Transformer' },
+      { id: 'sec-dry-transformer', label: 'Dry Transformer' },
+      { id: 'sec-switchgear-ais', label: 'Switchgear (AIS)' },
+      { id: 'sec-hv-switchgear-gis', label: 'HV Switchgear (GIS)' },
+      { id: 'sec-protection', label: 'Protection' },
+      { id: 'sec-cables', label: 'Cables' },
+      { id: 'sec-battery-dc', label: 'Battery & DC' },
+      { id: 'sec-earthing', label: 'Earthing' },
+      { id: 'sec-substation-checks', label: 'Substation Checks' },
+      { id: 'sec-panel-board', label: 'Panel Board' },
+    ],
+  },
+  {
+    id: 'equipment-reference', label: 'Equipment Reference', icon: '⚡',
+    children: [
+      { id: 'eq-switchgear-overall', label: 'Switchgear Overall' },
+      { id: 'eq-ct', label: 'CT' },
+      { id: 'eq-vt', label: 'VT' },
+      { id: 'eq-circuit-breaker', label: 'Circuit Breaker' },
+      { id: 'eq-relay', label: 'Relay' },
+      { id: 'eq-cubicle', label: 'Cubicle' },
+      { id: 'eq-transformer', label: 'Transformer' },
+      { id: 'eq-mk-oltc-panel', label: 'MK & OLTC Panel' },
+      { id: 'eq-energization', label: 'Energization' },
+      { id: 'eq-gis-bay', label: 'GIS Bay' },
+      { id: 'eq-cb-gis', label: 'CB (GIS)' },
+      { id: 'eq-ds-es-gis', label: 'DS/ES (GIS)' },
+      { id: 'eq-ct-gis', label: 'CT (GIS)' },
+      { id: 'eq-ied-oc-gis', label: 'IED OC (GIS)' },
+      { id: 'eq-ied-87t-gis', label: 'IED 87T (GIS)' },
+      { id: 'eq-battery-bank', label: 'Battery Bank' },
+      { id: 'eq-ups', label: 'UPS' },
+      { id: 'eq-earth-grid', label: 'Earth Grid' },
+      { id: 'eq-hv-cable-gis', label: 'HV Cable (GIS)' },
+      { id: 'eq-l4-integration', label: 'L4 Integration' },
+    ],
+  },
 ];
 
-/* ─── Sidebar ─────────────────────────────────────────── */
-function Sidebar({ activeSection, onNavigate }) {
-  const [expanded, setExpanded] = useState({});
+// ─── Equipment Data ──────────────────────────────────────────────────────────
+const EQUIPMENT_DATA = {
+  'eq-switchgear-overall': {
+    name: 'Switchgear Overall',
+    code: 'SWITCHGEAR_OVERALL',
+    testCount: 19,
+    description: 'Overall switchgear commissioning tests including busbar integrity, HV withstand, protection trip matrix, and energization checks.',
+    tests: [
+      { name: 'Substation Check Sheet', level: 'L3' },
+      { name: 'Busbar Ductor Test', level: 'L3' },
+      { name: 'Busbar Megger Test (IR)', level: 'L3' },
+      { name: 'Switchgear HV Withstand Test', level: 'L3' },
+      { name: 'Castel Key Interlock Test', level: 'L3' },
+      { name: 'Protection Trip Matrix Test', level: 'L3' },
+      { name: 'Pre Energisation Check', level: 'L3' },
+      { name: 'Post Energisation Check', level: 'L3' },
+      { name: 'DOF', level: 'L3' },
+      { name: 'HV Test Config 1', level: 'L3' },
+      { name: 'HV Test Config 2', level: 'L3' },
+      { name: 'HV Test Config 3', level: 'L3' },
+      { name: 'Busbar IR Test', level: 'L3' },
+      { name: 'Busbar Contact Resistance', level: 'L3' },
+      { name: 'Main AC Check', level: 'L3' },
+      { name: 'Main DC Check', level: 'L3' },
+      { name: 'BB VT Secondary Injection Test', level: 'L3' },
+      { name: 'BB VT Loop Distribution Check', level: 'L4' },
+      { name: 'Earth Bar CRM', level: 'L4' },
+    ],
+  },
+  'eq-ct': {
+    name: 'Current Transformer (CT)',
+    code: 'CT',
+    testCount: 9,
+    description: 'Current transformer commissioning tests covering insulation, polarity, saturation characteristics, and ratio verification.',
+    tests: [
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Polarity Check', level: 'L3' },
+      { name: 'Saturation Curve', level: 'L3' },
+      { name: 'Winding Resistance', level: 'L3' },
+      { name: 'CRM and Torque', level: 'L3' },
+      { name: 'Ratio Check', level: 'L3' },
+      { name: 'Burden Measurement', level: 'L3' },
+      { name: 'Primary Injection', level: 'L3' },
+    ],
+  },
+  'eq-vt': {
+    name: 'Voltage Transformer (VT)',
+    code: 'VT',
+    testCount: 13,
+    description: 'Voltage transformer commissioning from factory acceptance through to energization verification.',
+    tests: [
+      { name: 'FAT Report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Polarity Test', level: 'L3' },
+      { name: 'Winding Resistance', level: 'L3' },
+      { name: 'Ratio Check', level: 'L3' },
+      { name: 'VT Burden', level: 'L3' },
+      { name: 'Primary Injection', level: 'L4' },
+      { name: 'Pre Energization Check', level: 'L5' },
+      { name: 'Post Energization Check', level: 'L5' },
+    ],
+  },
+  'eq-circuit-breaker': {
+    name: 'Circuit Breaker',
+    code: 'CIRCUIT_BREAKER',
+    testCount: 12,
+    description: 'Circuit breaker commissioning tests covering mechanical operation, insulation, gas quality (SF6), and timing verification.',
+    tests: [
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Contact Resistance (DCRM)', level: 'L3' },
+      { name: 'Timing Check', level: 'L3' },
+      { name: 'Min Voltage Operation', level: 'L3' },
+      { name: 'Coil Resistance', level: 'L3' },
+      { name: 'Motor Charging Current', level: 'L3' },
+      { name: 'Manual/Electrical Operation', level: 'L3' },
+      { name: 'SF6 Gas Purity Test', level: 'L3' },
+      { name: 'SF6 Dew Point', level: 'L3' },
+      { name: 'SF6 Leakage Rate Test', level: 'L3' },
+      { name: 'CB Castell Key Interlock', level: 'L3' },
+    ],
+  },
+  'eq-relay': {
+    name: 'Protection Relay',
+    code: 'RELAY',
+    testCount: 12,
+    description: 'IED/Relay commissioning tests including configuration validation, I/O verification, and protection function testing.',
+    tests: [
+      { name: 'Equipment Details Validation', level: 'L3' },
+      { name: 'DC Supply Check', level: 'L3' },
+      { name: 'Measurement Validation', level: 'L3' },
+      { name: 'LED Verification', level: 'L3' },
+      { name: 'DI Verification', level: 'L3' },
+      { name: 'DO Verification', level: 'L3' },
+      { name: 'Trip Test', level: 'L3' },
+      { name: 'Disturbance Recorder Check', level: 'L3' },
+      { name: 'Time Sync Check', level: 'L3' },
+      { name: 'Config File Validation', level: 'L3' },
+      { name: 'Final Setting Verification', level: 'L3' },
+      { name: 'CB Failure Function Test', level: 'L3' },
+    ],
+  },
+  'eq-cubicle': {
+    name: 'Cubicle',
+    code: 'CUBICLE',
+    testCount: 11,
+    description: 'Switchgear cubicle/panel commissioning from factory acceptance through scheme checks and functional verification.',
+    tests: [
+      { name: 'FAT Report Review', level: 'L1' },
+      { name: 'FAT Observation Close-out', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'AC/DC Scheme Check', level: 'L3' },
+      { name: 'Inter-panel Wiring Check', level: 'L3' },
+      { name: 'Voltage Detector Functional Check', level: 'L3' },
+      { name: 'Spare Contact Healthiness Check', level: 'L3' },
+      { name: 'MCB Checks', level: 'L3' },
+      { name: 'Heater and Lighting Check', level: 'L3' },
+      { name: 'Interlock Checks', level: 'L3' },
+    ],
+  },
+  'eq-transformer': {
+    name: 'Power Transformer',
+    code: 'TRANSFORMER',
+    testCount: 45,
+    description: 'Comprehensive power transformer commissioning covering oil analysis, winding tests, insulation diagnostics, OLTC operation, and protection device verification.',
+    tests: [
+      { name: 'FAT Report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Shock Recorders Report', level: 'L2' },
+      { name: 'Oil Sample Reports', level: 'L2' },
+      { name: 'Oil Filtration', level: 'L3' },
+      { name: 'Turns Ratio and Vector Group Test', level: 'L3' },
+      { name: 'Winding Resistances', level: 'L3' },
+      { name: 'DC Winding Resistance HV', level: 'L3' },
+      { name: 'DC Winding Resistance LV', level: 'L3' },
+      { name: 'IR and Polarisation Index', level: 'L3' },
+      { name: 'Core Clamp IR', level: 'L3' },
+      { name: 'Winding Dissipation Factor', level: 'L3' },
+      { name: 'Bushing DF C1', level: 'L3' },
+      { name: 'SFRA', level: 'L3' },
+      { name: 'Exciting Current', level: 'L3' },
+      { name: 'Short-Circuit Impedance', level: 'L3' },
+      { name: 'Dynamic Winding Resistance OLTC Scan', level: 'L3' },
+      { name: 'OLTC Operation', level: 'L3' },
+      { name: 'Magnetic Balance', level: 'L3' },
+      { name: 'Demagnetisation', level: 'L3' },
+      { name: 'DIRANA', level: 'L3' },
+      { name: 'Pressure Test', level: 'L3' },
+      { name: 'Functional Tests on Protective Devices', level: 'L3' },
+      { name: 'Tests on CTs', level: 'L3' },
+      { name: 'Dielectric Strength Test (Transformer Oil)', level: 'L3' },
+      { name: 'Dielectric Strength Test (OLTC Oil)', level: 'L3' },
+      { name: 'Oil Sampling and Gas Analysis', level: 'L3' },
+      { name: 'No Load Test', level: 'L3' },
+      { name: 'Exciting Current Test', level: 'L3' },
+      { name: 'Dynamic OLTC Scan', level: 'L3' },
+      { name: 'DC Winding Resistance LV/HV', level: 'L3' },
+      { name: 'Winding DF', level: 'L3' },
+      { name: 'Bushing DF C1 (repeat)', level: 'L3' },
+      { name: 'Demagnetization', level: 'L3' },
+      { name: 'SFRA (repeat)', level: 'L3' },
+      { name: 'Short-Circuit Impedance Test', level: 'L3' },
+      { name: 'Report of Impact Recorders', level: 'L3' },
+      { name: 'Checks Before Assembly', level: 'L3' },
+      { name: 'MK Box Scheme Check', level: 'L3' },
+      { name: 'CT Primary Injection (Stability)', level: 'L4' },
+      { name: 'Transformer Differential 87T/64R', level: 'L4' },
+      { name: 'Cable End Torque/CRM', level: 'L4' },
+    ],
+  },
+  'eq-mk-oltc-panel': {
+    name: 'MK & OLTC Panel',
+    code: 'MK_OLTC_PANEL',
+    testCount: 24,
+    description: 'Marshalling kiosk and OLTC panel commissioning covering protective relays, annunciators, thermometers, and oil analysis.',
+    tests: [
+      { name: 'MCB Checks', level: 'L2' },
+      { name: 'Buchholz Relay Main Tank', level: 'L3' },
+      { name: 'OLTC Protective Relay 97QC', level: 'L3' },
+      { name: 'Rapid Pressure Rise Relay 66QT', level: 'L3' },
+      { name: 'Pressure Relief Relay Main Tank', level: 'L3' },
+      { name: 'Pressure Relief Relay OLTC', level: 'L3' },
+      { name: 'Protection Relay for OLTC', level: 'L3' },
+      { name: 'Sudden Pressure Relay', level: 'L3' },
+      { name: 'Annunciator', level: 'L3' },
+      { name: 'Dehydrating Breather Main Tank', level: 'L3' },
+      { name: 'Oil Level Indicator Main Tank', level: 'L3' },
+      { name: 'Oil Level Indicator OLTC', level: 'L3' },
+      { name: 'Winding Thermometer HV', level: 'L3' },
+      { name: 'Winding Thermometer LV', level: 'L3' },
+      { name: 'U1 Device', level: 'L3' },
+      { name: 'Tap Changer', level: 'L3' },
+      { name: 'Tap Changer Alarm', level: 'L3' },
+      { name: 'PF2/PF3', level: 'L3' },
+      { name: 'Alarms and Protection Signals', level: 'L3' },
+      { name: 'Result of Oil Analysis', level: 'L3' },
+      { name: 'Dielectric Strength Test Transformer Oil', level: 'L3' },
+      { name: 'Dielectric Strength Test OLTC Oil', level: 'L3' },
+      { name: 'Oil Sampling and Gas Analysis', level: 'L3' },
+      { name: 'No Load Test', level: 'L4' },
+    ],
+  },
+  'eq-energization': {
+    name: 'Energization',
+    code: 'ENERGIZATION',
+    testCount: 5,
+    description: 'Final energization sequence tests — pre-checks, FOD inspection, live energization, post-checks, and soak period.',
+    tests: [
+      { name: 'Pre-Energization Safety Checks', level: 'L5' },
+      { name: 'FOD Check', level: 'L5' },
+      { name: 'Energization', level: 'L5' },
+      { name: 'Post-Energization Check', level: 'L5' },
+      { name: 'Soak Test', level: 'L5' },
+    ],
+  },
+  'eq-gis-bay': {
+    name: 'GIS Bay',
+    code: 'GIS_BAY',
+    testCount: 13,
+    description: 'Gas-insulated switchgear bay-level tests including gas quality, interlocks, HV withstand, and control circuit verification.',
+    tests: [
+      { name: 'FAT report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'SF6 Gas Quality Test', level: 'L3' },
+      { name: 'Gas Density Monitor Test', level: 'L3' },
+      { name: 'Switchgear Interlock Test', level: 'L3' },
+      { name: 'Busbar Ductor Test', level: 'L3' },
+      { name: 'HV AC Withstand Test and PD Measurement', level: 'L3' },
+      { name: 'IR of Main Circuit', level: 'L3' },
+      { name: 'Dielectric Test on Aux/Control', level: 'L3' },
+      { name: 'Control Circuit Connection/Functional Test', level: 'L3' },
+    ],
+  },
+  'eq-cb-gis': {
+    name: 'Circuit Breaker (GIS)',
+    code: 'CB_GIS',
+    testCount: 25,
+    description: 'GIS circuit breaker commissioning — comprehensive testing from factory acceptance through interlocks and remote operation verification.',
+    tests: [
+      { name: 'FAT report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'SF6 Gas Functional Check', level: 'L3' },
+      { name: 'Leakage Test', level: 'L3' },
+      { name: 'Dew Point', level: 'L3' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Contact Resistance Ductor', level: 'L3' },
+      { name: 'Dynamic Contact Resistance DCRM', level: 'L3' },
+      { name: 'CB Operating Timing Test', level: 'L3' },
+      { name: 'Min Voltage Operation', level: 'L3' },
+      { name: 'Operational Lockout', level: 'L3' },
+      { name: 'Anti-Pumping', level: 'L3' },
+      { name: 'Anti-Condensation Heater', level: 'L3' },
+      { name: 'Pole Discrepancy Relay Timing', level: 'L3' },
+      { name: 'Coil Resistance', level: 'L3' },
+      { name: 'Motor Charging Current', level: 'L3' },
+      { name: 'Spring Operating Mechanism', level: 'L3' },
+      { name: 'Manual/Electrical Operation', level: 'L3' },
+      { name: 'CB Auxiliary Circuit Check', level: 'L3' },
+      { name: 'CB Castel Key Interlock', level: 'L3' },
+      { name: 'CB Interlock Check', level: 'L4' },
+      { name: 'Local/Remote Operation Check', level: 'L4' },
+    ],
+  },
+  'eq-ds-es-gis': {
+    name: 'Disconnector / Earth Switch (GIS)',
+    code: 'DS_ES_GIS',
+    testCount: 16,
+    description: 'GIS disconnector and earth switch commissioning — insulation, contact resistance, motor operation, and interlock verification.',
+    tests: [
+      { name: 'FAT report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Contact Resistance Ductor', level: 'L3' },
+      { name: 'Motor Winding Resistance', level: 'L3' },
+      { name: 'Coil Resistance', level: 'L3' },
+      { name: 'Motor Current and Timing', level: 'L3' },
+      { name: 'Operation at Min/Max Voltage', level: 'L3' },
+      { name: 'Position Indicator Check', level: 'L3' },
+      { name: 'Manual Operation', level: 'L3' },
+      { name: 'Auxiliary Contacts Check', level: 'L3' },
+      { name: 'Interlock Check', level: 'L3' },
+      { name: 'DS Interlock', level: 'L4' },
+      { name: 'ES Interlock', level: 'L4' },
+    ],
+  },
+  'eq-ct-gis': {
+    name: 'Current Transformer (GIS)',
+    code: 'CT_GIS',
+    testCount: 16,
+    description: 'GIS current transformer commissioning — insulation diagnostics, magnetization, ratio verification, and primary injection.',
+    tests: [
+      { name: 'FAT report', level: 'L1' },
+      { name: 'FAT Observation', level: 'L1' },
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'IR', level: 'L3' },
+      { name: 'Tan Delta', level: 'L3' },
+      { name: 'Polarity', level: 'L3' },
+      { name: 'Saturation/Magnetization', level: 'L3' },
+      { name: 'Winding Resistance', level: 'L3' },
+      { name: 'Ratio Check', level: 'L3' },
+      { name: 'Burden Test', level: 'L3' },
+      { name: 'Continuity/Connections', level: 'L3' },
+      { name: 'Contact Resistance/Torque', level: 'L3' },
+      { name: 'DGA Test for Oil', level: 'L3' },
+      { name: 'CT Primary Injection', level: 'L4' },
+    ],
+  },
+  'eq-ied-oc-gis': {
+    name: 'IED Overcurrent (GIS)',
+    code: 'IED_OC_GIS',
+    testCount: 30,
+    description: 'GIS overcurrent IED commissioning — relay configuration, I/O tests, protection function verification, SCADA integration, and synchro-check.',
+    tests: [
+      { name: 'Wiring Check', level: 'L3' },
+      { name: 'Relay Power On', level: 'L3' },
+      { name: 'Configuration Validation', level: 'L3' },
+      { name: 'Meter Functional Test', level: 'L3' },
+      { name: 'Breaker Trip Test', level: 'L3' },
+      { name: 'Alarms/Indication', level: 'L3' },
+      { name: 'Equipment Details', level: 'L3' },
+      { name: 'DC Supply', level: 'L3' },
+      { name: 'Measurement Validation', level: 'L3' },
+      { name: 'LED Test', level: 'L3' },
+      { name: 'DI Test', level: 'L3' },
+      { name: 'DO Test', level: 'L3' },
+      { name: 'Disturbance Recorder', level: 'L3' },
+      { name: 'Time Sync', level: 'L3' },
+      { name: 'Configuration File Validation', level: 'L3' },
+      { name: 'Lock Out Validation', level: 'L3' },
+      { name: 'Trip Circuit Supervision', level: 'L4' },
+      { name: 'EPMS Signal/Screenshot', level: 'L4' },
+      { name: 'RJ45 EPMS', level: 'L4' },
+      { name: 'Interlock Castel Key', level: 'L4' },
+      { name: 'CB Failure Function', level: 'L4' },
+      { name: 'Final Setting Verification', level: 'L4' },
+      { name: 'SCADA End Signal', level: 'L4' },
+      { name: '25 Synchro-check', level: 'L4' },
+      { name: '50/51 Phase OC', level: 'L4' },
+      { name: '50N/51N Neutral OC', level: 'L4' },
+      { name: '27 UV', level: 'L4' },
+      { name: '59 OV', level: 'L4' },
+    ],
+  },
+  'eq-ied-87t-gis': {
+    name: 'IED Transformer Differential (GIS)',
+    code: 'IED_87T_GIS',
+    testCount: 36,
+    description: 'GIS transformer differential IED commissioning — full relay validation plus differential, overcurrent, frequency, and directional earth fault protection.',
+    tests: [
+      { name: 'Wiring Check', level: 'L3' },
+      { name: 'Relay Power On', level: 'L3' },
+      { name: 'Configuration Validation', level: 'L3' },
+      { name: 'Meter Functional Test', level: 'L3' },
+      { name: 'Breaker Trip Test', level: 'L3' },
+      { name: 'Alarms/Indication', level: 'L3' },
+      { name: 'Equipment Details', level: 'L3' },
+      { name: 'DC Supply', level: 'L3' },
+      { name: 'Measurement Validation', level: 'L3' },
+      { name: 'LED Test', level: 'L3' },
+      { name: 'DI Test', level: 'L3' },
+      { name: 'DO Test', level: 'L3' },
+      { name: 'Disturbance Recorder', level: 'L3' },
+      { name: 'Time Sync', level: 'L3' },
+      { name: 'Configuration File Validation', level: 'L3' },
+      { name: 'Lock Out Validation', level: 'L3' },
+      { name: 'Trip Circuit Supervision', level: 'L4' },
+      { name: 'EPMS Signal/Screenshot', level: 'L4' },
+      { name: 'RJ45 EPMS', level: 'L4' },
+      { name: 'Interlock Castel Key', level: 'L4' },
+      { name: 'CB Failure Function', level: 'L4' },
+      { name: 'Final Setting Verification', level: 'L4' },
+      { name: 'SCADA End Signal', level: 'L4' },
+      { name: '87T Tx Differential', level: 'L4' },
+      { name: '50/51 Phase OC HV', level: 'L4' },
+      { name: '50/51 Phase OC MV', level: 'L4' },
+      { name: '50N/51N Neutral OC', level: 'L4' },
+      { name: '50G/51G Ground OC', level: 'L4' },
+      { name: '81O/81U Frequency', level: 'L4' },
+      { name: '67N Directional EF', level: 'L4' },
+      { name: '64REF', level: 'L4' },
+      { name: '25 Synchro-check', level: 'L4' },
+      { name: '27 UV', level: 'L4' },
+      { name: '59 OV', level: 'L4' },
+    ],
+  },
+  'eq-battery-bank': {
+    name: 'Battery Bank',
+    code: 'BATTERY_BANK',
+    testCount: 14,
+    description: 'Battery bank commissioning — environment checks, individual cell testing, capacity verification, and post-energization monitoring.',
+    tests: [
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual Inspection', level: 'L3' },
+      { name: 'Battery Room Environment', level: 'L3' },
+      { name: 'Individual Cell Voltage', level: 'L3' },
+      { name: 'Individual Cell IR/Impedance', level: 'L3' },
+      { name: 'Overall String Voltage', level: 'L3' },
+      { name: 'Specific Gravity', level: 'L3' },
+      { name: 'Electrolyte Level', level: 'L3' },
+      { name: 'Inter-cell Connection Torque/Resistance', level: 'L3' },
+      { name: 'IR battery to ground', level: 'L3' },
+      { name: 'Capacity Discharge Test', level: 'L3' },
+      { name: 'Battery Autonomy Verification', level: 'L3' },
+      { name: 'Post-Energization Float Voltage', level: 'L5' },
+    ],
+  },
+  'eq-ups': {
+    name: 'UPS',
+    code: 'UPS',
+    testCount: 19,
+    description: 'Uninterruptible power supply commissioning — startup, load testing, bypass modes, and integration signal verification.',
+    tests: [
+      { name: 'Visual/Mechanical Inspection', level: 'L3' },
+      { name: 'Record Nameplate', level: 'L3' },
+      { name: 'Check Tightness', level: 'L3' },
+      { name: 'Check Grounding', level: 'L3' },
+      { name: 'Pre-Startup Verification', level: 'L3' },
+      { name: 'Start-Up Testing', level: 'L3' },
+      { name: 'UPS Metering Calibration', level: 'L3' },
+      { name: 'Burn-In Test', level: 'L3' },
+      { name: 'Battery Discharge Test', level: 'L3' },
+      { name: 'Normal Operating Condition', level: 'L4' },
+      { name: 'Steady State Load', level: 'L4' },
+      { name: 'Transient Load', level: 'L4' },
+      { name: 'Bypass Mode', level: 'L4' },
+      { name: 'Generator Mode', level: 'L4' },
+      { name: 'Overload Test', level: 'L4' },
+      { name: 'Maintenance Bypass Transfer', level: 'L4' },
+      { name: 'Utility Failure/Battery Discharge', level: 'L4' },
+      { name: 'EPMS Signal Check', level: 'L4' },
+      { name: 'SAS Signal Check', level: 'L4' },
+    ],
+  },
+  'eq-earth-grid': {
+    name: 'Earth Grid',
+    code: 'EARTH_GRID',
+    testCount: 7,
+    description: 'Earthing system commissioning — grid integrity, resistance measurement, step/touch voltages, and soil resistivity.',
+    tests: [
+      { name: 'Visual Inspection of Earth Connections', level: 'L3' },
+      { name: 'Earth Grid Continuity', level: 'L3' },
+      { name: 'Earth Resistance (Fall-of-Potential)', level: 'L3' },
+      { name: 'Step Voltage', level: 'L3' },
+      { name: 'Touch Voltage', level: 'L3' },
+      { name: 'Soil Resistivity', level: 'L3' },
+      { name: 'Cross-bonding/Jumper Verification', level: 'L3' },
+    ],
+  },
+  'eq-hv-cable-gis': {
+    name: 'HV Cable (GIS)',
+    code: 'HV_CABLE_GIS',
+    testCount: 14,
+    description: 'HV cable commissioning — continuity, resistance measurements, AC withstand with PD monitoring, and termination inspection.',
+    tests: [
+      { name: 'RIF', level: 'L2' },
+      { name: 'IVF', level: 'L2' },
+      { name: 'Visual/Mechanical Inspection', level: 'L3' },
+      { name: 'Cable Continuity', level: 'L3' },
+      { name: 'Cable Screen Ohmic Resistance', level: 'L3' },
+      { name: 'Conductor Ohmic Resistance', level: 'L3' },
+      { name: 'IR for Cable Screen', level: 'L3' },
+      { name: 'IR for Conductor Before AC Withstand', level: 'L3' },
+      { name: 'AC Withstand Voltage Test', level: 'L3' },
+      { name: 'PD Test during AC Withstand', level: 'L3' },
+      { name: 'IR for Conductor After AC Withstand', level: 'L3' },
+      { name: 'Cable Termination Inspection', level: 'L3' },
+      { name: 'Sheath Voltage Limiting Device', level: 'L3' },
+      { name: 'Cross Bonding Link Box', level: 'L3' },
+    ],
+  },
+  'eq-l4-integration': {
+    name: 'L4 Integration Tests',
+    code: 'L4_INTEGRATION',
+    testCount: 12,
+    description: 'Level 4 system integration tests — verifying equipment interactions, SCADA connectivity, and end-to-end protection schemes.',
+    tests: [
+      { name: 'Local/Remote CB Operation', level: 'L4' },
+      { name: 'CB Real Trips by Primary Injection', level: 'L4' },
+      { name: 'CT Primary Injection', level: 'L4' },
+      { name: 'Trip Circuit Supervision', level: 'L4' },
+      { name: 'Lockout Relay (86)', level: 'L4' },
+      { name: 'CB Close Block', level: 'L4' },
+      { name: 'DI/DO to SCADA', level: 'L4' },
+      { name: 'SER Input Checks', level: 'L4' },
+      { name: 'RJ45 EPMS', level: 'L4' },
+      { name: 'OCC File', level: 'L4' },
+      { name: 'EPMS Validation/Screenshots', level: 'L4' },
+      { name: 'PQM Validation', level: 'L4' },
+    ],
+  },
+};
 
-  const toggle = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-
-  return (
-    <nav style={styles.sidebar}>
-      <div style={styles.sidebarHeader}>
-        <span style={{ fontSize: 20 }}>📖</span>
-        <span style={styles.sidebarTitle}>Documentation</span>
-      </div>
-      <div style={styles.sidebarNav}>
-        {sections.map(section => (
-          <div key={section.id}>
-            <button
-              onClick={() => {
-                onNavigate(section.id);
-                if (section.children) toggle(section.id);
-              }}
-              style={{
-                ...styles.navItem,
-                ...(activeSection === section.id ? styles.navItemActive : {}),
-              }}
-            >
-              <span style={{ marginRight: 8 }}>{section.icon}</span>
-              {section.title}
-              {section.children && (
-                <span style={styles.chevron}>
-                  {expanded[section.id] ? '▾' : '▸'}
-                </span>
-              )}
-            </button>
-            {section.children && expanded[section.id] && (
-              <div style={styles.subNav}>
-                {section.children.map(child => (
-                  <button
-                    key={child.id}
-                    onClick={() => onNavigate(child.id)}
-                    style={{
-                      ...styles.subNavItem,
-                      ...(activeSection === child.id ? styles.subNavItemActive : {}),
-                    }}
-                  >
-                    {child.title}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-/* ─── Content Sections ─────────────────────────────────── */
-function Callout({ type = 'info', children }) {
-  const colors = {
-    info: { bg: '#eff6ff', border: '#3b82f6', icon: 'ℹ️' },
-    tip: { bg: '#f0fdf4', border: '#22c55e', icon: '💡' },
-    warning: { bg: '#3a2f1a', border: '#f59e0b', icon: '⚠️' },
-  };
-  const c = colors[type];
-  return (
-    <div style={{ background: c.bg, borderLeft: `4px solid ${c.border}`, padding: '12px 16px', borderRadius: 6, margin: '16px 0' }}>
-      <span style={{ marginRight: 8 }}>{c.icon}</span>
-      {children}
-    </div>
-  );
-}
-
-function SectionHeader({ id, title }) {
-  return <h2 id={id} style={styles.sectionHeader}>{title}</h2>;
-}
-
-function SubHeader({ id, title }) {
-  return <h3 id={id} style={styles.subHeader}>{title}</h3>;
-}
-
-function Content() {
-  return (
-    <div style={styles.content}>
-      {/* ═══ OVERVIEW ═══ */}
-      <SectionHeader id="overview" title="🏠 Overview" />
-      <p style={styles.p}>
-        <strong>cx-dashboard</strong> is a commissioning automation tool for <strong>HV/MV substations</strong>.
-        It generates comprehensive Commissioning Outstanding Registers (CORs) from your project scope,
-        tracks testing progress in real-time, and exports production-ready Excel workbooks with charts,
-        programme summaries, and certificates.
-      </p>
-      <Callout type="info">
-        This tool is designed for <strong>HV/MV substation commissioning</strong> (220kV, 132kV, 20kV, etc.) —
-        not data centre electrical systems. Equipment templates are tailored to GIS switchgear,
-        oil transformers, MV switchgear, C&P panels, and auxiliary systems.
-      </Callout>
-
-      <h4 style={styles.h4}>Who is this for?</h4>
-      <ul style={styles.ul}>
-        <li>Commissioning Agents (CxA) managing site testing</li>
-        <li>Commissioning Managers tracking programme-level progress</li>
-        <li>Programme Managers needing COR documentation for handover</li>
-      </ul>
-
-      <h4 style={styles.h4}>End-to-End Pipeline</h4>
-      <div style={styles.pipeline}>
-        <div style={styles.pipelineStep}>📄 SLD PDF</div>
-        <div style={styles.pipelineArrow}>→</div>
-        <div style={styles.pipelineStep}>🏗️ Bay Builder<br/>(Equipment Scope)</div>
-        <div style={styles.pipelineArrow}>→</div>
-        <div style={styles.pipelineStep}>📊 Progress<br/>Tracker</div>
-        <div style={styles.pipelineArrow}>→</div>
-        <div style={styles.pipelineStep}>📤 COR Export<br/>(.xlsx)</div>
-        <div style={styles.pipelineArrow}>→</div>
-        <div style={styles.pipelineStep}>🔗 Procore<br/>Upload</div>
-      </div>
-
-      {/* ═══ QUICK START ═══ */}
-      <SectionHeader id="quick-start" title="🚀 Quick Start" />
-      <p style={styles.p}>Get from zero to a complete COR in 4 steps:</p>
-
-      <div style={styles.stepCard}>
-        <div style={styles.stepNumber}>1</div>
-        <div>
-          <strong>Create Your Project</strong>
-          <p style={styles.stepDesc}>Enter project name (e.g. "ZAZ062 - 220kV Substation") and site code. This sets the header on all exported sheets.</p>
-        </div>
-      </div>
-
-      <div style={styles.stepCard}>
-        <div style={styles.stepNumber}>2</div>
-        <div>
-          <strong>Build Your Scope (Bay Builder)</strong>
-          <p style={styles.stepDesc}>Add feeders/bays, select equipment presets (GIS Bay, Oil Transformer, MV Switchgear, etc.), and customize tests. Each preset auto-populates with the standard tests for that equipment type across all 5 commissioning levels.</p>
-        </div>
-      </div>
-
-      <div style={styles.stepCard}>
-        <div style={styles.stepNumber}>3</div>
-        <div>
-          <strong>Track Progress</strong>
-          <p style={styles.stepDesc}>As testing completes on site, mark tests with dates, checkboxes, and status columns. Progress is calculated automatically per bay, per level, and overall.</p>
-        </div>
-      </div>
-
-      <div style={styles.stepCard}>
-        <div style={styles.stepNumber}>4</div>
-        <div>
-          <strong>Export COR</strong>
-          <p style={styles.stepDesc}>Generate a complete .xlsx workbook with: Project Overview, Cx Programme (summary + charts), individual test sheets per bay, Certificate of Readiness, and Revision History.</p>
-        </div>
-      </div>
-
-      {/* ═══ BAY BUILDER ═══ */}
-      <SectionHeader id="bay-builder" title="🏗️ Bay Builder" />
-      <p style={styles.p}>
-        The Bay Builder is where you define your project scope — what equipment exists at the substation
-        and what tests need to be performed. Think of it as building a tree:
-      </p>
-      <div style={styles.codeBlock}>
-{`Project (e.g. ZAZ062 - 220kV Substation)
-├── Section (e.g. 220kV GIS Switchgear)
-│   ├── Feeder/Bay (e.g. H01 TR-1)
-│   │   ├── Equipment Group (e.g. Circuit Breaker)
-│   │   │   ├── Test 1 (CB Operating Timing Test)
-│   │   │   ├── Test 2 (Contact Resistance)
-│   │   │   └── ...
-│   │   ├── Equipment Group (e.g. Current Transformer)
-│   │   └── ...
-│   ├── Feeder/Bay (e.g. H02 LINE-1)
-│   └── ...
-├── Section (e.g. Oil Transformers)
-└── Section (e.g. Auxiliary Systems)`}
-      </div>
-
-      <SubHeader id="adding-bays" title="Adding Bays & Feeders" />
-      <p style={styles.p}>
-        Click <strong>"+ Add Bay"</strong> to create a new feeder/bay. Each bay represents a physical
-        switchgear bay, transformer, panel, or system at the substation.
-      </p>
-      <ul style={styles.ul}>
-        <li><strong>Bay Name</strong> — The display name (e.g. "H01 TR-1", "C02 INCOMER C")</li>
-        <li><strong>Feeder Reference</strong> — The formal reference code used on drawings</li>
-        <li><strong>Section</strong> — Which parent section it belongs to (GIS, Transformer, SWGR, C&P, Aux)</li>
-      </ul>
-
-      <SubHeader id="presets" title="Presets" />
-      <p style={styles.p}>
-        Presets are pre-configured equipment packages that auto-populate a bay with the standard
-        tests for that equipment type. Available presets:
-      </p>
-      <table style={styles.table}>
-        <thead>
-          <tr style={styles.tableHeader}>
-            <th style={styles.th}>Preset</th>
-            <th style={styles.th}>Equipment Included</th>
-            <th style={styles.th}>~Tests</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style={styles.tr}><td style={styles.td}>GIS Bay (Transformer Feeder)</td><td style={styles.td}>CB, Bus DS, Line DS, Fast ES, CT, VT, Arresters, BCU, SF6, Densimeter, Local Cubicle, VPIS, AFD, Annunciator, Interlocks, HV Test, Energization</td><td style={styles.td}>~196</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>GIS Bay (Line Feeder)</td><td style={styles.td}>Same as above minus VT (line side), + PQM</td><td style={styles.td}>~176</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>GIS Bay (Bus Coupler)</td><td style={styles.td}>CB, 2x Bus DS, Fast ES, CT, BCU, Interlocks, HV Test</td><td style={styles.td}>~149</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Oil Transformer</td><td style={styles.td}>Transformer Electrical Tests, MK & OLTC Panel, EPMS, SAS, Energization</td><td style={styles.td}>~87</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>MV Switchgear (Incomer/Feeder)</td><td style={styles.td}>VCB, CT, Manual ES, Relay (P139), AFD, VPIS, Terminal Blocks, EPMS, Energization</td><td style={styles.td}>~109-112</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>MV Switchgear (Coupler)</td><td style={styles.td}>VCB, CT, Manual ES, Relay, AFD, VPIS</td><td style={styles.td}>~95</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>MV Switchgear (Metering)</td><td style={styles.td}>VT, CT, Terminal Blocks, Signalling, SER Comms</td><td style={styles.td}>~51</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>C&P Panel (Tx Feeder)</td><td style={styles.td}>87T Diff, REF, AVR, Protection Panel, EPMS, SAS, Energization</td><td style={styles.td}>~101</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>C&P Panel (Line Feeder)</td><td style={styles.td}>87L Diff, Distance (7SL86), PQM, Protection Panel, EPMS, SAS</td><td style={styles.td}>~85</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Busbar Protection (BBP)</td><td style={styles.td}>Central Unit, Bay Units (per feeder), EPMS, SAS, Energization</td><td style={styles.td}>~98-151</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Auxiliary Systems</td><td style={styles.td}>Battery Banks, AC Panels, UPS, NER, Diesel Gen, ATS, DGA, MV Cables, SAS, Earth Grid</td><td style={styles.td}>~225</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>B-Watch 3 (PD Monitoring)</td><td style={styles.td}>Phase threshold tests (L1-3), sensors, alarms, HMI, SAS integration</td><td style={styles.td}>~60</td></tr>
-        </tbody>
-      </table>
-
-      <Callout type="tip">
-        Presets are starting points — you can always add, remove, or modify individual tests
-        after applying a preset. Use custom equipment for site-specific items not covered by templates.
-      </Callout>
-
-      <SubHeader id="sub-sections" title="Sub-Sections & Feeders" />
-      <p style={styles.p}>
-        Large projects are organized into <strong>sections</strong> that group related bays:
-      </p>
-      <ul style={styles.ul}>
-        <li><strong>220kV GIS Switchgear</strong> — All HV bays (H01-H06), Bus Coupler (H04)</li>
-        <li><strong>Oil Transformers</strong> — Transformer 1, 2, 3 (each with MK/OLTC panel)</li>
-        <li><strong>20kV Switchgear C</strong> — MV bays (C01-C06): Coupler, Incomer, Feeders, Metering, Spare</li>
-        <li><strong>C&P Panels</strong> — Protection panels per HV bay (H1-H6), BBP-1, BBP-2</li>
-        <li><strong>Auxiliary Systems</strong> — Site-wide support systems (batteries, AC, diesel gen, etc.)</li>
-      </ul>
-      <p style={styles.p}>
-        Within each section, <strong>feeders</strong> are the individual bays/units. Each feeder
-        gets its own sheet in the exported COR.
-      </p>
-
-      <SubHeader id="custom-equipment" title="Custom Equipment" />
-      <p style={styles.p}>
-        Not every substation is identical. Use <strong>Custom Equipment</strong> to add:
-      </p>
-      <ul style={styles.ul}>
-        <li>Site-specific equipment not in the standard 77-type template library</li>
-        <li>Additional tests required by local standards or project specifications</li>
-        <li>Vendor-specific commissioning items (e.g. specific relay model tests)</li>
-      </ul>
-      <p style={styles.p}>
-        Custom equipment is saved to your project and included in the COR export just like
-        preset equipment.
-      </p>
-
-      {/* ═══ EQUIPMENT & TESTS ═══ */}
-      <SectionHeader id="equipment-tests" title="⚡ Equipment & Tests" />
-
-      <SubHeader id="levels" title="L1–L5 Commissioning Levels" />
-      <p style={styles.p}>
-        Every test in the COR is assigned to one of 5 commissioning levels, representing
-        the stage at which that test is performed:
-      </p>
-      <table style={styles.table}>
-        <thead>
-          <tr style={styles.tableHeader}>
-            <th style={styles.th}>Level</th>
-            <th style={styles.th}>Name</th>
-            <th style={styles.th}>Description</th>
-            <th style={styles.th}>Typical Tests</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style={styles.tr}><td style={styles.td}><strong>L1</strong></td><td style={styles.td}>FAT (Factory Acceptance)</td><td style={styles.td}>Tests performed at the manufacturer's factory before shipping</td><td style={styles.td}>FAT Report on Procore, FAT Observations</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>L2</strong></td><td style={styles.td}>Pre-SAT</td><td style={styles.td}>Document checks before site testing begins</td><td style={styles.td}>RIF (Request for Inspection Form), IVF (Inspection Verification Form), Shock Recorders, Oil Reports</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>L3</strong></td><td style={styles.td}>SAT (Site Acceptance)</td><td style={styles.td}>The bulk of commissioning — hands-on testing at site</td><td style={styles.td}>Visual Inspection, Insulation Resistance, Contact Resistance, Functional Checks, Protection Relay Testing, Operation Checks</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>L4</strong></td><td style={styles.td}>Integration</td><td style={styles.td}>Inter-system tests, end-to-end signal verification</td><td style={styles.td}>CT Primary Injection, SCADA Signal Checks, Interlock Checks, Protection Scheme Integration, AFD Integration</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>L5</strong></td><td style={styles.td}>Energization</td><td style={styles.td}>Final checks before and during first energization</td><td style={styles.td}>Pre-Energization Safety Checks, FOD (Foreign Object Debris), Energization, Post-Energization, Soak Test</td></tr>
-        </tbody>
-      </table>
-
-      <Callout type="info">
-        L3 (SAT) typically accounts for 60-70% of all tests in a COR. This is where the
-        majority of site commissioning work happens.
-      </Callout>
-
-      <SubHeader id="equipment-reference" title="Equipment Reference (77 Types)" />
-      <p style={styles.p}>
-        The template library contains <strong>77 equipment types</strong> with pre-defined test lists.
-        Key categories include:
-      </p>
-      <table style={styles.table}>
-        <thead>
-          <tr style={styles.tableHeader}>
-            <th style={styles.th}>Category</th>
-            <th style={styles.th}>Equipment Types</th>
-            <th style={styles.th}>Tests per Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style={styles.tr}><td style={styles.td}><strong>GIS Switchgear</strong></td><td style={styles.td}>Circuit Breaker, Bus Disconnector, Line Disconnector, Fast Earth Switch, Voltage Transformer, Current Transformer, Surge Arrester, Local Control Cubicle, BCU, SF6 Gas System, Densimeter, VPIS, AFD Relay</td><td style={styles.td}>3–20 each</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>Transformer</strong></td><td style={styles.td}>Oil Transformer (electrical tests), MK & OLTC Panel, Cooling System (fans), DGA900, Buchholz Relay, Dehydrating Breather</td><td style={styles.td}>19–45 each</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>MV Switchgear</strong></td><td style={styles.td}>VCB (Vacuum Circuit Breaker), CT, VT, Manual Earth Switch, P139 Protection Relay, Arc Flash Detection, Terminal Blocks, EPMS, PQM</td><td style={styles.td}>3–19 each</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>Protection</strong></td><td style={styles.td}>87T (Transformer Diff), 87L (Line Diff), REF, Distance (7SL86), Busbar Protection (REB500), AVR</td><td style={styles.td}>5–15 each</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>Auxiliary</strong></td><td style={styles.td}>Battery Bank, Rectifier/Charger, AC Power Panel, UPS, NER, Diesel Generator, ATS, DGA Monitoring Panel, SAS/SCADA Panel, Earth Grid, MV Cable, LV Cable</td><td style={styles.td}>2–19 each</td></tr>
-          <tr style={styles.tr}><td style={styles.td}><strong>Monitoring</strong></td><td style={styles.td}>B-Watch 3 (PD Monitoring), EPMS, SAS</td><td style={styles.td}>2–10 each</td></tr>
-        </tbody>
-      </table>
-
-      <SubHeader id="template-structure" title="Template Structure" />
-      <p style={styles.p}>
-        Templates are stored in <code style={styles.code}>test_templates.json</code>. Each entry maps
-        an equipment type to its default tests:
-      </p>
-      <div style={styles.codeBlock}>
-{`{
-  "CIRCUIT_BREAKER": {
-    "displayName": "Circuit Breaker",
-    "level": "L3",
-    "tests": [
-      "Visual Inspection",
-      "Insulation Resistance",
-      "Contact Resistance Ductor Test",
-      "CB Operating Timing Test",
-      "Minimum Voltage Operation",
-      ...
-    ]
-  }
-}`}
-      </div>
-      <Callout type="warning">
-        Some expanded templates (MK_OLTC_PANEL, SWITCHGEAR_OVERALL) were built using ZAZ062HV
-        site-specific data. Items like specific Buchholz relay models or DGA900 references may
-        need adjustment for other projects.
-      </Callout>
-
-      {/* ═══ PROGRESS TRACKER ═══ */}
-      <SectionHeader id="progress-tracker" title="📊 Progress Tracker" />
-      <p style={styles.p}>
-        The Progress Tracker shows real-time completion status for every test in your project.
-        Data is persisted in your browser's localStorage between sessions.
-      </p>
-
-      <SubHeader id="status-columns" title="Status Columns" />
-      <table style={styles.table}>
-        <thead>
-          <tr style={styles.tableHeader}>
-            <th style={styles.th}>Column</th>
-            <th style={styles.th}>Type</th>
-            <th style={styles.th}>Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style={styles.tr}><td style={styles.td}>Planned Start</td><td style={styles.td}>Date</td><td style={styles.td}>Scheduled start date for the test</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Planned Finish</td><td style={styles.td}>Date</td><td style={styles.td}>Scheduled completion date</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Actual Start</td><td style={styles.td}>Date</td><td style={styles.td}>When testing actually started</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Actual Finish</td><td style={styles.td}>Date</td><td style={styles.td}>When testing actually completed</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>SAT Completed</td><td style={styles.td}>Date</td><td style={styles.td}>Date SAT was completed</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>CxA Witnessed</td><td style={styles.td}>Yes/No</td><td style={styles.td}>Whether the CxA witnessed the test</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Completed</td><td style={styles.td}>Yes/No</td><td style={styles.td}>Overall completion flag</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Report Received</td><td style={styles.td}>Date</td><td style={styles.td}>Date test report was received</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Report on Procore</td><td style={styles.td}>Yes/No</td><td style={styles.td}>Whether report is uploaded to Procore</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Report Reviewed</td><td style={styles.td}>Yes/No/NA</td><td style={styles.td}>Whether report has been reviewed by CxA</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Outstanding Obs</td><td style={styles.td}>Text</td><td style={styles.td}>Any open observations from the report</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Report Closed</td><td style={styles.td}>Yes/No</td><td style={styles.td}>Whether the report is fully closed out</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>Comments</td><td style={styles.td}>Text</td><td style={styles.td}>Free-text remarks</td></tr>
-          <tr style={styles.tr}><td style={styles.td}>% Complete</td><td style={styles.td}>Auto</td><td style={styles.td}>Calculated based on milestone columns completed</td></tr>
-        </tbody>
-      </table>
-
-      <SubHeader id="dates-checkboxes" title="Dates & Checkboxes" />
-      <p style={styles.p}>
-        Progress is determined by the <strong>milestone columns</strong> (SAT Completed → CxA Witnessed →
-        Completed → Report Received → Report on Procore → Report Reviewed → Report Closed).
-        A test is considered:
-      </p>
-      <ul style={styles.ul}>
-        <li><strong>Not Started</strong> — No dates or checkmarks in any column</li>
-        <li><strong>In Progress</strong> — Has Actual Start date but not all milestones complete</li>
-        <li><strong>Done</strong> — All milestone columns filled (Report Closed = Yes)</li>
-        <li><strong>N/A</strong> — Marked as not applicable for this project</li>
-      </ul>
-      <Callout type="tip">
-        The Cx Programme tab in the exported COR uses these statuses to generate the
-        Done / In Progress / Pending breakdown and the stacked bar charts.
-      </Callout>
-
-      {/* ═══ COR EXPORT ═══ */}
-      <SectionHeader id="cor-export" title="📤 COR Export" />
-      <p style={styles.p}>
-        The export generates a complete <strong>.xlsx workbook</strong> ready for distribution.
-        The file preserves formatting, merged cells, conditional formatting, and embedded charts.
-      </p>
-
-      <SubHeader id="sheet-structure" title="Sheet Structure" />
-      <p style={styles.p}>A typical exported COR contains these sheets:</p>
-      <div style={styles.codeBlock}>
-{`📄 Project Overview          — Project info, site code, dates, team
-📊 Cx Programme              — Summary table + progress stats + level breakdown
-📈 Cx Charts                 — Stacked bar charts (Done/In Prog/Pending per section)
-🔲 [Bay Sheet 1]             — Full test list with all status columns
-🔲 [Bay Sheet 2]             — ...
-🔲 ...                       — One sheet per bay/feeder
-📜 Certificate of Readiness  — Sign-off template for project handover
-📋 Revision History          — Document revision log`}
-      </div>
-
-      <SubHeader id="cx-programme" title="Cx Programme & Charts" />
-      <p style={styles.p}>The Cx Programme sheet contains three summary tables:</p>
-      <ul style={styles.ul}>
-        <li><strong>Commissioning Progress</strong> — Per-section breakdown: Total, Done, In Progress, Pending, % Complete, L1-L5 test counts</li>
-        <li><strong>Documentation Status</strong> — Stage-by-stage tracking (SAT Completed, CxA Witnessed, Completed, Report Received, on Procore, Reviewed, Closed)</li>
-        <li><strong>Level Completion</strong> — Per-section, per-level (L1-L5) Total vs Done</li>
-      </ul>
-      <p style={styles.p}>
-        The <strong>Cx Charts</strong> sheet contains embedded stacked bar charts visualizing the
-        Done / In Progress / Pending status for each section. These update automatically based
-        on the progress data.
-      </p>
-
-      <SubHeader id="certificate" title="Certificate of Readiness" />
-      <p style={styles.p}>
-        A formal sign-off sheet template including:
-      </p>
-      <ul style={styles.ul}>
-        <li>Project completion statement</li>
-        <li>Outstanding items summary</li>
-        <li>Sign-off blocks (Contractor, CxA, Client)</li>
-        <li>Date and conditional release notes</li>
-      </ul>
-
-      {/* ═══ SLD VIEWER ═══ */}
-      <SectionHeader id="sld-viewer" title="🔌 SLD Viewer" />
-      <p style={styles.p}>
-        Upload a Single Line Diagram (SLD) PDF and the tool will parse and render an interactive
-        topology view of your substation.
-      </p>
-      <h4 style={styles.h4}>Flow View</h4>
-      <p style={styles.p}>
-        Displays the substation topology as a node-and-connection diagram. Each bay is shown
-        as a vertical column with equipment nodes (CB, DS, ES, CT, VT) connected by bus bars.
-      </p>
-      <ul style={styles.ul}>
-        <li>Multi-bay horizontal layout — all bays side by side</li>
-        <li>Equipment badges showing test completion status</li>
-        <li>Click a bay to navigate to its test sheet</li>
-      </ul>
-      <Callout type="warning">
-        SLD parsing is in Beta. Not all SLD formats are supported — diagrams may appear
-        jumbled if the PDF structure is non-standard. Best results with clean, single-page SLDs.
-      </Callout>
-
-      {/* ═══ ASANA INTEGRATION ═══ */}
-      <SectionHeader id="asana-integration" title="🔗 Asana Integration" />
-      <p style={styles.p}>
-        Connect your project to Asana to automatically create and sync a commissioning tracking board.
-      </p>
-      <h4 style={styles.h4}>Project Builder</h4>
-      <p style={styles.p}>
-        Click <strong>"Sync to Asana"</strong> to create an Asana project structured as:
-      </p>
-      <div style={styles.codeBlock}>
-{`Asana Project: ZAZ062 - 220kV Substation
-├── Section: 220kV GIS Switchgear
-│   ├── Task: H01 TR-1 (185 tests)
-│   ├── Task: H02 LINE-1 (165 tests)
-│   └── ...
-├── Section: Oil Transformers
-│   ├── Task: Transformer 1 (87 tests)
-│   └── ...
-└── Section: Auxiliary Systems
-    └── Task: Auxiliary (225 tests)`}
-      </div>
-      <p style={styles.p}>
-        Each task includes the test count and links back to the dashboard. Progress is
-        synced based on completion percentage.
-      </p>
-      <h4 style={styles.h4}>OAuth Setup</h4>
-      <p style={styles.p}>
-        Requires OAuth authorization (one-time setup via Settings). Uses the Asana API
-        with rate-limited batch creation (respects Asana's 150 req/min limit with automatic
-        sleep/retry).
-      </p>
-
-      {/* ═══ FAQ ═══ */}
-      <SectionHeader id="faq" title="❓ FAQ" />
-
-      <h4 style={styles.h4}>Why does my COR have more tests than the manual one?</h4>
-      <p style={styles.p}>
-        The template library uses granular, individual test entries (one per line) while
-        manually-created CORs often group tests under equipment headers. For example, our
-        template expands "Circuit Breaker" into 15+ individual tests, while a manual COR
-        might list "Circuit Breaker Testing" as one entry. Both approaches are valid — ours
-        gives better tracking granularity.
-      </p>
-
-      <h4 style={styles.h4}>Can I add custom tests not in the template?</h4>
-      <p style={styles.p}>
-        Yes! Use the Custom Equipment feature in Bay Builder to add any equipment type and
-        define your own test list. These are saved permanently to your project.
-      </p>
-
-      <h4 style={styles.h4}>How do I export for a specific section only?</h4>
-      <p style={styles.p}>
-        Currently the COR exports the entire project. To export a sub-COR for a specific
-        section (e.g. just GIS, or just Transformers), use the section filter in Export settings.
-      </p>
-
-      <h4 style={styles.h4}>What's the difference between this and the sub-CORs?</h4>
-      <p style={styles.p}>
-        Sub-CORs are smaller, section-specific registers (e.g. one for GIS, one for Transformers).
-        This tool generates a unified COR covering the entire substation in one workbook,
-        with a single Cx Programme summary across all sections. You can still break it into
-        sub-CORs if needed for distribution.
-      </p>
-
-      <h4 style={styles.h4}>Where is my data stored?</h4>
-      <p style={styles.p}>
-        Progress data (dates, checkmarks) is stored in your browser's <strong>localStorage</strong>.
-        It persists between sessions on the same browser/machine but is NOT synced to the cloud.
-        Always export your COR to save a permanent copy.
-      </p>
-
-      <h4 style={styles.h4}>Can multiple people use this simultaneously?</h4>
-      <p style={styles.p}>
-        Currently single-user (browser-based). For multi-user collaboration, export the COR
-        and share via Procore or SharePoint. Cloud sync is planned for a future release.
-      </p>
-
-      <div style={{ height: 100 }} />
-    </div>
-  );
-}
-
-/* ─── Main Docs Component ─────────────────────────────── */
-export default function DocsReference() {
-  const [activeSection, setActiveSection] = useState('overview');
-
-  const handleNavigate = (id) => {
-    setActiveSection(id);
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sectionIds = sections.flatMap(s => [s.id, ...(s.children?.map(c => c.id) || [])]);
-      for (const id of sectionIds.reverse()) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= 120) {
-          setActiveSection(id);
-          break;
-        }
-      }
-    };
-    const container = document.querySelector('[data-docs-content]');
-    if (container) container.addEventListener('scroll', handleScroll);
-    return () => container?.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return (
-    <div style={styles.container}>
-      <Sidebar activeSection={activeSection} onNavigate={handleNavigate} />
-      <main style={styles.main} data-docs-content>
-        <Content />
-      </main>
-    </div>
-  );
-}
-
-/* ─── Styles ──────────────────────────────────────────── */
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = {
   container: {
     display: 'flex',
-    height: 'calc(100vh - 80px)',
-    overflow: 'hidden',
-    background: '#ffffff',
-    color: '#1e293b',
+    height: '100vh',
+    background: COLORS.bg,
+    color: COLORS.text,
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    overflow: 'hidden',
   },
   sidebar: {
     width: 260,
     minWidth: 260,
-    background: '#f8fafc',
-    borderRight: '1px solid #e2e8f0',
+    background: COLORS.sidebar,
+    borderRight: `1px solid ${COLORS.border}`,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
   },
   sidebarHeader: {
-    padding: '20px 16px 12px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    borderBottom: '1px solid #e2e8f0',
+    padding: '20px 16px 16px',
+    borderBottom: `1px solid ${COLORS.border}`,
   },
   sidebarTitle: {
     fontSize: 15,
-    fontWeight: 600,
-    color: '#1e293b',
+    fontWeight: 700,
+    color: COLORS.text,
+    margin: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sidebarSubtitle: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 4,
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
   },
   sidebarNav: {
     flex: 1,
@@ -632,111 +628,99 @@ const styles = {
     padding: '8px 0',
   },
   navItem: {
-    width: '100%',
+    padding: '8px 16px',
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    padding: '8px 16px',
-    border: 'none',
-    background: 'none',
-    color: '#64748b',
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    textAlign: 'left',
+    gap: 8,
     transition: 'all 0.15s',
-    borderRadius: 0,
+    borderLeft: '3px solid transparent',
   },
   navItemActive: {
-    color: '#60a5fa',
+    color: COLORS.accent,
     background: 'rgba(96, 165, 250, 0.08)',
-    borderLeft: '3px solid #60a5fa',
+    borderLeft: `3px solid ${COLORS.accent}`,
   },
-  chevron: {
-    marginLeft: 'auto',
-    fontSize: 10,
-    color: '#64748b',
+  navItemHover: {
+    color: COLORS.text,
+    background: 'rgba(255,255,255,0.03)',
   },
-  subNav: {
-    paddingLeft: 12,
-  },
-  subNavItem: {
-    width: '100%',
-    display: 'block',
-    padding: '6px 16px 6px 32px',
-    border: 'none',
-    background: 'none',
-    color: '#64748b',
-    fontSize: 12,
+  navGroup: {
+    padding: '6px 16px',
+    fontSize: 13,
+    fontWeight: 600,
+    color: COLORS.text,
     cursor: 'pointer',
-    textAlign: 'left',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    userSelect: 'none',
+  },
+  navChild: {
+    padding: '6px 16px 6px 36px',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    cursor: 'pointer',
     transition: 'all 0.15s',
-  },
-  subNavItemActive: {
-    color: '#93c5fd',
-  },
-  main: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '0 40px',
+    borderLeft: '3px solid transparent',
   },
   content: {
-    maxWidth: 1100,
-    margin: '0 auto',
-    padding: '32px 0',
+    flex: 1,
+    overflowY: 'auto',
+    padding: '40px 48px',
   },
-  sectionHeader: {
+  contentInner: {
+    maxWidth: 800,
+    margin: '0 auto',
+  },
+  h1: {
+    fontSize: 32,
+    fontWeight: 800,
+    color: COLORS.text,
+    marginBottom: 8,
+    lineHeight: 1.2,
+  },
+  h2: {
     fontSize: 24,
     fontWeight: 700,
-    color: '#1e293b',
+    color: COLORS.text,
     marginTop: 48,
     marginBottom: 16,
-    paddingTop: 24,
-    borderTop: '1px solid #e2e8f0',
+    paddingBottom: 8,
+    borderBottom: `1px solid ${COLORS.border}`,
   },
-  subHeader: {
+  h3: {
     fontSize: 18,
     fontWeight: 600,
-    color: '#1e293b',
+    color: COLORS.text,
     marginTop: 32,
     marginBottom: 12,
   },
-  h4: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: '#475569',
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  p: {
+  paragraph: {
     fontSize: 14,
     lineHeight: 1.7,
-    color: '#64748b',
-    marginBottom: 12,
-  },
-  ul: {
-    paddingLeft: 20,
+    color: COLORS.textSecondary,
     marginBottom: 16,
-    fontSize: 14,
-    lineHeight: 1.8,
-    color: '#64748b',
   },
   code: {
-    background: '#f1f5f9',
-    padding: '2px 6px',
+    background: COLORS.card,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: 4,
-    fontSize: 13,
-    color: '#93c5fd',
-    fontFamily: 'JetBrains Mono, Fira Code, monospace',
+    padding: '2px 6px',
+    fontSize: 12,
+    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+    color: COLORS.accent,
   },
   codeBlock: {
-    background: '#f8fafc',
-    border: '1px solid #e2e8f0',
+    background: COLORS.card,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: 8,
     padding: 16,
     fontSize: 12,
-    fontFamily: 'JetBrains Mono, Fira Code, monospace',
-    color: '#64748b',
-    whiteSpace: 'pre',
+    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+    color: COLORS.textSecondary,
     overflowX: 'auto',
     marginBottom: 16,
     lineHeight: 1.6,
@@ -744,76 +728,525 @@ const styles = {
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    marginBottom: 20,
+    marginBottom: 24,
     fontSize: 13,
   },
-  tableHeader: {
-    background: '#e0f2fe',
-  },
   th: {
+    background: COLORS.tableHeader,
     padding: '10px 12px',
     textAlign: 'left',
     fontWeight: 600,
-    color: '#1e293b',
-    borderBottom: '2px solid #334155',
-  },
-  tr: {
-    borderBottom: '1px solid #e2e8f0',
+    color: COLORS.text,
+    borderBottom: `2px solid ${COLORS.border}`,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
   },
   td: {
     padding: '8px 12px',
-    color: '#64748b',
-    verticalAlign: 'top',
+    borderBottom: `1px solid ${COLORS.border}`,
+    color: COLORS.textSecondary,
   },
-  pipeline: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: '20px 0',
-    flexWrap: 'wrap',
-  },
-  pipelineStep: {
-    background: '#e0f2fe',
-    border: '1px solid #334155',
+  badge: (level) => ({
+    display: 'inline-block',
+    padding: '2px 8px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 700,
+    background: `${COLORS[level.toLowerCase()]}20`,
+    color: COLORS[level.toLowerCase()] || COLORS.accent,
+    border: `1px solid ${COLORS[level.toLowerCase()] || COLORS.accent}40`,
+  }),
+  card: {
+    background: COLORS.card,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: 8,
-    padding: '12px 16px',
-    fontSize: 13,
-    fontWeight: 500,
-    color: '#1e293b',
-    textAlign: 'center',
-    minWidth: 100,
+    padding: 20,
+    marginBottom: 16,
   },
-  pipelineArrow: {
-    fontSize: 20,
-    color: '#60a5fa',
+  infoBox: {
+    background: 'rgba(96, 165, 250, 0.06)',
+    border: `1px solid rgba(96, 165, 250, 0.2)`,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+  },
+  stepGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+    gap: 12,
+    marginBottom: 24,
   },
   stepCard: {
-    display: 'flex',
-    gap: 16,
-    padding: 16,
-    background: '#f8fafc',
-    border: '1px solid #e2e8f0',
+    background: COLORS.card,
+    border: `1px solid ${COLORS.border}`,
     borderRadius: 8,
-    marginBottom: 12,
+    padding: 16,
+    textAlign: 'center',
   },
   stepNumber: {
-    width: 32,
-    height: 32,
-    minWidth: 32,
+    width: 28,
+    height: 28,
     borderRadius: '50%',
-    background: '#2563eb',
-    color: '#1e293b',
-    display: 'flex',
+    background: COLORS.accent,
+    color: '#fff',
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontWeight: 700,
-    fontSize: 14,
-  },
-  stepDesc: {
     fontSize: 13,
-    color: '#64748b',
-    marginTop: 4,
-    lineHeight: 1.5,
+    fontWeight: 700,
+    marginBottom: 8,
+  },
+  tagList: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 12,
+  },
+  tag: {
+    background: 'rgba(96, 165, 250, 0.1)',
+    border: `1px solid rgba(96, 165, 250, 0.25)`,
+    borderRadius: 4,
+    padding: '3px 8px',
+    fontSize: 11,
+    color: COLORS.accent,
+  },
+  pipelineBox: {
+    background: COLORS.card,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 8,
+    padding: 20,
+    marginBottom: 24,
+    fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+    fontSize: 12,
+    lineHeight: 1.8,
+    color: COLORS.textSecondary,
+    overflowX: 'auto',
+    whiteSpace: 'pre',
   },
 };
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+function LevelBadge({ level }) {
+  return <span style={styles.badge(level)}>{level}</span>;
+}
+
+function TestTable({ tests }) {
+  return (
+    <table style={styles.table}>
+      <thead>
+        <tr>
+          <th style={{ ...styles.th, width: 50 }}>#</th>
+          <th style={styles.th}>Test Name</th>
+          <th style={{ ...styles.th, width: 70 }}>Level</th>
+        </tr>
+      </thead>
+      <tbody>
+        {tests.map((t, i) => (
+          <tr key={i} style={i % 2 === 1 ? { background: COLORS.tableRowAlt } : {}}>
+            <td style={styles.td}>{i + 1}</td>
+            <td style={styles.td}>{t.name}</td>
+            <td style={styles.td}><LevelBadge level={t.level} /></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function EquipmentSection({ id, data }) {
+  return (
+    <div id={id} style={{ marginBottom: 48 }}>
+      <h3 style={styles.h3}>{data.name}</h3>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+        <span style={styles.code}>{data.code}</span>
+        <span style={{ fontSize: 12, color: COLORS.textMuted }}>{data.testCount} tests</span>
+      </div>
+      <p style={styles.paragraph}>{data.description}</p>
+      <TestTable tests={data.tests} />
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+export default function DocsReference() {
+  const [activeSection, setActiveSection] = useState('overview');
+  const [expandedGroups, setExpandedGroups] = useState({ 'section-types': true, 'equipment-reference': true });
+  const [hoveredNav, setHoveredNav] = useState(null);
+  const contentRef = useRef(null);
+
+  const scrollTo = (id) => {
+    setActiveSection(id);
+    const el = document.getElementById(id);
+    if (el && contentRef.current) {
+      contentRef.current.scrollTo({ top: el.offsetTop - 40, behavior: 'smooth' });
+    }
+  };
+
+  const toggleGroup = (id) => {
+    setExpandedGroups(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Track scroll position to highlight active nav
+  useEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+    const handleScroll = () => {
+      const sections = container.querySelectorAll('[id]');
+      let current = 'overview';
+      sections.forEach(section => {
+        if (section.offsetTop - 80 <= container.scrollTop) {
+          current = section.id;
+        }
+      });
+      setActiveSection(current);
+    };
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const getNavStyle = (id) => {
+    const isActive = activeSection === id;
+    const isHovered = hoveredNav === id;
+    return {
+      ...styles.navItem,
+      ...(isActive ? styles.navItemActive : {}),
+      ...(!isActive && isHovered ? styles.navItemHover : {}),
+    };
+  };
+
+  const getChildNavStyle = (id) => {
+    const isActive = activeSection === id;
+    const isHovered = hoveredNav === id;
+    return {
+      ...styles.navChild,
+      ...(isActive ? { ...styles.navItemActive, paddingLeft: 36 } : {}),
+      ...(!isActive && isHovered ? styles.navItemHover : {}),
+    };
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* ═══ SIDEBAR ═══ */}
+      <aside style={styles.sidebar}>
+        <div style={styles.sidebarHeader}>
+          <h1 style={styles.sidebarTitle}>📘 CX Dashboard</h1>
+          <div style={styles.sidebarSubtitle}>Documentation</div>
+        </div>
+        <nav style={styles.sidebarNav}>
+          {NAV_SECTIONS.map(section => {
+            if (section.children) {
+              return (
+                <div key={section.id}>
+                  <div
+                    style={styles.navGroup}
+                    onClick={() => toggleGroup(section.id)}
+                  >
+                    <span>{section.icon}</span>
+                    <span style={{ flex: 1 }}>{section.label}</span>
+                    <span style={{ fontSize: 10, color: COLORS.textMuted }}>
+                      {expandedGroups[section.id] ? '▼' : '▶'}
+                    </span>
+                  </div>
+                  {expandedGroups[section.id] && section.children.map(child => (
+                    <div
+                      key={child.id}
+                      style={getChildNavStyle(child.id)}
+                      onClick={() => scrollTo(child.id)}
+                      onMouseEnter={() => setHoveredNav(child.id)}
+                      onMouseLeave={() => setHoveredNav(null)}
+                    >
+                      {child.label}
+                    </div>
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div
+                key={section.id}
+                style={getNavStyle(section.id)}
+                onClick={() => scrollTo(section.id)}
+                onMouseEnter={() => setHoveredNav(section.id)}
+                onMouseLeave={() => setHoveredNav(null)}
+              >
+                <span>{section.icon}</span>
+                <span>{section.label}</span>
+              </div>
+            );
+          })}
+        </nav>
+        <div style={{ padding: '12px 16px', borderTop: `1px solid ${COLORS.border}`, fontSize: 11, color: COLORS.textMuted }}>
+          v2.0 • Last updated Aug 2026
+        </div>
+      </aside>
+
+      {/* ═══ CONTENT ═══ */}
+      <main style={styles.content} ref={contentRef}>
+        <div style={styles.contentInner}>
+
+          {/* ──── OVERVIEW ──── */}
+          <section id="overview">
+            <h1 style={styles.h1}>CX Dashboard Documentation</h1>
+            <p style={{ ...styles.paragraph, fontSize: 16, color: COLORS.textSecondary }}>
+              Complete reference for the Commissioning (Cx) Dashboard — a structured tool for managing
+              electrical substation commissioning from factory acceptance through energization.
+            </p>
+
+            <div style={styles.infoBox}>
+              <strong style={{ color: COLORS.accent }}>Who is this for?</strong><br/>
+              Commissioning engineers, project managers, and QA teams managing HV/MV substation
+              commissioning projects. The tool tracks every test across the full IEC commissioning
+              lifecycle (L1→L5).
+            </div>
+
+            <h3 style={styles.h3}>Commissioning Levels</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 24 }}>
+              {[
+                { level: 'L1', desc: 'Factory Acceptance Testing (FAT)' },
+                { level: 'L2', desc: 'Receipt & Inspection (RIF/IVF)' },
+                { level: 'L3', desc: 'Individual Component Testing' },
+                { level: 'L4', desc: 'System Integration Testing' },
+                { level: 'L5', desc: 'Energization & Soak Testing' },
+              ].map(l => (
+                <div key={l.level} style={{ ...styles.card, flex: '1 1 140px', minWidth: 140 }}>
+                  <LevelBadge level={l.level} />
+                  <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 6 }}>{l.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <h3 style={styles.h3}>Pipeline Diagram</h3>
+            <div style={styles.pipelineBox}>
+{` ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+ │  CREATE      │───▶│  BUILD       │───▶│  TRACK       │───▶│  EXPORT      │
+ │  PROJECT     │    │  SCOPE       │    │  PROGRESS    │    │  COR         │
+ └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+        │                    │                    │                    │
+   Name, Client         Add Sections       Fill Results        Generate
+   Location, Dates      Add Equipment      Upload Evidence     Certificate
+   Team Members         Configure Tests    Sign-off Tests      of Readiness`}
+            </div>
+          </section>
+
+          {/* ──── QUICK START ──── */}
+          <section id="quick-start">
+            <h2 style={styles.h2}>🚀 Quick Start</h2>
+            <p style={styles.paragraph}>
+              Get a commissioning project tracked in 4 steps:
+            </p>
+            <div style={styles.stepGrid}>
+              {[
+                { num: 1, title: 'Create Project', desc: 'Set project name, client, location, dates, and assign team members.' },
+                { num: 2, title: 'Build Scope', desc: 'Add section templates (transformer, switchgear, etc.) and configure equipment within each section.' },
+                { num: 3, title: 'Track Progress', desc: 'Record test results, upload evidence documents, and get engineer sign-offs for each test.' },
+                { num: 4, title: 'Export COR', desc: 'Generate Certificate of Readiness package with all completed tests, evidence, and sign-off records.' },
+              ].map(s => (
+                <div key={s.num} style={styles.stepCard}>
+                  <div style={styles.stepNumber}>{s.num}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: COLORS.text, marginBottom: 6 }}>{s.title}</div>
+                  <div style={{ fontSize: 11, color: COLORS.textSecondary, lineHeight: 1.5 }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ──── SECTION TYPES ──── */}
+          <section id="section-types">
+            <h2 style={styles.h2}>📂 Section Types</h2>
+            <p style={styles.paragraph}>
+              Sections are the top-level organizational units in a commissioning project. Each section
+              template defines the equipment types and feeder structures available. There are 11 section
+              templates:
+            </p>
+          </section>
+
+          <section id="sec-oil-transformer">
+            <h3 style={styles.h3}>Oil Transformer</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>oil_transformer</span></div>
+            <p style={styles.paragraph}>
+              Complete oil-filled power transformer section covering the main transformer unit and all
+              associated ancillary equipment through to energization.
+            </p>
+            <div style={styles.tagList}>
+              {['Power Transformer', 'VT', 'CT', 'Surge Arrester', 'NER CT', 'Busbar', 'NER', 'MK & OLTC Panel', 'Energization'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-dry-transformer">
+            <h3 style={styles.h3}>Dry Transformer</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>dry_transformer</span></div>
+            <p style={styles.paragraph}>
+              Dry-type transformer section — similar to oil transformer but without OLTC-specific
+              tests and oil analysis requirements.
+            </p>
+            <div style={styles.tagList}>
+              {['Dry Transformer', 'VT', 'CT', 'Surge Arrester', 'Busbar', 'NER', 'Energization'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-switchgear-ais">
+            <h3 style={styles.h3}>Switchgear (AIS)</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>switchgear_ais</span></div>
+            <p style={styles.paragraph}>
+              Air-insulated switchgear section organized per-feeder. Each feeder is assigned a type
+              which determines its equipment complement. Also includes overall switchgear tests.
+            </p>
+            <div style={{ ...styles.card, marginBottom: 12 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8 }}>Feeder Types:</div>
+              <div style={styles.tagList}>
+                {['Incomer', 'Bus Coupler', 'NER', 'Bus Bar VT', 'Outgoing Feeder', 'Aux Transformer', 'Transformer Feeder', 'Spare', 'Custom'].map(t => (
+                  <span key={t} style={styles.tag}>{t}</span>
+                ))}
+              </div>
+            </div>
+            <div style={{ ...styles.card }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8 }}>Overall Equipment:</div>
+              <div style={styles.tagList}>
+                {['Switchgear Overall', 'AC/DC Checks', 'SCADA'].map(t => (
+                  <span key={t} style={styles.tag}>{t}</span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="sec-hv-switchgear-gis">
+            <h3 style={styles.h3}>HV Switchgear (GIS)</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>hv_switchgear_gis</span></div>
+            <p style={styles.paragraph}>
+              Gas-insulated switchgear for 110–400kV applications. Per-feeder structure with
+              GIS-specific equipment types (SF6 gas testing, GIS bay tests, etc.).
+            </p>
+            <div style={{ ...styles.card }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: COLORS.text, marginBottom: 8 }}>Feeder Types:</div>
+              <div style={styles.tagList}>
+                {['Line Feeder', 'Transformer Feeder', 'Bus Section/Coupler', 'Bus Bar VT', 'Spare', 'Custom'].map(t => (
+                  <span key={t} style={styles.tag}>{t}</span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="sec-protection">
+            <h3 style={styles.h3}>Protection</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>protection</span></div>
+            <p style={styles.paragraph}>
+              Protection system section for relay panels and stability testing. Used for dedicated
+              protection commissioning outside of switchgear feeders.
+            </p>
+            <div style={styles.tagList}>
+              {['Protection Panel', 'Stability Test'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-cables">
+            <h3 style={styles.h3}>Cables</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>cables</span></div>
+            <p style={styles.paragraph}>
+              Cable commissioning section for HV and MV power cables including withstand testing,
+              partial discharge measurement, and termination checks.
+            </p>
+            <div style={styles.tagList}>
+              {['HV Cable', 'MV Cable'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-battery-dc">
+            <h3 style={styles.h3}>Battery & DC Systems</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>battery_dc</span></div>
+            <p style={styles.paragraph}>
+              DC power systems section covering batteries, chargers, distribution, UPS, and earth
+              fault monitoring — the backbone of protection and control power.
+            </p>
+            <div style={styles.tagList}>
+              {['Battery Bank', 'Battery Charger', 'DC Distribution Board', 'UPS', 'DC Earth Fault Monitor'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-earthing">
+            <h3 style={styles.h3}>Earthing</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>earthing</span></div>
+            <p style={styles.paragraph}>
+              Earthing system section for earth grid integrity and electrode testing.
+            </p>
+            <div style={styles.tagList}>
+              {['Earth Grid', 'Earth Electrode'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-substation-checks">
+            <h3 style={styles.h3}>Substation Checks</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>substation_checks</span></div>
+            <p style={styles.paragraph}>
+              General substation-level commissioning checks and grid interface verification.
+            </p>
+            <div style={styles.tagList}>
+              {['Substation Check Sheets', 'Grid Interface Kiosk'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section id="sec-panel-board">
+            <h3 style={styles.h3}>Panel Board</h3>
+            <div style={{ marginBottom: 4 }}><span style={styles.code}>panel_board</span></div>
+            <p style={styles.paragraph}>
+              Panel board section organized per-feeder with CT, busbar, and protection equipment
+              for each feeder position.
+            </p>
+            <div style={styles.tagList}>
+              {['CT', 'Busbar', 'Protection'].map(t => (
+                <span key={t} style={styles.tag}>{t}</span>
+              ))}
+            </div>
+          </section>
+
+          {/* ──── EQUIPMENT REFERENCE ──── */}
+          <section id="equipment-reference">
+            <h2 style={styles.h2}>⚡ Equipment Reference</h2>
+            <p style={styles.paragraph}>
+              Complete test listings for every equipment type. Each test is assigned a commissioning
+              level (L1–L5) indicating when it should be performed in the project lifecycle.
+            </p>
+            <div style={styles.infoBox}>
+              <strong style={{ color: COLORS.accent }}>Level Legend:</strong>{' '}
+              <LevelBadge level="L1" /> Factory{' • '}
+              <LevelBadge level="L2" /> Receipt{' • '}
+              <LevelBadge level="L3" /> Component{' • '}
+              <LevelBadge level="L4" /> Integration{' • '}
+              <LevelBadge level="L5" /> Energization
+            </div>
+          </section>
+
+          {Object.entries(EQUIPMENT_DATA).map(([id, data]) => (
+            <section key={id} id={id}>
+              <EquipmentSection id={id} data={data} />
+            </section>
+          ))}
+
+          {/* Footer */}
+          <div style={{ marginTop: 64, paddingTop: 24, borderTop: `1px solid ${COLORS.border}`, textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+              CX Dashboard Documentation • v2.0 • Generated August 2026
+            </p>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  );
+}
