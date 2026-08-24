@@ -876,12 +876,18 @@ export default function DocsReference() {
   const [expandedGroups, setExpandedGroups] = useState({ 'section-types': true, 'equipment-reference': true });
   const [hoveredNav, setHoveredNav] = useState(null);
   const contentRef = useRef(null);
+  const scrollingRef = useRef(false);
 
   const scrollTo = (id) => {
     setActiveSection(id);
     const el = document.getElementById(id);
     if (el && contentRef.current) {
-      contentRef.current.scrollTo({ top: el.offsetTop - 40, behavior: 'smooth' });
+      scrollingRef.current = true;
+      const containerTop = contentRef.current.getBoundingClientRect().top;
+      const elTop = el.getBoundingClientRect().top;
+      const scrollOffset = contentRef.current.scrollTop + (elTop - containerTop) - 40;
+      contentRef.current.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+      setTimeout(() => { scrollingRef.current = false; }, 800);
     }
   };
 
@@ -894,6 +900,7 @@ export default function DocsReference() {
     const container = contentRef.current;
     if (!container) return;
     const handleScroll = () => {
+      if (scrollingRef.current) return;
       const sections = container.querySelectorAll('[id]');
       let current = 'overview';
       sections.forEach(section => {

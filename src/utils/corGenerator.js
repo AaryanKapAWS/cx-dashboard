@@ -726,6 +726,7 @@ export async function generateCOR(equipmentData, projectName) {
   // ═══════════════════════════════════════════════════════════════════
   // Read schedule data from localStorage
   const scheduleData = JSON.parse(localStorage.getItem('test_schedule') || '{}');
+  const progressData = JSON.parse(localStorage.getItem('test_progress') || '{}');
 
   const DATA_HEADERS = [
     'S.No', 'Feeder Ref', 'Equipment', 'Level', 'Test Description',
@@ -780,7 +781,14 @@ export async function generateCOR(equipmentData, projectName) {
       }
       lastEquipName = equipName
 
+      let testIdx = 0
       for (const [level, testName] of tests) {
+        // Look up progress data for this test
+        const progressKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${testIdx}`
+        const prog = progressData[progressKey] || {}
+        const satCompleted = prog.tested ? 'YES' : ''
+        const cxaWitnessed = prog.witnessed ? 'YES' : ''
+        const reportClosed = prog.closed ? 'YES' : ''
         const levelLabel = LEVEL_LABELS[level] || level
         const rowNum = ws.lastRow ? ws.lastRow.number + 1 : dataStartRow
 
@@ -794,7 +802,7 @@ export async function generateCOR(equipmentData, projectName) {
 
         const row = ws.addRow([
           sNo, '', levelLabel, level, testName,
-          pStart, pFinish, aStart, aFinish, '', '', '', '', '', '', '', '', '', '', ''
+          pStart, pFinish, aStart, aFinish, satCompleted, cxaWitnessed, '', '', '', '', '', '', reportClosed, '', ''
         ])
 
         row.eachCell((cell, col) => {
@@ -812,6 +820,7 @@ export async function generateCOR(equipmentData, projectName) {
         // % Complete FORMULA: counts YES in tracking columns / 5
         // Tracking cols: J(10), K(11), L(12), N(14), R(18)  = SAT, CxA, Completed, Procore, Closed
         const r = row.number
+        testIdx++
         row.getCell(20).value = { formula: `(COUNTIF(J${r},"YES")+COUNTIF(K${r},"YES")+COUNTIF(L${r},"YES")+COUNTIF(N${r},"YES")+COUNTIF(R${r},"YES"))/5` }
         row.getCell(20).numFmt = '0%'
 
