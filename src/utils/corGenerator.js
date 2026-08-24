@@ -638,6 +638,8 @@ export async function generateCOR(equipmentData, projectName) {
 
   // Compute actual dates: programme starts today, each item gets duration from test count
   // Items within same section run in parallel; sections run sequentially
+  // Read schedule data for Cx Programme dates
+  const progScheduleData = JSON.parse(localStorage.getItem('test_schedule') || '{}');
   const programmeStart = new Date()
   programmeStart.setHours(0, 0, 0, 0)
   let sectionStartDate = new Date(programmeStart)
@@ -662,11 +664,21 @@ export async function generateCOR(equipmentData, projectName) {
       const levels = { L3: 0, L4: 0, L5: 0 }
       for (const [lv] of tests) { if (levels[lv] !== undefined) levels[lv]++ }
 
-      // Duration: 1 day per 3 tests, minimum 2 days
-      const duration = Math.max(2, Math.ceil(tests.length / 3))
-      const itemStart = new Date(sectionStartDate)
-      const itemEnd = new Date(itemStart)
-      itemEnd.setDate(itemEnd.getDate() + duration)
+      // Check if user has set schedule dates for this equipment
+      const progSchedKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+      const progSched = progScheduleData[progSchedKey] || {}
+
+      let itemStart, itemEnd
+      if (progSched.plannedStart && progSched.plannedFinish) {
+        itemStart = new Date(progSched.plannedStart)
+        itemEnd = new Date(progSched.plannedFinish)
+      } else {
+        // Fallback: auto-generate duration from test count
+        const duration = Math.max(2, Math.ceil(tests.length / 3))
+        itemStart = new Date(sectionStartDate)
+        itemEnd = new Date(itemStart)
+        itemEnd.setDate(itemEnd.getDate() + duration)
+      }
 
       // Track max end date in section
       if (itemEnd > sectionMaxEnd) sectionMaxEnd = new Date(itemEnd)
