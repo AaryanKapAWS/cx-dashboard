@@ -47,9 +47,9 @@ export default function SettingsPanel() {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   // PROJECT PRESET FUNCTIONS
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   function handleSaveProject() {
     const defaultName = localStorage.getItem('cor_projectName') || localStorage.getItem('bay_project_name') || 'Untitled Project'
     const name = prompt('Save project as:', defaultName)
@@ -134,9 +134,9 @@ export default function SettingsPanel() {
     e.target.value = ''
   }
 
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   // COR IMPORT FUNCTIONS
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   async function handleCorUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -148,7 +148,23 @@ export default function SettingsPanel() {
       const wb = new ExcelJS.Workbook()
       await wb.xlsx.load(buffer)
 
+      // ── Extract project name from "Project Overview" sheet ──
+      let projectName = file.name.replace(/\.(xlsx|xlsm)$/i, '')
+      const overviewSheet = wb.getWorksheet('Project Overview')
+      if (overviewSheet) {
+        for (let r = 1; r <= 20; r++) {
+          const row = overviewSheet.getRow(r)
+          const cellC = row.getCell(3).value
+          const cellD = row.getCell(4).value
+          if (cellC && String(cellC).includes('Project Name') && cellD) {
+            projectName = String(cellD).trim()
+            break
+          }
+        }
+      }
+
       const parsed = {}
+      parsed.__projectName = projectName
       let totalTests = 0
       let sheetsWithData = 0
 
@@ -156,23 +172,55 @@ export default function SettingsPanel() {
         // Skip non-data sheets
         if (['Project Overview', 'Cx Programme', 'Cx Charts', 'Certificate of Readiness', 'Revision History'].includes(ws.name)) continue
 
-        const sheetData = []
+        const equipmentGroups = []
+        let currentGroup = null
         const rowCount = ws.rowCount || 500
+
         for (let rowNum = 4; rowNum <= rowCount; rowNum++) {
           const row = ws.getRow(rowNum)
-          let testName = row.getCell(5).value // Col E: Test Description
-          if (!testName) continue
-          // Handle ExcelJS rich text objects, formulas, etc.
-          if (typeof testName === 'object') {
-            if (testName.richText) testName = testName.richText.map(r => r.text).join('')
-            else if (testName.result) testName = String(testName.result)
-            else testName = String(testName)
-          } else {
-            testName = String(testName)
-          }
-          if (!testName.trim()) continue
 
-          const rowData = { test: testName.trim(), row: rowNum }
+          // Helper to extract cell text
+          function getCellText(col) {
+            let v = row.getCell(col).value
+            if (!v) return ''
+            if (typeof v === 'object') {
+              if (v.richText) return v.richText.map(r => r.text).join('').trim()
+              if (v.result !== undefined) return String(v.result).trim()
+              return String(v).trim()
+            }
+            return String(v).trim()
+          }
+
+          const colA = getCellText(1) // S.No
+          const colB = getCellText(2) // Equipment name (separator) or feeder ref
+          const colD = getCellText(4) // Level code (e.g. "L3")
+          const colE = getCellText(5) // Test name
+
+          // ── Detect equipment separator row ──
+          // A row is an equipment separator if col A is NOT a number and col B has text
+          const isNumericSNo = /^\d+$/.test(colA)
+
+          if (!isNumericSNo && colB) {
+            currentGroup = { name: colB, tests: [] }
+            equipmentGroups.push(currentGroup)
+            continue
+          }
+
+          // ── Test data row ──
+          // Must have a numeric S.No in col A
+          if (!isNumericSNo) continue
+
+          // DEBUG: log first 3 test rows per sheet to console
+          if (currentGroup && currentGroup.tests.length < 3) console.log(`[COR Import] Sheet "${ws.name}" Row ${rowNum}: colA="${colA}" colD="${colD}" colE="${colE}"`, row.getCell(5).value)
+
+          // If no equipment group has been started yet, create a default one
+          if (!currentGroup) {
+            currentGroup = { name: ws.name, tests: [] }
+            equipmentGroups.push(currentGroup)
+          }
+
+          const detectedLevel = colD.match(/L([1-5])/) ? colD.match(/L([1-5])/)[0] : 'L3'
+          const rowData = { test: colE, row: rowNum, level: detectedLevel }
 
           // Dates (cols F-I = 6-9)
           const plannedStart = row.getCell(6).value
@@ -206,13 +254,10 @@ export default function SettingsPanel() {
           if (satCompleted) rowData.satCompleted = satCompleted.toUpperCase()
           if (witnessed) rowData.witnessed = witnessed.toUpperCase()
           if (completed) rowData.completed = completed.toUpperCase()
-          // Only write report columns if SAT is confirmed
-          if (satCompleted === 'YES') {
-            if (reportReceived) rowData.reportReceived = reportReceived.toUpperCase()
-            if (reportProcore) rowData.reportProcore = reportProcore.toUpperCase()
-            if (reportReviewed) rowData.reportReviewed = reportReviewed.toUpperCase()
-            if (reportClosed) rowData.reportClosed = reportClosed.toUpperCase()
-          }
+          if (reportReceived) rowData.reportReceived = reportReceived.toUpperCase()
+          if (reportProcore) rowData.reportProcore = reportProcore.toUpperCase()
+          if (reportReviewed) rowData.reportReviewed = reportReviewed.toUpperCase()
+          if (reportClosed) rowData.reportClosed = reportClosed.toUpperCase()
 
           // Text columns
           const obs = row.getCell(17).value
@@ -220,12 +265,12 @@ export default function SettingsPanel() {
           if (obs) rowData.obs = String(obs)
           if (comments) rowData.comments = String(comments)
 
-          sheetData.push(rowData)
+          currentGroup.tests.push(rowData)
           totalTests++
         }
 
-        if (sheetData.length > 0) {
-          parsed[ws.name] = sheetData
+        if (equipmentGroups.length > 0) {
+          parsed[ws.name] = { equipmentGroups }
           sheetsWithData++
         }
       }
@@ -241,56 +286,123 @@ export default function SettingsPanel() {
 
   function handleCorLoadNow() {
     if (!corParsedData) return
-    
-    // Build test_progress directly from parsed COR data
-    // Since the COR was generated by this tool, we can build progress keys
-    // from the sheet structure: sheet name → feeder_ref, equipment separators → displayName
-    const progress = JSON.parse(localStorage.getItem('test_progress') || '{}')
-    let matched = 0
-    let total = 0
 
-    // For each sheet in parsed COR data
-    for (const [sheetName, sheetTests] of Object.entries(corParsedData)) {
-      // Track current equipment group (from separator rows)
-      let currentEquipment = sheetName
-      let testIdx = 0
-      
-      for (const corTest of sheetTests) {
-        const testName = (corTest.test || '').trim()
-        if (!testName) continue
-        
-        // Check if this is an equipment separator row (no level, typically bold equipment name)
-        // Equipment separators don't have satCompleted/witnessed/etc and have no level
-        if (!corTest.satCompleted && !corTest.witnessed && !corTest.completed && 
-            !corTest.plannedStart && !corTest.plannedFinish && !corTest.actualStart && !corTest.actualFinish &&
-            !corTest.reportReceived && !corTest.reportClosed) {
-          // This might be an equipment separator — use as current equipment name
-          currentEquipment = testName
-          testIdx = 0
-          continue
-        }
-        
-        total++
-        const tested = corTest.satCompleted === 'YES'
-        const witnessed = corTest.witnessed === 'YES'
-        const closed = corTest.reportClosed === 'YES'
-        
-        if (tested || witnessed || closed) {
-          // Build progress key: feeder_ref_equipmentName_testIdx
-          // Use sheetName as a proxy for feeder_ref, currentEquipment for displayName
-          const key = `${sheetName.replace(/\s/g, '_')}_${currentEquipment.replace(/\s/g, '_')}_${testIdx}`
-          progress[key] = { tested, witnessed, closed }
-          matched++
-        }
-        testIdx++
+    if (!confirm('This will replace your current project. Continue?')) return
+
+    // Helper: convert date values to ISO date string
+    function toISO(v) {
+      if (!v) return ''
+      if (v instanceof Date) return v.toISOString().slice(0, 10)
+      if (typeof v === 'number') {
+        // Excel serial date number
+        const d = new Date((v - 25569) * 86400 * 1000)
+        return d.toISOString().slice(0, 10)
+      }
+      return String(v).slice(0, 10)
+    }
+
+    const projectName = corParsedData.__projectName || 'Imported Project'
+    let totalTests = 0
+
+    // ── Step 1: Build bay_tree_v5 ──
+    const bayTree = Object.keys(corParsedData)
+      .filter(k => k !== '__projectName')
+      .map((sheetName, idx) => ({
+        id: `ln_${Date.now()}_${idx}`,
+        name: sheetName,
+        preset: 'custom',
+        colour: '#2980b9',
+        subtype: null,
+        equipment: corParsedData[sheetName].equipmentGroups.map((eq, eqIdx) => ({
+          id: `eq_${Date.now()}_${idx}_${eqIdx}`,
+          type: `custom_import_${sheetName}_${eq.name}`.replace(/[^a-zA-Z0-9]/g, '_'),
+          qty: 1,
+          name: eq.name,
+        })),
+        feeders: [],
+        children: [],
+      }))
+
+    // ── Step 2: Build bay_equipment ──
+    const bayEquipment = []
+    for (const [sheetName, sheetData] of Object.entries(corParsedData)) {
+      if (sheetName === '__projectName') continue
+      for (const eq of sheetData.equipmentGroups) {
+        const eqType = `custom_import_${sheetName}_${eq.name}`.replace(/[^a-zA-Z0-9]/g, '_')
+        bayEquipment.push({
+          type: eqType,
+          name: eq.name,
+          displayName: eq.name,
+          feeder_ref: sheetName,
+          feeder_type: 'custom',
+          feeder_type_label: sheetName,
+          section: 'custom',
+          child_section: null,
+          parent_section: null,
+          customTests: eq.tests.map(t => ({
+            level: t.level || 'L3',
+            name: t.test,
+            enabled: true,
+          })),
+        })
+        totalTests += eq.tests.length
       }
     }
-    
-    // Save to localStorage
-    localStorage.setItem('test_progress', JSON.stringify(progress))
-    localStorage.setItem('cor_imported_data', JSON.stringify(corParsedData))
-    
-    setCorImportStatus(`✓ Loaded! ${matched} tests with progress data saved (${total} total parsed). Check the Progress tab.`)
+
+    // ── Step 3: Build test_schedule ──
+    const testSchedule = {}
+    for (const [sheetName, sheetData] of Object.entries(corParsedData)) {
+      if (sheetName === '__projectName') continue
+      for (const eq of sheetData.equipmentGroups) {
+        const firstWithDates = eq.tests.find(t => t.plannedStart || t.actualStart)
+        if (firstWithDates) {
+          const key = `${sheetName.replace(/\s/g, '_')}_${eq.name.replace(/\s/g, '_')}`
+          testSchedule[key] = {
+            plannedStart: toISO(firstWithDates.plannedStart),
+            plannedFinish: toISO(firstWithDates.plannedFinish),
+            actualStart: toISO(firstWithDates.actualStart),
+            actualFinish: toISO(firstWithDates.actualFinish),
+          }
+        }
+      }
+    }
+
+    // ── Step 4: Build test_progress ──
+    const testProgress = {}
+    for (const [sheetName, sheetData] of Object.entries(corParsedData)) {
+      if (sheetName === '__projectName') continue
+      for (const eq of sheetData.equipmentGroups) {
+        eq.tests.forEach((t, idx) => {
+          const key = `${sheetName.replace(/\s/g, '_')}_${eq.name.replace(/\s/g, '_')}_${idx}`
+          const tested = t.satCompleted === 'YES' || (t.satCompleted && t.satCompleted !== 'NO')
+          const witnessed = t.witnessed === 'YES' || (t.witnessed && t.witnessed !== 'NO')
+          const closed = t.reportClosed === 'YES' || (t.reportClosed && t.reportClosed !== 'NO')
+          if (tested || witnessed || closed) {
+            testProgress[key] = { tested: !!tested, witnessed: !!witnessed, closed: !!closed }
+          }
+        })
+      }
+    }
+
+    // ── Step 5: Save all to localStorage and reload ──
+    localStorage.setItem('bay_tree_v5', JSON.stringify(bayTree))
+    localStorage.setItem('bay_equipment', JSON.stringify(bayEquipment))
+    localStorage.setItem('test_schedule', JSON.stringify(testSchedule))
+    localStorage.setItem('test_progress', JSON.stringify(testProgress))
+    localStorage.setItem('cor_projectName', projectName)
+
+    // Also save as custom templates so BayBuilder's getTestCount/getLabel can find them
+    const customTemplates = bayEquipment.map(eq => ({
+      id: eq.type,
+      label: eq.name,
+      tests: (eq.customTests || []).map(t => [t.level, t.name]),
+      createdAt: new Date().toISOString(),
+    }))
+    localStorage.setItem('cx_custom_templates', JSON.stringify(customTemplates))
+
+    const sections = Object.keys(corParsedData).filter(k => k !== '__projectName').length
+    setCorImportStatus(`✓ Full project loaded! ${bayEquipment.length} equipment items, ${totalTests} tests across ${sections} sections.`)
+    setTimeout(() => window.location.reload(), 1500)
   }
 
   function handleCorSaveWithProject() {
@@ -322,9 +434,9 @@ export default function SettingsPanel() {
     setCorImportStatus(`✓ Saved as "${preset.name}"`)
   }
 
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   // STYLES
-  // ════════════════════════════════════════════════════
+  // ══════════════════════════════════════════════════════════
   const cardStyle = {
     background: '#fff',
     border: '1px solid #e2e8f0',
@@ -542,7 +654,7 @@ export default function SettingsPanel() {
       <div style={cardStyle}>
         <div style={sectionHeaderStyle}>COR DATA IMPORT</div>
         <p style={{ fontSize: 11, color: '#64748b', margin: '0 0 16px' }}>
-          Upload an existing COR (.xlsx) to import dates, checkmarks, and comments. Matches tests by name and populates your scope.
+          Upload a COR (.xlsx) exported from this tool to fully load the project — sections, equipment, tests, dates, and progress.
         </p>
 
         {/* Upload button */}
@@ -575,7 +687,7 @@ export default function SettingsPanel() {
         {corParsedData && !corImportStatus?.startsWith('✓') && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={handleCorLoadNow} style={btnPrimary}>
-              ⚡ Load Now
+              ⚡ Load Full Project
             </button>
             <button onClick={handleCorSaveWithProject} style={btnSecondary}>
               💾 Save with Project

@@ -1224,8 +1224,9 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                 }
                 if (filteredCustom.length === 0 && paletteFilter) return null
                 return (
-                  <div style={{ width: '23%', minWidth: 180, paddingRight: 16, marginBottom: 20 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 4, borderBottom: '2px solid #60a5fa' }}>Custom Equipment</div>
+                  <div style={{ width: '100%', marginBottom: 20, borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px', paddingBottom: 4, borderBottom: '2px solid #60a5fa' }}>Custom Equipment ({filteredCustom.length})</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0 16px' }}>
                     {filteredCustom.map(ct => (
                       <button key={ct.id}
                         onClick={() => { addEquipment(paletteTarget.lineId, paletteTarget.feederId, ct.id) }}
@@ -1238,6 +1239,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                         <span style={{ fontSize: 10, color: '#b0b0b0' }}>{ct.tests.length}</span>
                       </button>
                     ))}
+                    </div>
                     <button
                       onClick={() => setCustomCreateOpen(true)}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%', textAlign: 'left', padding: '7px 8px', fontSize: 12, border: '1px dashed #60a5fa', background: 'transparent', cursor: 'pointer', color: '#60a5fa', borderRadius: 4, marginTop: 4 }}

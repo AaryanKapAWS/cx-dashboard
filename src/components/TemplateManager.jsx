@@ -208,6 +208,9 @@ export default function TemplateManager() {
           <button style={styles.ioBtn} onClick={() => importRef.current?.click()} title="Import templates from JSON">
             📥 Import
           </button>
+          <button style={{ ...styles.ioBtn, background: '#991b1b', marginLeft: 8 }} onClick={() => { if (confirm(`Delete ALL ${templates.length} custom templates? This cannot be undone.`)) { localStorage.removeItem('cx_custom_templates'); setTemplates([]); } }} title="Delete all custom templates">
+            🗑️ Delete All
+          </button>
           <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
         </div>
       </div>

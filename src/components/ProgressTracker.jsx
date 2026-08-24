@@ -14,17 +14,6 @@ const LEVEL_COLOURS = {
   L1: '#7c3aed', L2: '#d97706', L3: '#059669', L4: '#2563eb', L5: '#db2777'
 }
 
-const ZONE_ORDER = ['HV', 'MV', 'Aux']
-const ZONE_COLOURS = { HV: '#1e3a5f', MV: '#1a4d3e', Aux: '#1e293b' }
-
-
-function classifyZone(item) {
-  const sec = item.section || ''
-  if (['battery_dc', 'earthing', 'substation', 'protection'].includes(sec)) return 'Aux'
-  if (['switchgear', 'hv_switchgear_gis', 'panel_board'].includes(sec)) return 'MV'
-  return 'HV'
-}
-
 // Stable key for progress tracking - uses feeder_ref + type + instance count
 // This ensures keys don't collide across sections and survive equipment re-creation
 function makeProgressKey(item, testIdx) {
@@ -105,10 +94,8 @@ function MiniProgressBar({ current, total }) {
 
 export default function ProgressTracker({ equipment }) {
   const [progress, setProgress] = useState(loadProgress)
-  const [expandedZones, setExpandedZones] = useState({ HV: true, MV: true, Aux: true })
   const [expandedSections, setExpandedSections] = useState({})
   const [expandedItems, setExpandedItems] = useState({})
-  const [zoneFilter, setZoneFilter] = useState({ HV: true, MV: true, Aux: true })
   const [levelFilter, setLevelFilter] = useState('All')
   const [sectionFilter, setSectionFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
@@ -156,24 +143,18 @@ export default function ProgressTracker({ equipment }) {
     })
   }, [progress])
 
+  // Flat section grouping - group equipment by feeder_ref (section/sheet name)
   const structured = useMemo(() => {
-    if (!equipment || !equipment.length) return { zones: {}, sections: new Set() }
-    const zones = {}
-    const allSections = new Set()
-    equipment.forEach(item => {
+    if (!equipment || !equipment.length) return { sections: {}, sectionList: [] }
+    const sections = {}
+    for (const item of equipment) {
       const tests = testTemplates[item.type] || []
-      if (!tests.length) return
-      const zone = classifyZone(item)
-      if (!zones[zone]) zones[zone] = {}
-      const feederParts = (item.feeder_ref || '').split(' — ')
-      const sectionName = feederParts[0] || item.section || 'Other'
-      allSections.add(sectionName)
-      if (!zones[zone][sectionName]) zones[zone][sectionName] = {}
-      const feederKey = feederParts.length > 1 ? feederParts[1].trim() : '__none__'
-      if (!zones[zone][sectionName][feederKey]) zones[zone][sectionName][feederKey] = []
-      zones[zone][sectionName][feederKey].push({ ...item, _tests: tests })
-    })
-    return { zones, sections: allSections }
+      if (!tests.length) continue
+      const sectionName = item.feeder_ref || item.section || 'Other'
+      if (!sections[sectionName]) sections[sectionName] = []
+      sections[sectionName].push({ ...item, _tests: tests })
+    }
+    return { sections, sectionList: Object.keys(sections).sort() }
   }, [equipment])
 
   const stats = useMemo(() => {
@@ -233,16 +214,25 @@ export default function ProgressTracker({ equipment }) {
     return levels
   }, [equipment, progress])
 
-  const isTestComplete = useCallback((itemId, idx) => {
-    const p = progress[`${itemId}_${idx}`]
-    return p && p.tested && p.witnessed && p.closed
-  }, [progress])
-
   const getEquipmentProgress = useCallback((item) => {
     const tests = testTemplates[item.type] || []
     let done = 0
     tests.forEach((_, idx) => { const k = makeProgressKey(item, idx); const p = progress[k]; if (p && p.tested && p.witnessed && p.closed) done++ })
     return { done, total: tests.length }
+  }, [progress])
+
+  const getSectionProgress = useCallback((items) => {
+    let total = 0, done = 0
+    items.forEach(item => {
+      const tests = item._tests || testTemplates[item.type] || []
+      tests.forEach((_, idx) => {
+        total++
+        const k = makeProgressKey(item, idx)
+        const p = progress[k]
+        if (p && p.tested && p.witnessed && p.closed) done++
+      })
+    })
+    return { done, total }
   }, [progress])
 
   const matchesFilters = useCallback((item, tests) => {
@@ -268,11 +258,8 @@ export default function ProgressTracker({ equipment }) {
     return false
   }, [completionFilter, getEquipmentProgress])
 
-  const toggleZone = (zone) => setExpandedZones(p => ({ ...p, [zone]: !p[zone] }))
   const toggleSection = (key) => setExpandedSections(p => ({ ...p, [key]: !p[key] }))
   const toggleItem = (id) => setExpandedItems(p => ({ ...p, [id]: !p[id] }))
-
-  const sectionList = useMemo(() => Array.from(structured.sections).sort(), [structured.sections])
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -323,20 +310,6 @@ export default function ProgressTracker({ equipment }) {
         padding: 12, background: '#f9fafb', borderRadius: 8, border: '1px solid #e5e7eb',
         flexWrap: 'wrap' }}>
 
-        {/* Zone Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-          <span style={{ fontSize: 11, color: '#6b7280', marginRight: 6 }}>Zone:</span>
-          {ZONE_ORDER.map(z => (
-            <button key={z} onClick={() => setZoneFilter(p => ({ ...p, [z]: !p[z] }))}
-              style={{ padding: '4px 10px', fontSize: 11, fontWeight: 'bold', cursor: 'pointer',
-                border: '1px solid #d1d5db', background: zoneFilter[z] ? '#1f2937' : '#fff',
-                color: zoneFilter[z] ? '#fff' : '#6b7280',
-                borderRadius: z === 'HV' ? '4px 0 0 4px' : z === 'Aux' ? '0 4px 4px 0' : 0 }}>
-              {z}
-            </button>
-          ))}
-        </div>
-
         {/* Level Pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ fontSize: 11, color: '#6b7280', marginRight: 4 }}>Level:</span>
@@ -359,7 +332,7 @@ export default function ProgressTracker({ equipment }) {
             style={{ fontSize: 11, padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db',
               background: '#fff', cursor: 'pointer' }}>
             <option value="All">All</option>
-            {sectionList.map(s => (
+            {structured.sectionList.map(s => (
               <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
             ))}
           </select>
@@ -389,183 +362,162 @@ export default function ProgressTracker({ equipment }) {
         </div>
       </div>
 
-      {/* Main Content: Zone → Section → Feeder → Equipment → Tests */}
-      {ZONE_ORDER.filter(z => zoneFilter[z]).map(zone => {
-        const sections = structured.zones[zone]
-        if (!sections) return null
-        const zoneSections = Object.entries(sections).filter(([sec]) =>
-          sectionFilter === 'All' || sec === sectionFilter)
-        if (!zoneSections.length) return null
+      {/* Main Content: Flat Sections → Equipment → Tests */}
+      {structured.sectionList
+        .filter(sectionName => sectionFilter === 'All' || sectionName === sectionFilter)
+        .map(sectionName => {
+          const items = structured.sections[sectionName]
+          const filteredItems = items.filter(item => matchesFilters(item, item._tests))
+          if (!filteredItems.length) return null
 
-        return (
-          <div key={zone} style={{ marginBottom: 16 }}>
-            {/* Zone Header */}
-            <div onClick={() => toggleZone(zone)} style={{ display: 'flex', alignItems: 'center',
-              gap: 8, padding: '10px 12px', background: ZONE_COLOURS[zone] || '#1f2937', borderRadius: 8,
-              cursor: 'pointer', marginBottom: 8 }}>
-              <span style={{ color: '#fff', fontSize: 12 }}>
-                {expandedZones[zone] ? '▼' : '▶'}
-              </span>
-              <span style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{zone} Zone</span>
-            </div>
+          const isSecExpanded = expandedSections[sectionName] === true
+          const { done: secDone, total: secTotal } = getSectionProgress(filteredItems)
+          const testCount = filteredItems.reduce((sum, item) => sum + (item._tests || []).length, 0)
 
-            {expandedZones[zone] && zoneSections.map(([section, feeders]) => {
-              const sectionKey = `${zone}_${section}`
-              const isSecExpanded = expandedSections[sectionKey] === true
-              const borderColour = SECTION_COLOURS[section] || ZONE_COLOURS[zone] || '#6b7280'
+          // Determine border colour: check SECTION_COLOURS by item.section, or default
+          const firstItem = items[0]
+          const borderColour = SECTION_COLOURS[firstItem?.section] || '#3b82f6'
 
-              return (
-                <div key={sectionKey} style={{ marginLeft: 12, marginBottom: 8,
-                  borderLeft: `3px solid ${borderColour}`, paddingLeft: 12 }}>
-                  {/* Section Header */}
-                  <div onClick={(e) => { e.stopPropagation(); toggleSection(sectionKey); }} style={{ display: 'flex',
-                    alignItems: 'center', gap: 8, padding: '8px 10px', background: '#f9fafb',
-                    borderRadius: 6, cursor: 'pointer', marginBottom: 6 }}>
-                    <span style={{ fontSize: 11, color: '#6b7280' }}>
-                      {isSecExpanded ? '▼' : '▶'}
-                    </span>
-                    <span style={{ fontSize: 14, fontWeight: 'bold', color: '#374151' }}>
-                      {section.replace(/_/g, ' ')}
-                    </span>
-                    <span style={{ fontSize: 10, color: '#9ca3af', marginLeft: 'auto' }}>
-                      {Object.values(feeders).flat().length} items
-                    </span>
-                  </div>
+          return (
+            <div key={sectionName} style={{ marginBottom: 8,
+              borderLeft: `3px solid ${borderColour}`, paddingLeft: 12 }}>
+              {/* Section Header */}
+              <div onClick={() => toggleSection(sectionName)} style={{ display: 'flex',
+                alignItems: 'center', gap: 8, padding: '10px 12px', background: '#f9fafb',
+                borderRadius: 6, cursor: 'pointer', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: '#6b7280' }}>
+                  {isSecExpanded ? '▼' : '▶'}
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 'bold', color: '#374151' }}>
+                  {sectionName.replace(/_/g, ' ')}
+                </span>
+                <span style={{ fontSize: 10, color: '#9ca3af', marginLeft: 8 }}>
+                  {filteredItems.length} equipment
+                </span>
+                <span style={{ fontSize: 10, color: '#9ca3af' }}>
+                  · {testCount} tests
+                </span>
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: '#6b7280' }}>{secDone}/{secTotal}</span>
+                  <MiniProgressBar current={secDone} total={secTotal} />
+                </div>
+              </div>
 
-                  {isSecExpanded && Object.entries(feeders).map(([feederKey, items]) => {
-                    const filteredItems = items.filter(item => matchesFilters(item, item._tests))
-                    if (!filteredItems.length) return null
+              {/* Expanded Section: Equipment List */}
+              {isSecExpanded && filteredItems.map((item, idx) => {
+                const tests = item._tests
+                const { done, total } = getEquipmentProgress(item)
+                const expandKey = `${sectionName}_${item.id || idx}`
+                const isExpanded = expandedItems[expandKey]
+                const dimmed = isItemDimmed(item)
 
-                    return (
-                      <div key={feederKey} style={{ marginBottom: 4 }}>
-                        {/* Feeder sub-header */}
-                        {feederKey !== '__none__' && (
-                          <div style={{ fontSize: 12, fontWeight: '600', color: '#6b7280',
-                            padding: '4px 8px', marginBottom: 4, marginLeft: 8 }}>
-                            ⚡ {feederKey}
-                          </div>
-                        )}
+                return (
+                  <div key={item.id || idx} style={{ marginLeft: 8, marginBottom: 4,
+                    opacity: dimmed ? 0.4 : 1 }}>
+                    {/* Equipment Row (collapsed) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '6px 10px', background: '#fff', borderRadius: 6,
+                      border: '1px solid #e5e7eb', cursor: 'pointer' }}
+                      onClick={(e) => { e.stopPropagation(); toggleItem(expandKey); }}>
+                      <span style={{ fontSize: 12, color: '#6b7280' }}>
+                        {isExpanded ? '▼' : '▶'}
+                      </span>
+                      <span style={{ fontSize: 14, fontWeight: '500', color: '#1f2937', flex: 1 }}>
+                        {item.displayName || item.name}
+                      </span>
+                      {/* Level badges */}
+                      <div style={{ display: 'flex', gap: 1 }}>
+                        {[...new Set(tests.map(t => t[0]))].sort().map(lvl => (
+                          <LevelBadge key={lvl} level={lvl} />
+                        ))}
+                      </div>
+                      <span style={{ fontSize: 11, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                        {done}/{total}
+                      </span>
+                      <MiniProgressBar current={done} total={total} />
+                      <button onClick={e => { e.stopPropagation(); markAllEquipment(item, tests) }}
+                        style={{ padding: '2px 8px', fontSize: 10, fontWeight: 'bold',
+                          height: 28, borderRadius: 4, cursor: 'pointer',
+                          border: done === total && total > 0 ? 'none' : '1.5px solid #22c55e',
+                          background: done === total && total > 0 ? '#22c55e' : '#fff',
+                          color: done === total && total > 0 ? '#fff' : '#22c55e',
+                          whiteSpace: 'nowrap' }}>
+                        ✓ All
+                      </button>
+                    </div>
 
-                        {filteredItems.map((item, idx) => {
-                          const tests = item._tests
-                          const { done, total } = getEquipmentProgress(item)
-                          const expandKey = `${zone}_${section}_${feederKey}_${item.id || idx}`
-                          const isExpanded = expandedItems[expandKey]
-                          const dimmed = isItemDimmed(item)
+                    {/* Expanded: Test Rows */}
+                    {isExpanded && (
+                      <div style={{ marginTop: 2, marginLeft: 20 }}>
+                        {/* Column Headers */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '4px 10px', borderBottom: '1px solid #e5e7eb' }}>
+                          <span style={{ width: 28 }} />
+                          <span style={{ flex: 1, fontSize: 11, fontWeight: 'bold', color: '#6b7280' }}>
+                            Test
+                          </span>
+                          <span style={{ width: 60, textAlign: 'center', fontSize: 11,
+                            fontWeight: 'bold', color: '#22c55e' }}>Tested</span>
+                          <span style={{ width: 60, textAlign: 'center', fontSize: 11,
+                            fontWeight: 'bold', color: '#3b82f6' }}>Witnessed</span>
+                          <span style={{ width: 60, textAlign: 'center', fontSize: 11,
+                            fontWeight: 'bold', color: '#065f46' }}>Closed</span>
+                          <span style={{ width: 60 }} />
+                        </div>
+
+                        {tests.map((test, testIdx) => {
+                          const key = makeProgressKey(item, testIdx)
+                          const p = progress[key] || { tested: false, witnessed: false, closed: false }
+                          const lvl = test[0]
+                          const testName = test[1]
+
+                          if (levelFilter !== 'All' && lvl !== levelFilter) return null
 
                           return (
-                            <div key={item.id} style={{ marginLeft: feederKey !== '__none__' ? 16 : 8,
-                              marginBottom: 4, opacity: dimmed ? 0.4 : 1 }}>
-                              {/* Equipment Row (collapsed) */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8,
-                                padding: '6px 10px', background: '#fff', borderRadius: 6,
-                                border: '1px solid #e5e7eb', cursor: 'pointer' }}
-                                onClick={(e) => { e.stopPropagation(); toggleItem(expandKey); }}>
-                                <span style={{ fontSize: 12, color: '#6b7280' }}>
-                                  {isExpanded ? '▼' : '▶'}
-                                </span>
-                                <span style={{ fontSize: 14, fontWeight: '500', color: '#1f2937', flex: 1 }}>
-                                  {item.displayName || item.name}
-                                </span>
-                                {/* Level badges */}
-                                <div style={{ display: 'flex', gap: 1 }}>
-                                  {[...new Set(tests.map(t => t[0]))].sort().map(lvl => (
-                                    <LevelBadge key={lvl} level={lvl} />
-                                  ))}
-                                </div>
-                                <span style={{ fontSize: 11, color: '#6b7280', whiteSpace: 'nowrap' }}>
-                                  {done}/{total}
-                                </span>
-                                <MiniProgressBar current={done} total={total} />
-                                <button onClick={e => { e.stopPropagation(); markAllEquipment(item, tests) }}
-                                  style={{ padding: '2px 8px', fontSize: 10, fontWeight: 'bold',
-                                    height: 28, borderRadius: 4, cursor: 'pointer',
-                                    border: done === total && total > 0 ? 'none' : '1.5px solid #22c55e',
-                                    background: done === total && total > 0 ? '#22c55e' : '#fff',
-                                    color: done === total && total > 0 ? '#fff' : '#22c55e',
-                                    whiteSpace: 'nowrap' }}>
-                                  ✓ All
+                            <div key={key} style={{ display: 'flex', alignItems: 'center',
+                              gap: 8, padding: '5px 10px', borderBottom: '1px solid #f3f4f6',
+                              background: testIdx % 2 === 0 ? '#fafafa' : '#fff' }}>
+                              <LevelBadge level={lvl} />
+                              <span style={{ flex: 1, fontSize: 13, color: '#374151' }}>
+                                {testName}
+                              </span>
+                              <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
+                                <Checkbox checked={p.tested} colour="#22c55e"
+                                  onChange={() => updateProgress(key, 'tested', !p.tested)} />
+                              </div>
+                              <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
+                                <Checkbox checked={p.witnessed} colour="#3b82f6"
+                                  onChange={() => updateProgress(key, 'witnessed', !p.witnessed)} />
+                              </div>
+                              <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
+                                <Checkbox checked={p.closed} colour="#065f46"
+                                  onChange={() => updateProgress(key, 'closed', !p.closed)} />
+                              </div>
+                              <div style={{ width: 60, display: 'flex', gap: 4, justifyContent: 'center' }}>
+                                <button onClick={() => markAllTest(key)}
+                                  style={{ padding: '2px 6px', fontSize: 10, fontWeight: 'bold',
+                                    height: 26, border: '1.5px solid #22c55e', borderRadius: 4,
+                                    background: '#fff', color: '#22c55e', cursor: 'pointer' }}>
+                                  ✓All
+                                </button>
+                                <button onClick={() => clearTest(key)}
+                                  style={{ padding: '2px 6px', fontSize: 10, fontWeight: 'bold',
+                                    height: 26, border: '1.5px solid #9ca3af', borderRadius: 4,
+                                    background: '#fff', color: '#9ca3af', cursor: 'pointer' }}>
+                                  ✗
                                 </button>
                               </div>
-
-                              {/* Expanded: Test Rows */}
-                              {isExpanded && (
-                                <div style={{ marginTop: 2, marginLeft: 20 }}>
-                                  {/* Column Headers */}
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8,
-                                    padding: '4px 10px', borderBottom: '1px solid #e5e7eb' }}>
-                                    <span style={{ width: 28 }} />
-                                    <span style={{ flex: 1, fontSize: 11, fontWeight: 'bold', color: '#6b7280' }}>
-                                      Test
-                                    </span>
-                                    <span style={{ width: 60, textAlign: 'center', fontSize: 11,
-                                      fontWeight: 'bold', color: '#22c55e' }}>Tested</span>
-                                    <span style={{ width: 60, textAlign: 'center', fontSize: 11,
-                                      fontWeight: 'bold', color: '#3b82f6' }}>Witnessed</span>
-                                    <span style={{ width: 60, textAlign: 'center', fontSize: 11,
-                                      fontWeight: 'bold', color: '#065f46' }}>Closed</span>
-                                    <span style={{ width: 60 }} />
-                                  </div>
-
-                                  {tests.map((test, idx) => {
-                                    const key = makeProgressKey(item, idx)
-                                    const p = progress[key] || { tested: false, witnessed: false, closed: false }
-                                    const lvl = test[0]
-                                    const testName = test[1]
-
-                                    if (levelFilter !== 'All' && lvl !== levelFilter) return null
-
-                                    return (
-                                      <div key={key} style={{ display: 'flex', alignItems: 'center',
-                                        gap: 8, padding: '5px 10px', borderBottom: '1px solid #f3f4f6',
-                                        background: idx % 2 === 0 ? '#fafafa' : '#fff' }}>
-                                        <LevelBadge level={lvl} />
-                                        <span style={{ flex: 1, fontSize: 13, color: '#374151' }}>
-                                          {testName}
-                                        </span>
-                                        <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
-                                          <Checkbox checked={p.tested} colour="#22c55e"
-                                            onChange={() => updateProgress(key, 'tested', !p.tested)} />
-                                        </div>
-                                        <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
-                                          <Checkbox checked={p.witnessed} colour="#3b82f6"
-                                            onChange={() => updateProgress(key, 'witnessed', !p.witnessed)} />
-                                        </div>
-                                        <div style={{ width: 60, display: 'flex', justifyContent: 'center' }}>
-                                          <Checkbox checked={p.closed} colour="#065f46"
-                                            onChange={() => updateProgress(key, 'closed', !p.closed)} />
-                                        </div>
-                                        <div style={{ width: 60, display: 'flex', gap: 4, justifyContent: 'center' }}>
-                                          <button onClick={() => markAllTest(key)}
-                                            style={{ padding: '2px 6px', fontSize: 10, fontWeight: 'bold',
-                                              height: 26, border: '1.5px solid #22c55e', borderRadius: 4,
-                                              background: '#fff', color: '#22c55e', cursor: 'pointer' }}>
-                                            ✓All
-                                          </button>
-                                          <button onClick={() => clearTest(key)}
-                                            style={{ padding: '2px 6px', fontSize: 10, fontWeight: 'bold',
-                                              height: 26, border: '1.5px solid #9ca3af', borderRadius: 4,
-                                              background: '#fff', color: '#9ca3af', cursor: 'pointer' }}>
-                                            ✗
-                                          </button>
-                                        </div>
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              )}
                             </div>
                           )
                         })}
                       </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
-          </div>
-        )
-      })}
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
 
       {/* Empty state */}
       {(!equipment || !equipment.length) && (
