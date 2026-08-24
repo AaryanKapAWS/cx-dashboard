@@ -1,13 +1,12 @@
 /**
- * Asana API Integration (OAuth)
+ * Asana API Integration (Implicit Grant OAuth)
  * 
  * Uses OAuth token from localStorage for authentication.
- * Falls back to VITE_ASANA_PAT if present (dev mode).
+ * Each user must complete OAuth flow to connect their own Asana.
  */
 
 const CLIENT_ID = '1217191412887386'
-const CLIENT_SECRET = import.meta.env.VITE_ASANA_CLIENT_SECRET || 'b60276c2d9bbb0fd1dee221457f03bec'
-const REDIRECT_URI = 'https://aaryankapaws.github.io/cx-dashboard/auth'
+const REDIRECT_URI = 'https://aaryankapaws.github.io/cx-dashboard/'
 const API_BASE = 'https://app.asana.com/api/1.0'
 
 // ─── TOKEN MANAGEMENT ────────────────────────────────────────────────────────
@@ -29,29 +28,8 @@ export function isAuthenticated() {
 
 // ─── OAUTH FLOW ──────────────────────────────────────────────────────────────
 export function startOAuthFlow() {
-  const url = `https://app.asana.com/-/oauth_authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`
+  const url = `https://app.asana.com/-/oauth_authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token`
   window.location.href = url
-}
-
-export async function exchangeCodeForToken(code) {
-  const resp = await fetch('https://app.asana.com/-/oauth_token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uri: REDIRECT_URI,
-      code,
-    }),
-  })
-  if (!resp.ok) {
-    const err = await resp.text()
-    throw new Error(`OAuth token exchange failed: ${err}`)
-  }
-  const data = await resp.json()
-  setToken(data.access_token)
-  return data.access_token
 }
 
 // ─── API HELPERS ─────────────────────────────────────────────────────────────

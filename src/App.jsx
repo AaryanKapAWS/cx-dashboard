@@ -7,7 +7,7 @@ import { generateCOR } from './utils/corGenerator'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
-import { isAuthenticated, startOAuthFlow, exchangeCodeForToken } from './utils/asanaAPI'
+import { isAuthenticated, startOAuthFlow, setToken } from './utils/asanaAPI'
 import SettingsPanel from './components/SettingsPanel'
 import ProgressTracker from './components/ProgressTracker'
 import ScheduleTracker from './components/ScheduleTracker'
@@ -43,22 +43,19 @@ export default function App() {
   // ── OAuth callback handler ──
   const [asanaConnected, setAsanaConnected] = useState(isAuthenticated())
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const code = params.get('code')
-    if (code) {
-      // Remove code from URL
-      window.history.replaceState({}, '', window.location.pathname)
-      // Exchange code for token
-      exchangeCodeForToken(code)
-        .then(() => {
-          setAsanaConnected(true)
-          setToast({ message: '\u2713 Connected to Asana!' })
-          setTimeout(() => setToast(null), 5000)
-        })
-        .catch(err => {
-          setToast({ message: `\u26a0 Asana connection failed: ${err.message}` })
-          setTimeout(() => setToast(null), 6000)
-        })
+    // Implicit Grant: token comes back in URL hash fragment
+    const hash = window.location.hash
+    if (hash && hash.includes('access_token')) {
+      const params = new URLSearchParams(hash.substring(1))
+      const token = params.get('access_token')
+      if (token) {
+        setToken(token)
+        setAsanaConnected(true)
+        setToast({ message: '\u2713 Connected to Asana!' })
+        setTimeout(() => setToast(null), 5000)
+        // Clean URL
+        window.history.replaceState({}, '', window.location.pathname)
+      }
     }
   }, [])
 

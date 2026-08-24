@@ -127,8 +127,7 @@ export default function ScheduleTracker({ equipment }) {
     equipment.forEach(item => {
       const testCount = getTestCount(item)
       if (testCount === 0) return
-      const feederParts = (item.feeder_ref || '').split(' — ')
-      const sectionName = feederParts[0] || item.section || 'Other'
+      const sectionName = item.feeder_ref || item.section || 'Other'
       if (!secs[sectionName]) secs[sectionName] = []
       secs[sectionName].push(item)
     })

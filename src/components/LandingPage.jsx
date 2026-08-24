@@ -93,18 +93,6 @@ export default function LandingPage({ onNavigate }) {
 
         {/* Footer CTA */}
         <div style={{ textAlign: 'center', marginTop: 48 }}>
-          <button
-            onClick={() => onNavigate('builder')}
-            style={{
-              background: 'transparent', color: '#FF9900', border: '2px solid #FF9900',
-              borderRadius: 8, padding: '12px 32px', fontSize: 15, fontWeight: 600,
-              cursor: 'pointer', transition: 'background 0.15s, color 0.15s'
-            }}
-            onMouseEnter={e => { e.target.style.background = '#FF9900'; e.target.style.color = '#fff'; }}
-            onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#FF9900'; }}
-          >
-            Get Started →
-          </button>
           <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 16 }}>Built by ACx Team, Amazon Dublin</p>
         </div>
       </div>
