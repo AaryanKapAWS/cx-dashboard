@@ -12,7 +12,7 @@ const API_BASE = 'https://app.asana.com/api/1.0'
 
 // ─── TOKEN MANAGEMENT ────────────────────────────────────────────────────────
 export function getToken() {
-  return localStorage.getItem('asana_token') || import.meta.env.VITE_ASANA_PAT || ''
+  return localStorage.getItem('asana_token') || ''
 }
 
 export function setToken(token) {
