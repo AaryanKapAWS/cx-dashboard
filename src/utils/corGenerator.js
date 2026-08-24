@@ -668,13 +668,14 @@ export async function generateCOR(equipmentData, projectName) {
       const progSchedKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
       const progSched = progScheduleData[progSchedKey] || {}
 
+      // Duration: 1 day per 3 tests, minimum 2 days
+      const duration = Math.max(2, Math.ceil(tests.length / 3))
       let itemStart, itemEnd
       if (progSched.plannedStart && progSched.plannedFinish) {
         itemStart = new Date(progSched.plannedStart)
         itemEnd = new Date(progSched.plannedFinish)
       } else {
-        // Fallback: auto-generate duration from test count
-        const duration = Math.max(2, Math.ceil(tests.length / 3))
+        // Fallback: auto-generate from test count
         itemStart = new Date(sectionStartDate)
         itemEnd = new Date(itemStart)
         itemEnd.setDate(itemEnd.getDate() + duration)
@@ -688,7 +689,7 @@ export async function generateCOR(equipmentData, projectName) {
       const r = wsProg.addRow(['', '', feederPrefix + getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, '', '', '', ''])
       r.height = 18
       // Duration formula: Planned Finish - Planned Start & "d"
-      r.getCell(10).value = { formula: `INT(I${r.number}-H${r.number})&"d"` }
+      r.getCell(10).value = { formula: `IFERROR(INT(I${r.number}-H${r.number})&"d","")` }
       // Status formula: based on whether dates have passed
       r.getCell(11).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
       r.getCell(11).font = { name: 'Times New Roman', size: 9, italic: true }
