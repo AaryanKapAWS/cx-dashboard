@@ -29,6 +29,7 @@ export function isAuthenticated() {
 // ─── OAUTH FLOW ──────────────────────────────────────────────────────────────
 export function startOAuthFlow() {
   const url = `https://app.asana.com/-/oauth_authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`
+  window.location.href = url
 }
 
 // Exchange authorization code for access token (public client — no secret needed)
