@@ -1,7 +1,7 @@
 /**
- * Asana API Integration (Implicit Grant OAuth)
+ * Asana API Integration (Authorization Code OAuth - Public Client)
  * 
- * Uses OAuth token from localStorage for authentication.
+ * Uses OAuth Authorization Code flow (no client secret - native app).
  * Each user must complete OAuth flow to connect their own Asana.
  */
 
@@ -28,7 +28,24 @@ export function isAuthenticated() {
 
 // ─── OAUTH FLOW ──────────────────────────────────────────────────────────────
 export function startOAuthFlow() {
-  const url = `https://app.asana.com/-/oauth_authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token`
+  const url = `https://app.asana.com/-/oauth_authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`
+}
+
+// Exchange authorization code for access token (public client — no secret needed)
+export async function exchangeCodeForToken(code) {
+  const res = await fetch('https://app.asana.com/-/oauth_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      code,
+    }),
+  })
+  const data = await res.json()
+  if (data.access_token) return data.access_token
+  throw new Error(data.error || 'Token exchange failed')
   window.location.href = url
 }
 

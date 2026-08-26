@@ -7,7 +7,7 @@ import { generateCOR } from './utils/corGenerator'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
-import { isAuthenticated, startOAuthFlow, setToken } from './utils/asanaAPI'
+import { isAuthenticated, startOAuthFlow, setToken, exchangeCodeForToken } from './utils/asanaAPI'
 import SettingsPanel from './components/SettingsPanel'
 import ProgressTracker from './components/ProgressTracker'
 import ScheduleTracker from './components/ScheduleTracker'
@@ -43,19 +43,24 @@ export default function App() {
   // ── OAuth callback handler ──
   const [asanaConnected, setAsanaConnected] = useState(isAuthenticated())
   useEffect(() => {
-    // Implicit Grant: token comes back in URL hash fragment
-    const hash = window.location.hash
-    if (hash && hash.includes('access_token')) {
-      const params = new URLSearchParams(hash.substring(1))
-      const token = params.get('access_token')
-      if (token) {
-        setToken(token)
-        setAsanaConnected(true)
-        setToast({ message: '\u2713 Connected to Asana!' })
-        setTimeout(() => setToast(null), 5000)
-        // Clean URL
-        window.history.replaceState({}, '', window.location.pathname)
-      }
+    // Authorization Code flow: code comes back as query param
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      // Clean URL immediately so we don't re-process on refresh
+      window.history.replaceState({}, '', window.location.pathname)
+      // Exchange code for token
+      exchangeCodeForToken(code)
+        .then(token => {
+          setToken(token)
+          setAsanaConnected(true)
+          setToast({ message: '\u2713 Connected to Asana!' })
+          setTimeout(() => setToast(null), 5000)
+        })
+        .catch(err => {
+          setToast({ message: `Asana auth failed: ${err.message}`, type: 'error' })
+          setTimeout(() => setToast(null), 5000)
+        })
     }
   }, [])
 

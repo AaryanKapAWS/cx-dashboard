@@ -1,5 +1,18 @@
 import { useState, useMemo, useCallback } from 'react'
 import testTemplates from '../data/test_templates.json'
+import { getCustomTemplates } from '../utils/customTemplates'
+
+// Resolve tests for any equipment item (built-in, custom, or imported)
+function resolveTests(item) {
+  if (item.customTests && item.customTests.length > 0) {
+    return item.customTests.filter(t => t.enabled !== false).map(t => [t.level || 'L3', t.name, ''])
+  }
+  const builtin = testTemplates[item.type]
+  if (builtin && builtin.length > 0) return builtin
+  const ct = getCustomTemplates().find(t => t.id === item.type)
+  if (ct) return ct.tests.map(t => [t[0], t[1], ''])
+  return []
+}
 
 const STORAGE_KEY = 'test_progress'
 
@@ -148,7 +161,7 @@ export default function ProgressTracker({ equipment }) {
     if (!equipment || !equipment.length) return { sections: {}, sectionList: [] }
     const sections = {}
     for (const item of equipment) {
-      const tests = testTemplates[item.type] || []
+      const tests = resolveTests(item)
       if (!tests.length) continue
       const sectionName = item.feeder_ref || item.section || 'Other'
       if (!sections[sectionName]) sections[sectionName] = []
@@ -163,7 +176,7 @@ export default function ProgressTracker({ equipment }) {
     let eqCount = 0
     if (equipment) {
       equipment.forEach(item => {
-        const tests = testTemplates[item.type] || []
+        const tests = resolveTests(item)
         if (!tests.length) return
         eqCount++
         sectionSet.add(item.section || item.type)
@@ -182,7 +195,7 @@ export default function ProgressTracker({ equipment }) {
     let complete = 0
     if (equipment) {
       equipment.forEach(item => {
-        const tests = testTemplates[item.type] || []
+        const tests = resolveTests(item)
         tests.forEach((_, idx) => {
           const key = makeProgressKey(item, idx)
           const p = progress[key]
@@ -199,7 +212,7 @@ export default function ProgressTracker({ equipment }) {
       L4: { total: 0, done: 0 }, L5: { total: 0, done: 0 } }
     if (equipment) {
       equipment.forEach(item => {
-        const tests = testTemplates[item.type] || []
+        const tests = resolveTests(item)
         tests.forEach((test, idx) => {
           const lvl = test[0]
           if (levels[lvl]) {
@@ -215,7 +228,7 @@ export default function ProgressTracker({ equipment }) {
   }, [equipment, progress])
 
   const getEquipmentProgress = useCallback((item) => {
-    const tests = testTemplates[item.type] || []
+    const tests = resolveTests(item)
     let done = 0
     tests.forEach((_, idx) => { const k = makeProgressKey(item, idx); const p = progress[k]; if (p && p.tested && p.witnessed && p.closed) done++ })
     return { done, total: tests.length }
@@ -224,7 +237,7 @@ export default function ProgressTracker({ equipment }) {
   const getSectionProgress = useCallback((items) => {
     let total = 0, done = 0
     items.forEach(item => {
-      const tests = item._tests || testTemplates[item.type] || []
+      const tests = item._tests || resolveTests(item)
       tests.forEach((_, idx) => {
         total++
         const k = makeProgressKey(item, idx)
