@@ -368,20 +368,20 @@ export default function AnalyticsDashboard({ equipment = [] }) {
           <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
             {title('Schedule Summary')}
             {desc('Equipment by schedule status.')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
               {[
                 { label: 'On time', value: ganttItems.filter(i => i.actualFinish && !i.isLate).length, color: GREEN },
                 { label: 'Late', value: ganttItems.filter(i => i.isLate).length, color: RED },
                 { label: 'In progress', value: ganttItems.filter(i => i.plannedStart && !i.actualFinish).length, color: BLUE },
                 { label: 'Not scheduled', value: equipment.length - ganttItems.length, color: theme.muted },
               ].map((s, i) => (
-                <div key={i} style={{ padding: '6px 10px', background: theme.barBg, borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: theme.sec }}>{s.label}</span>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: s.color }}>{s.value}</span>
+                <div key={i} style={{ padding: '8px 12px', background: theme.barBg, borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, color: theme.sec }}>{s.label}</span>
+                  <span style={{ fontSize: 20, fontWeight: 800, color: s.color }}>{s.value}</span>
                 </div>
               ))}
-              <div style={{ marginTop: 6, padding: '8px 10px', background: theme.barBg, borderRadius: 6 }}>
-                <div style={{ fontSize: 10, color: theme.muted, marginBottom: 6 }}>Schedule Metrics</div>
+              <div style={{ marginTop: 8, padding: '10px 12px', background: theme.barBg, borderRadius: 6 }}>
+                <div style={{ fontSize: 11, color: theme.muted, marginBottom: 8, fontWeight: 600 }}>Schedule Metrics</div>
                 {(() => {
                   const scheduled = ganttItems.length
                   const total = equipment.length
@@ -391,26 +391,26 @@ export default function AnalyticsDashboard({ equipment = [] }) {
                   const lateItems = ganttItems.filter(i => i.isLate && i.plannedFinish && i.actualFinish)
                   const avgDelay = lateItems.length > 0 ? Math.round(lateItems.reduce((a, i) => a + Math.round((new Date(i.actualFinish) - new Date(i.plannedFinish)) / 86400000), 0) / lateItems.length) : 0
                   return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: theme.muted }}>Coverage</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: theme.text }}>{total > 0 ? Math.round((scheduled / total) * 100) : 0}%</span>
+                        <span style={{ fontSize: 12, color: theme.muted }}>Coverage</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: theme.text }}>{total > 0 ? Math.round((scheduled / total) * 100) : 0}%</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: theme.muted }}>On-time rate</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: onTimePct > 70 ? GREEN : onTimePct > 40 ? AMBER : RED }}>{onTimePct}%</span>
+                        <span style={{ fontSize: 12, color: theme.muted }}>On-time rate</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: onTimePct > 70 ? GREEN : onTimePct > 40 ? AMBER : RED }}>{onTimePct}%</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: theme.muted }}>Avg delay</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: avgDelay > 14 ? RED : avgDelay > 7 ? AMBER : theme.text }}>{avgDelay}d</span>
+                        <span style={{ fontSize: 12, color: theme.muted }}>Avg delay</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: avgDelay > 14 ? RED : avgDelay > 7 ? AMBER : theme.text }}>{avgDelay}d</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: theme.muted }}>Total scheduled</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: theme.text }}>{scheduled}/{total}</span>
+                        <span style={{ fontSize: 12, color: theme.muted }}>Total scheduled</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: theme.text }}>{scheduled}/{total}</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: theme.muted }}>Completed</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: theme.text }}>{completed}</span>
+                        <span style={{ fontSize: 12, color: theme.muted }}>Completed</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: theme.text }}>{completed}</span>
                       </div>
                     </div>
                   )
