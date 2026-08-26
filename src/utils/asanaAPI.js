@@ -6,7 +6,7 @@
  */
 
 const CLIENT_ID = '1217191412887386'
-const REDIRECT_URI = 'https://aaryankapaws.github.io/cx-dashboard/'
+const REDIRECT_URI = 'https://aaryankapaws.github.io/cx-dashboard'
 const API_BASE = 'https://app.asana.com/api/1.0'
 
 // ─── TOKEN MANAGEMENT ────────────────────────────────────────────────────────
@@ -32,7 +32,9 @@ export function startOAuthFlow() {
   window.location.href = url
 }
 
-// Exchange authorization code for access token (public client — no secret needed)
+// Exchange authorization code for access token
+const CLIENT_SECRET = 'b60276c2d9bbb0fd1dee221457f03bec'
+
 export async function exchangeCodeForToken(code) {
   const res = await fetch('https://app.asana.com/-/oauth_token', {
     method: 'POST',
@@ -40,6 +42,7 @@ export async function exchangeCodeForToken(code) {
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
       redirect_uri: REDIRECT_URI,
       code,
     }),

@@ -13,6 +13,7 @@ import ProgressTracker from './components/ProgressTracker'
 import ScheduleTracker from './components/ScheduleTracker'
 import ExportHistory from './components/ExportHistory'
 import LandingPage from './components/LandingPage'
+import AnalyticsDashboard from './components/AnalyticsDashboard'
 
 export default function App() {
   const [tab, setTab] = useState('home')
@@ -215,6 +216,12 @@ export default function App() {
               background: 'transparent', color: tab === 'schedule' ? '#fff' : '#94a3b8',
               cursor: 'pointer'
             }}>📅 Schedule</button>
+            <button onClick={() => setTab('analytics')} style={{
+              padding: '8px 20px', fontSize: 12, fontWeight: 600,
+              border: 'none', borderBottom: tab === 'analytics' ? '2px solid #f59e0b' : '2px solid transparent',
+              background: 'transparent', color: tab === 'analytics' ? '#fff' : '#94a3b8',
+              cursor: 'pointer'
+            }}>📊 Analytics</button>
             <button onClick={() => setTab('sld')} style={{
               padding: '8px 20px', fontSize: 12, fontWeight: 600,
               border: 'none', borderBottom: tab === 'sld' ? '2px solid #27ae60' : '2px solid transparent',
@@ -250,6 +257,10 @@ export default function App() {
           background: '#1e293b', color: '#fff', padding: '12px 20px',
           borderRadius: 8, fontSize: 13, boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
         }}>{toast.message}</div>
+      )}
+
+      {tab === 'analytics' && (
+        <AnalyticsDashboard equipment={equipment} />
       )}
 
       {/* ═══ HOME / LANDING TAB ═══ */}
