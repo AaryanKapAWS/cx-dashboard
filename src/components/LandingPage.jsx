@@ -7,7 +7,7 @@ export default function LandingPage({ onNavigate }) {
     try {
       const data = JSON.parse(localStorage.getItem('bay_equipment') || '[]');
       if (data.length > 0) {
-        const sections = new Set(data.map(item => item.section || item.bay)).size;
+        const sections = new Set(data.map(item => item.feeder_ref || item.section || item.bay)).size;
         setStats({ items: data.length, sections });
       }
     } catch (e) { /* no stats */ }
@@ -90,6 +90,29 @@ export default function LandingPage({ onNavigate }) {
             You have <strong>{stats.items}</strong> equipment items across <strong>{stats.sections}</strong> sections
           </div>
         )}
+
+        {/* Project Memo */}
+        <div style={{ marginTop: 32, textAlign: 'center' }}>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>📄 Project Documentation</h3>
+          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>Read the full project memo — problem, solution, metrics, and FAQ.</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
+            <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: '#232F3E', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
+              Open Full PDF ↗
+            </a>
+          </div>
+          <div style={{ maxWidth: 800, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <iframe
+              src={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`}
+              style={{ width: '100%', height: 500, border: 'none' }}
+              title="Cx Dashboard Project Memo"
+            />
+          </div>
+          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>
+            If the PDF doesn't load, <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>click here to open it directly</a>.
+          </p>
+        </div>
+
 
         {/* Footer CTA */}
         <div style={{ textAlign: 'center', marginTop: 48 }}>

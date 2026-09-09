@@ -3,38 +3,104 @@ import { saveAs } from 'file-saver'
 
 // Equipment type → CxHV inspection template mapping
 const TEMPLATE_MAP = {
+  // ── Transformers ──
   TRANSFORMER: 'CxHV-Power Transformer',
+  DRY_TRANSFORMER: 'CxHV-Power Transformer',
+  AUX_TRANSFORMER_ENHANCED: 'CxHV-Auxiliary Transformer',
+  MK_OLTC_PANEL: 'CxHV-Power Transformer',
+  DGA_MONITOR: 'CxHV-Power Transformer',
+  // ── Current Transformers ──
   CT: 'CxHV-Current Transformer',
-  CT2: 'CxHV-Current Transformer',
   CT_HV: 'CxHV-Current Transformer',
+  CT_GIS: 'CxHV-Current Transformer',
+  CT_METER: 'CxHV-Current Transformer',
   NCT: 'CxHV-Current Transformer',
   NER_CT: 'CxHV-Current Transformer',
+  RING_CT_GIS: 'CxHV-Current Transformer',
+  // ── Voltage Transformers ──
   VT: 'CxHV-Voltage Transformer',
   VT_HV: 'CxHV-Voltage Transformer',
+  VT_GIS: 'CxHV-Voltage Transformer',
+  // ── Surge Arresters ──
   SURGE_ARRESTER: 'CxHV-Surge Arrester',
+  SA_GIS: 'CxHV-Surge Arrester',
+  // ── Neutral Earthing ──
   NER: 'CxHV-Neutral Earthing Transformer/Resistor',
+  NER_STANDALONE: 'CxHV-Neutral Earthing Transformer/Resistor',
+  // ── Busbar & AIS Switchgear ──
   BUSBAR: 'CxHV-AIS Main Busbar',
-  PROTECTION_PANEL: 'CxHV-Relay Panels',
-  STABILITY_TEST: 'CxHV-Relay Panels',
-  HV_CABLE: 'CxHV-HV & MV Cable',
-  MV_CABLE: 'CxHV-HV & MV Cable',
-  SUBSTATION_CHECKS: 'CxHV-HV Substation',
-  ESB_INTERFACE: 'CxHV-Blank',
   SWITCHGEAR_OVERALL: 'CxHV-Air Insulated Switchgear (AIS)',
-  AC_DC_CHECKS: 'CxHV-Battery & Charger',
-  SCADA: 'CxHV-Blank',
+  CUBICLE: 'Cx-MV Switchgear',
+  CIRCUIT_BREAKER: 'CxHV-Circuit Breaker',
+  EARTH_SWITCH: 'CxHV-Disconnector & Earth Switch',
+  // ── GIS Equipment ──
+  GIS_BAY: 'CxHV-Gas Insulated Switchgear (GIS)',
+  CB_GIS: 'CxHV-Gas Insulated Switchgear (GIS)',
+  CUBICLE_GIS: 'CxHV-Gas Insulated Switchgear (GIS)',
+  DS_ES_GIS: 'CxHV-Disconnector & Earth Switch',
+  ES_GIS: 'CxHV-Disconnector & Earth Switch',
+  ENERGIZATION_GIS: 'CxHV-HV Substation',
+  EPMS_GIS: 'Cx-Controls-EPMS',
+  STABILITY_GIS: 'CxHV-Relay Panels',
+  B_WATCH_3: 'CxHV-Gas Insulated Switchgear (GIS)',
+  VPIS: 'CxHV-Gas Insulated Switchgear (GIS)',
+  // ── Cables ──
+  HV_CABLE: 'CxHV-HV & MV Cable',
+  HV_CABLE_GIS: 'CxHV-HV & MV Cable',
+  MV_CABLE: 'CxHV-HV & MV Cable',
+  LV_CONTROL_CABLE: 'Cx-LV Cable',
+  LV_POWER_CABLE: 'Cx-LV Cable',
+  // ── Protection & Relays ──
+  PROTECTION_PANEL: 'CxHV-Relay Panels',
   RELAY: 'CxHV-Relay Panels',
-  CUBICLE: 'CxHV-Circuit Breaker',
-  ENERGIZATION: 'CxHV-HV Substation',
-  PQM: 'CxHV-Blank',
-  EPMS: 'CxHV-Blank',
+  STABILITY_TEST: 'CxHV-Relay Panels',
   SYNCH_CHECK: 'CxHV-Relay Panels',
   CABLE_DIFF: 'CxHV-Relay Panels',
+  LOCKOUT_RELAY: 'CxHV-Relay Panels',
+  BUSBAR_PROTECTION_CENTRAL: 'CxHV-Relay Panels',
+  BUSBAR_PROTECTION_RELAY: 'CxHV-Relay Panels',
+  IED_87B_GIS: 'CxHV-Relay Panels',
+  IED_87L: 'CxHV-Relay Panels',
+  IED_87T: 'CxHV-Relay Panels',
+  IED_87T_GIS: 'CxHV-Relay Panels',
+  IED_AVR: 'CxHV-Relay Panels',
+  IED_OC_GIS: 'CxHV-Relay Panels',
+  IED_REF: 'CxHV-Relay Panels',
+  ARC_FLASH_DETECTION: 'CxHV-Relay Panels',
+  SAS_PANEL: 'CxHV-Relay Panels',
+  LCC_GIS: 'CxHV-Relay Panels',
+  // ── Panels ──
+  BBP_PANEL: 'Cx-Panelboard',
+  AC_POWER_PANEL: 'Cx-Panelboard',
+  AC_UPS_PANEL: 'Cx-Panelboard',
+  // ── Battery & DC ──
+  BATTERY_BANK: 'CxHV-Battery & Charger',
+  BATTERY_CHARGER: 'CxHV-Battery & Charger',
+  AC_DC_CHECKS: 'CxHV-Battery & Charger',
+  DC_DISTRIBUTION: 'CxHV-Battery & Charger',
+  DC_EARTH_FAULT: 'CxHV-Battery & Charger',
+  UPS: 'Cx-UPS',
+  // ── Earthing ──
+  EARTH_GRID: 'CxHV-Grounding System',
+  EARTH_ELECTRODE: 'CxHV-Grounding System',
+  // ── Substation / Integration ──
+  SUBSTATION_CHECKS: 'CxHV-HV Substation',
+  ENERGIZATION: 'CxHV-HV Substation',
+  L4_INTEGRATION: 'CxHV-HV Substation',
+  // ── Controls & Monitoring ──
+  SCADA: 'Cx-SCCS',
+  EPMS: 'Cx-Controls-EPMS',
+  PQM: 'Cx-Controls-EPMS',
+  // ── Other ──
+  ESB_INTERFACE: 'CxHV-Blank',
+  ATS: 'Cx-ATS',
+  DIESEL_GENERATOR: 'CxHV-Blank',
 }
 
 // Template → Trade mapping
 const TRADE_MAP = {
   'CxHV-Power Transformer': 'Electrical',
+  'CxHV-Auxiliary Transformer': 'Electrical',
   'CxHV-Current Transformer': 'Electrical',
   'CxHV-Voltage Transformer': 'Electrical',
   'CxHV-Surge Arrester': 'Electrical',
@@ -44,8 +110,18 @@ const TRADE_MAP = {
   'CxHV-HV & MV Cable': 'Electrical',
   'CxHV-HV Substation': 'Commissioning',
   'CxHV-Air Insulated Switchgear (AIS)': 'Electrical',
+  'CxHV-Gas Insulated Switchgear (GIS)': 'Electrical',
+  'CxHV-Disconnector & Earth Switch': 'Electrical',
   'CxHV-Battery & Charger': 'Electrical',
   'CxHV-Circuit Breaker': 'Electrical',
+  'CxHV-Grounding System': 'Electrical',
+  'Cx-MV Switchgear': 'Electrical',
+  'Cx-Panelboard': 'Electrical',
+  'Cx-UPS': 'Electrical',
+  'Cx-ATS': 'Electrical',
+  'Cx-LV Cable': 'Electrical',
+  'Cx-Controls-EPMS': 'Electrical',
+  'Cx-SCCS': 'Electrical',
   'CxHV-Blank': 'Commissioning',
 }
 
@@ -65,6 +141,124 @@ const SECTION_LABEL = {
   cables: 'Cable Testing',
   substation_checks: 'HV Substation',
   panel_board: 'Panel Board',
+}
+
+
+// Display name → template fallback (for imported COR data where type is custom_import_*)
+const NAME_MAP = {
+  'transformer': 'CxHV-Power Transformer',
+  'power transformer': 'CxHV-Power Transformer',
+  'oil transformer': 'CxHV-Power Transformer',
+  'dry transformer': 'CxHV-Power Transformer',
+  'auxiliary transformer': 'CxHV-Auxiliary Transformer',
+  'mk & oltc panel': 'CxHV-Power Transformer',
+  'mk panel': 'CxHV-Power Transformer',
+  'oltc panel': 'CxHV-Power Transformer',
+  'dga monitor': 'CxHV-Power Transformer',
+  'dga monitoring': 'CxHV-Power Transformer',
+  'current transformer': 'CxHV-Current Transformer',
+  'current transformers': 'CxHV-Current Transformer',
+  'ct': 'CxHV-Current Transformer',
+  'ner ct': 'CxHV-Current Transformer',
+  'ring ct': 'CxHV-Current Transformer',
+  'ct meter': 'CxHV-Current Transformer',
+  'voltage transformer': 'CxHV-Voltage Transformer',
+  'voltage transformers': 'CxHV-Voltage Transformer',
+  'vt': 'CxHV-Voltage Transformer',
+  'surge arrester': 'CxHV-Surge Arrester',
+  'arresters': 'CxHV-Surge Arrester',
+  'arrester': 'CxHV-Surge Arrester',
+  'lightning arrester': 'CxHV-Surge Arrester',
+  'ner': 'CxHV-Neutral Earthing Transformer/Resistor',
+  'neutral earthing': 'CxHV-Neutral Earthing Transformer/Resistor',
+  'neutral earthing resistor': 'CxHV-Neutral Earthing Transformer/Resistor',
+  'neutral earthing transformer': 'CxHV-Neutral Earthing Transformer/Resistor',
+  'busbar': 'CxHV-AIS Main Busbar',
+  'main busbar': 'CxHV-AIS Main Busbar',
+  'ais main busbar': 'CxHV-AIS Main Busbar',
+  'circuit breaker': 'CxHV-Circuit Breaker',
+  'breaker': 'CxHV-Circuit Breaker',
+  'disconnector': 'CxHV-Disconnector & Earth Switch',
+  'earth switch': 'CxHV-Disconnector & Earth Switch',
+  'earthing switch': 'CxHV-Disconnector & Earth Switch',
+  'fast earthing switch': 'CxHV-Disconnector & Earth Switch',
+  'disconnector and earthing switch': 'CxHV-Disconnector & Earth Switch',
+  'bus disconnector and earthing switches': 'CxHV-Disconnector & Earth Switch',
+  'line disconnector and earthing switches': 'CxHV-Disconnector & Earth Switch',
+  'gis': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'gas insulated switchgear': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'switchgear': 'CxHV-Air Insulated Switchgear (AIS)',
+  'ais': 'CxHV-Air Insulated Switchgear (AIS)',
+  'cubicle': 'Cx-MV Switchgear',
+  'mv switchgear': 'Cx-MV Switchgear',
+  'relay': 'CxHV-Relay Panels',
+  'relay panel': 'CxHV-Relay Panels',
+  'relay panels': 'CxHV-Relay Panels',
+  'protection panel': 'CxHV-Relay Panels',
+  'protection': 'CxHV-Relay Panels',
+  'annunciator': 'CxHV-Relay Panels',
+  'lockout relay': 'CxHV-Relay Panels',
+  'busbar protection': 'CxHV-Relay Panels',
+  'hv cable': 'CxHV-HV & MV Cable',
+  'mv cable': 'CxHV-HV & MV Cable',
+  'cable': 'CxHV-HV & MV Cable',
+  'lv cable': 'Cx-LV Cable',
+  'battery': 'CxHV-Battery & Charger',
+  'battery bank': 'CxHV-Battery & Charger',
+  'battery charger': 'CxHV-Battery & Charger',
+  'charger': 'CxHV-Battery & Charger',
+  'bcu': 'CxHV-Battery & Charger',
+  'dc distribution': 'CxHV-Battery & Charger',
+  'ups': 'Cx-UPS',
+  'earth grid': 'CxHV-Grounding System',
+  'earthing': 'CxHV-Grounding System',
+  'grounding': 'CxHV-Grounding System',
+  'earth electrode': 'CxHV-Grounding System',
+  'panelboard': 'Cx-Panelboard',
+  'panel board': 'Cx-Panelboard',
+  'panel': 'Cx-Panelboard',
+  'scada': 'Cx-SCCS',
+  'sas': 'Cx-SCCS',
+  'scada/sas': 'Cx-SCCS',
+  'epms': 'Cx-Controls-EPMS',
+  'pqm': 'Cx-Controls-EPMS',
+  'ats': 'Cx-ATS',
+  'diesel generator': 'CxHV-Blank',
+  'generator': 'CxHV-Blank',
+  'energization': 'CxHV-HV Substation',
+  'energization check': 'CxHV-HV Substation',
+  'substation checks': 'CxHV-HV Substation',
+  'hv substation': 'CxHV-HV Substation',
+  'esb interface': 'CxHV-Blank',
+  'gis local interlock checks': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'sf6 gas test': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'high voltage test': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'visual inspection check': 'CxHV-HV Substation',
+  'densimeter inspection': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'local control cubicle': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'lcc': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'l1 and l2': 'CxHV-HV Substation',
+  'vpis': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'b-watch': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'b- watch 3_commissioning': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'pd monitoring': 'CxHV-Gas Insulated Switchgear (GIS)',
+  'post insulator': 'CxHV-Post Insulator',
+  'overhead conductor': 'CxHV-Over Head Conductor & Hardware',
+}
+
+// Resolve equipment type to Procore template — tries type ID first, then display name
+function resolveTemplate(item) {
+  const equipType = item.type || item.equipmentType || ''
+  // Direct type match
+  if (TEMPLATE_MAP[equipType]) return TEMPLATE_MAP[equipType]
+  // Name-based fallback for imported/custom equipment
+  const name = (item.displayName || item.name || '').toLowerCase().trim()
+  if (NAME_MAP[name]) return NAME_MAP[name]
+  // Partial match — check if any NAME_MAP key is contained in the name
+  for (const [key, tmpl] of Object.entries(NAME_MAP)) {
+    if (name.includes(key) || key.includes(name)) return tmpl
+  }
+  return 'CxHV-Blank'
 }
 
 // Style indices from row 6 of the reference template — maps each column to its style
@@ -154,7 +348,7 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
     // RETRO MODE: One row per equipment item, using individual CxHV templates
     for (const item of equipmentData) {
       const equipType = item.type || item.equipmentType || ''
-      const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
+      const templateName = resolveTemplate(item)
       const trade = TRADE_MAP[templateName] || 'Electrical'
 
       // Build a meaningful asset tag:
@@ -211,7 +405,7 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
     // Standalone items
     for (const item of standalone) {
       const equipType = item.type || item.equipmentType || ''
-      const templateName = TEMPLATE_MAP[equipType] || 'CxHV-Blank'
+      const templateName = resolveTemplate(item)
       const trade = TRADE_MAP[templateName] || 'Electrical'
       const assetTag = item.name || item.displayName || `${equipType}-${dataRows.length + 1}`
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
