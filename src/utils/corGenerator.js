@@ -63,6 +63,7 @@ function styleHeader(row, color = C.navy) {
 
 // ─── MAIN EXPORT ────────────────────────────────────────────────────
 export async function generateCOR(equipmentData, projectName) {
+  console.log('%c[COR] Using FIXED formula build — v2026-09-10', 'color: lime; font-size: 14px; font-weight: bold')
   const wb = new ExcelJS.Workbook()
   wb.creator = 'HV Substation Commissioning Tool'
   wb.created = new Date()
@@ -806,21 +807,7 @@ sNo++
       equipRanges.push({ sheetName: truncate(sectionName), equipName, startRow: equipFirstRow, endRow: equipLastRow, hasL5, sectionName })
     }
 
-    // Data validation on YES/NO columns (shifted: K=11,L=12,M=13,O=15,Q=17,R=18,S=19 + C=3 Critical)
     const lastRow = ws.lastRow ? ws.lastRow.number : dataStartRow
-    const yesNoValidationCols = [3, 10, 11, 12, 14, 16, 17, 18]
-    for (const col of yesNoValidationCols) {
-      for (let r = dataStartRow; r <= lastRow; r++) {
-        ws.getCell(r, col).dataValidation = yesNoValidation
-      }
-    }
-    // Clear any merged validation from date cols M(13) and O(15)
-    // (ExcelJS merges adjacent-column validations into ranges like J:P, incorrectly covering dates)
-    for (const col of [13, 15]) {
-      for (let r = dataStartRow; r <= lastRow; r++) {
-        ws.getCell(r, col).dataValidation = undefined
-      }
-    }
 
     // Date format on Report Received (N=14) and Report Reviewed (P=16)
     const dateCols = [13, 15]
@@ -915,7 +902,7 @@ sNo++
   const statusDataStart = 6
   for (let i = 0; i < sheetInfo.length; i++) {
     const si = sheetInfo[i]
-    const sn = si.sheetName.includes(' ') ? `'${si.sheetName}'` : si.sheetName
+    const sn = `'${si.sheetName}'`
     const tRange = `T${si.dataStart}:T${si.dataEnd}`
     const jRange = `J${si.dataStart}:J${si.dataEnd}`
     const lRange2 = `L${si.dataStart}:L${si.dataEnd}`
@@ -966,7 +953,7 @@ sNo++
 // Commissioning & Reporting Status formulas (per-section table)
   for (let i = 0; i < sheetInfo.length; i++) {
     const si = sheetInfo[i]
-    const sn = si.sheetName.includes(' ') ? `'${si.sheetName}'` : si.sheetName
+    const sn = `'${si.sheetName}'`
     const jRange = `J${si.dataStart}:J${si.dataEnd}`  // SAT Completed
     const mRange = `M${si.dataStart}:M${si.dataEnd}`  // Report Received (date)
     const oRange = `O${si.dataStart}:O${si.dataEnd}`  // Report Reviewed (date)
@@ -987,7 +974,7 @@ sNo++
     // Report Received (col 7) — date column, count non-blank
     wsProg.getCell(dsRow, 7).value = { formula: `COUNTIF(${sn}!${nRange},"YES")` }
     // Report Pending (col 8)
-    wsProg.getCell(dsRow, 8).value = { formula: `D${dsRow}-G${dsRow}` }
+    wsProg.getCell(dsRow, 8).value = { formula: `E${dsRow}-G${dsRow}` }
     // Report Reviewed (col 9) — date column, count non-blank
     wsProg.getCell(dsRow, 9).value = { formula: `COUNTIF(${sn}!${pRange},"YES")` }
     // Review Pending (col 10)
@@ -995,7 +982,7 @@ sNo++
     // Report Closed (col 11)
     wsProg.getCell(dsRow, 11).value = { formula: `COUNTIF(${sn}!${rRange},"YES")` }
     // % Completed (col 12)
-    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,E${dsRow}/D${dsRow})` }
+    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,(E${dsRow}/D${dsRow})*0.6+(G${dsRow}/D${dsRow})*0.15+(I${dsRow}/D${dsRow})*0.15+(K${dsRow}/D${dsRow})*0.1)` }
     wsProg.getCell(dsRow, 12).numFmt = '0.0%'
     // % Pending (col 13)
     wsProg.getCell(dsRow, 13).value = { formula: `IF(D${dsRow}=0,0,F${dsRow}/D${dsRow})` }
@@ -1008,7 +995,7 @@ sNo++
     const refs = docStatusRows.map(r => `${colLetter}${r}`)
     wsProg.getCell(docOverallRowNum, c).value = { formula: refs.join('+') }
   }
-  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,E${docOverallRowNum}/D${docOverallRowNum})` }
+  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,(E${docOverallRowNum}/D${docOverallRowNum})*0.6+(G${docOverallRowNum}/D${docOverallRowNum})*0.15+(I${docOverallRowNum}/D${docOverallRowNum})*0.15+(K${docOverallRowNum}/D${docOverallRowNum})*0.1)` }
   wsProg.getCell(docOverallRowNum, 12).numFmt = '0.0%'
   wsProg.getCell(docOverallRowNum, 13).value = { formula: `IF(D${docOverallRowNum}=0,0,F${docOverallRowNum}/D${docOverallRowNum})` }
   wsProg.getCell(docOverallRowNum, 13).numFmt = '0.0%'
@@ -1016,7 +1003,7 @@ sNo++
   // For each section row in Level Completion, count tests at each level that are 100% complete
   for (let i = 0; i < Math.min(sheetInfo.length, lvCompRows.length); i++) {
     const si = sheetInfo[i]
-    const sn = si.sheetName.includes(' ') ? `'${si.sheetName}'` : si.sheetName
+    const sn = `'${si.sheetName}'`
     const lvRow = lvCompRows[i]
     const dRange = `$D$${si.dataStart}:$D$${si.dataEnd}`   // Level column
     const jRange = `$J$${si.dataStart}:$J$${si.dataEnd}`   // SAT Completed column
@@ -1047,13 +1034,13 @@ sNo++
 
   // ─── Documentation Status metric formulas (turnaround + outstanding) ───
   const turnaroundParts = sheetInfo.map(si => {
-    const sn = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn = "'" + si.sheetName + "'"
     const nRange = `${sn}!M${si.dataStart}:M${si.dataEnd}`
     const jRange = `${sn}!I${si.dataStart}:I${si.dataEnd}`
     return `SUMPRODUCT((${nRange}<>"")*(${jRange}<>"")*(${nRange}-${jRange}))`
   })
   const countParts = sheetInfo.map(si => {
-    const sn = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn = "'" + si.sheetName + "'"
     return `SUMPRODUCT((${sn}!M${si.dataStart}:M${si.dataEnd}<>"")*(${sn}!I${si.dataStart}:I${si.dataEnd}<>""))`
   })
   if (turnaroundParts.length > 0) {
@@ -1061,7 +1048,7 @@ sNo++
   }
 
   const outstandingParts = sheetInfo.map(si => {
-    const sn = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn = "'" + si.sheetName + "'"
     return `COUNTIFS(${sn}!J${si.dataStart}:J${si.dataEnd},"YES",${sn}!M${si.dataStart}:M${si.dataEnd},"")`
   })
   if (outstandingParts.length > 0) {
@@ -1109,7 +1096,7 @@ sNo++
   const satTrackRows = []
   for (let i = 0; i < sheetInfo.length; i++) {
     const si = sheetInfo[i]
-    const sn = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn = "'" + si.sheetName + "'"
     const dRange = `$D$${si.dataStart}:$D$${si.dataEnd}`
     const lRange = `$L$${si.dataStart}:$L$${si.dataEnd}`
 
@@ -1256,7 +1243,7 @@ sNo++
   const conProgRows = []
   for (let i = 0; i < sheetInfo.length; i++) {
     const si = sheetInfo[i]
-    const sn = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn = "'" + si.sheetName + "'"
     const jRange = `J${si.dataStart}:J${si.dataEnd}`
     const mRange = `M${si.dataStart}:M${si.dataEnd}`
     const tRange = `T${si.dataStart}:T${si.dataEnd}`
@@ -1320,11 +1307,11 @@ sNo++
   const orn = conOverallProg.number
   // Overall Weekly Rate = Total SAT Done / MAX weeks elapsed across all sections
   const allMinParts = sheetInfo.map(si => {
-    const sn2 = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn2 = "'" + si.sheetName + "'"
     return `MIN(${sn2}!H${si.dataStart}:H${si.dataEnd})`
   })
   const allMaxParts = sheetInfo.map(si => {
-    const sn2 = si.sheetName.includes(' ') ? "'" + si.sheetName + "'" : si.sheetName
+    const sn2 = "'" + si.sheetName + "'"
     return `MAX(${sn2}!G${si.dataStart}:G${si.dataEnd})`
   })
   conOverallProg.getCell(11).value = { formula: `IF(E${orn}=0,0,ROUND(E${orn}/MAX(1,INT((TODAY()-MIN(${allMinParts.join(',')}))/7)),1))` }
@@ -1389,7 +1376,7 @@ sNo++
   const critRows = []
   for (let ci = 0; ci < sheetInfo.length; ci++) {
     const csi = sheetInfo[ci]
-    const csn = csi.sheetName.includes(' ') ? "'" + csi.sheetName + "'" : csi.sheetName
+    const csn = "'" + csi.sheetName + "'"
     const ccRange = `C${csi.dataStart}:C${csi.dataEnd}`
     const cjRange = `J${csi.dataStart}:J${csi.dataEnd}`
 
@@ -1492,6 +1479,7 @@ sNo++
   const schedStart = new Date()
   schedStart.setHours(0, 0, 0, 0)
   let schedSectionStart = new Date(schedStart)
+  let schedEquipIdx = 0   // tracks equipRanges index to match data sheet rows
 
   for (const [sectionName, items] of Object.entries(sections)) {
     const sep = wsSched.addRow(['', '', sectionName, '', '', '', '', '', '', '', '', '', '', '', ''])
@@ -1524,22 +1512,11 @@ sNo++
       // Actual dates for schedule
       const schAStart = sched.actualStart ? new Date(sched.actualStart) : ''
       const schAFinish = sched.actualFinish ? new Date(sched.actualFinish) : ''
+      // Get matching data sheet row range for live formula
+      const schEr = equipRanges[schedEquipIdx] || {}
+      const schSn = schEr.sheetName ? (`'${schEr.sheetName}'`) : null
 
-      // Calculate weighted % progress for this equipment
-      let schWeightedSum = 0
-      for (let schTIdx = 0; schTIdx < tests.length; schTIdx++) {
-        const schProgKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${schTIdx}`
-        const schProg = progressData[schProgKey] || {}
-        let schW = 0
-        if (schProg.tested) schW += 0.6
-        if (schProg.reportReceived || schProg.reportDate) schW += 0.15
-        if (schProg.reportReviewed) schW += 0.15
-        if (schProg.closed) schW += 0.1
-        schWeightedSum += schW
-      }
-      const schEquipProgress = tests.length > 0 ? schWeightedSum / tests.length : 0
-
-      const r = wsSched.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, schAStart, schAFinish, '', '', schEquipProgress, ''])
+      const r = wsSched.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, schAStart, schAFinish, '', '', '', ''])
       r.height = 24
 
       // eachCell FIRST — sets default styles and VISIBLE borders
@@ -1561,16 +1538,17 @@ sNo++
       r.getCell(15).font = { name: 'Times New Roman', size: 10, italic: true }
 
       // Variance (col M=13): Actual Finish - Planned Finish
-      if (schAFinish && itemEnd) {
-        const variance = Math.round((new Date(schAFinish) - new Date(itemEnd)) / 86400000)
-        r.getCell(13).value = variance
-        r.getCell(13).font = { name: 'Times New Roman', size: 9, color: { argb: variance <= 0 ? 'FF27AE60' : 'FFC0392B' } }
-      }
+      r.getCell(13).value = { formula: `IF(OR(K${r.number}="",I${r.number}=""),"",INT(K${r.number}-I${r.number}))` }
       r.getCell(13).alignment = { horizontal: 'center', vertical: 'middle' }
 
       // % Progress (col N=14)
+      if (schSn && schEr.startRow && schEr.endRow) {
+        r.getCell(14).value = { formula: `IF(COUNTIF(${schSn}!D${schEr.startRow}:D${schEr.endRow},"L*")=0,0,SUM(${schSn}!T${schEr.startRow}:T${schEr.endRow})/COUNTIF(${schSn}!D${schEr.startRow}:D${schEr.endRow},"L*"))` }
+      }
       r.getCell(14).numFmt = '0.0%'
       r.getCell(14).font = { name: 'Times New Roman', size: 9 }
+
+      schedEquipIdx++
       r.getCell(14).alignment = { horizontal: 'center', vertical: 'middle' }
 
       schedSectionStart.setDate(schedSectionStart.getDate() + Math.ceil(duration * 0.6))
@@ -1663,7 +1641,7 @@ sNo++
     const sectionEquipRows = []
 
     for (const eq of eqList) {
-      const sn = eq.sheetName.includes(' ') ? "'" + eq.sheetName + "'" : eq.sheetName
+      const sn = "'" + eq.sheetName + "'"
       const dR = `D${eq.startRow}:D${eq.endRow}`   // Level column
       const jR = `J${eq.startRow}:J${eq.endRow}`   // SAT Completed
       const mR = `M${eq.startRow}:M${eq.endRow}`   // Report Received (date)

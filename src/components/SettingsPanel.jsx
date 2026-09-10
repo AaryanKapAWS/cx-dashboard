@@ -88,6 +88,9 @@ export default function SettingsPanel() {
     if (preset.fbnId) localStorage.setItem('cor_fbnId', preset.fbnId)
     if (preset.region) localStorage.setItem('cor_region', preset.region)
     if (preset.projectName) localStorage.setItem('cor_projectName', preset.projectName)
+    if (preset.testSchedule) localStorage.setItem('test_schedule', JSON.stringify(preset.testSchedule))
+    if (preset.testProgress) localStorage.setItem('test_progress', JSON.stringify(preset.testProgress))
+    if (preset.customTemplates) localStorage.setItem('cx_custom_templates', JSON.stringify(preset.customTemplates))
     window.location.reload()
   }
 
@@ -170,7 +173,7 @@ export default function SettingsPanel() {
 
       for (const ws of wb.worksheets) {
         // Skip non-data sheets
-        if (['Project Overview', 'Cx Programme', 'Cx Charts', 'Certificate of Readiness', 'Revision History'].includes(ws.name)) continue
+        if (['Project Overview', 'Cx Programme', 'Cx Schedule', 'Detailed Breakdown', 'Cx Charts', 'Certificate of Readiness', 'Revision History'].includes(ws.name)) continue
 
         const equipmentGroups = []
         let currentGroup = null
