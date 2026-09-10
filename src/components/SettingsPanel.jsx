@@ -249,7 +249,11 @@ export default function SettingsPanel() {
           const reportReceived = cellStr(13)
           const reportProcore = cellStr(14)
           const reportReviewed = cellStr(15)
+          const reviewed = cellStr(16)
+          const outstandingObs = cellStr(17)
           const reportClosed = cellStr(18)
+          const comments = cellStr(19)
+          const critical = cellStr(3)
 
           if (satCompleted) rowData.satCompleted = satCompleted.toUpperCase()
           if (witnessed) rowData.witnessed = witnessed.toUpperCase()
@@ -258,12 +262,18 @@ export default function SettingsPanel() {
           if (reportProcore) rowData.reportProcore = reportProcore.toUpperCase()
           if (reportReviewed) rowData.reportReviewed = reportReviewed.toUpperCase()
           if (reportClosed) rowData.reportClosed = reportClosed.toUpperCase()
-
-          // Text columns
-          const obs = row.getCell(17).value
-          const comments = row.getCell(19).value
-          if (obs) rowData.obs = String(obs)
+          if (reviewed) rowData.reviewed = reviewed.toUpperCase()
+          if (outstandingObs) rowData.outstandingObs = outstandingObs.toUpperCase()
+          if (critical) rowData.critical = critical.toUpperCase()
           if (comments) rowData.comments = String(comments)
+
+          // Date columns — store raw Date values for report dates (cols 13, 15)
+          const reportReceivedRaw = row.getCell(13).value
+          const reportReviewedRaw = row.getCell(15).value
+          if (reportReceivedRaw instanceof Date) rowData.reportReceivedDate = reportReceivedRaw
+          else if (typeof reportReceivedRaw === 'number') rowData.reportReceivedDate = new Date((reportReceivedRaw - 25569) * 86400 * 1000)
+          if (reportReviewedRaw instanceof Date) rowData.reportReviewedDate = reportReviewedRaw
+          else if (typeof reportReviewedRaw === 'number') rowData.reportReviewedDate = new Date((reportReviewedRaw - 25569) * 86400 * 1000)
 
           currentGroup.tests.push(rowData)
           totalTests++
@@ -374,11 +384,32 @@ export default function SettingsPanel() {
       for (const eq of sheetData.equipmentGroups) {
         eq.tests.forEach((t, idx) => {
           const key = `${sheetName.replace(/\s/g, '_')}_${eq.name.replace(/\s/g, '_')}_${idx}`
-          const tested = t.satCompleted === 'YES' || (t.satCompleted && t.satCompleted !== 'NO')
-          const witnessed = t.witnessed === 'YES' || (t.witnessed && t.witnessed !== 'NO')
-          const closed = t.reportClosed === 'YES' || (t.reportClosed && t.reportClosed !== 'NO')
-          if (tested || witnessed || closed) {
-            testProgress[key] = { tested: !!tested, witnessed: !!witnessed, closed: !!closed }
+          const tested = t.satCompleted === 'YES'
+          const witnessed = t.witnessed === 'YES'
+          const completedVal = t.completed === 'YES' ? true : (t.completed === 'N/A' || t.completed === 'NA') ? 'NA' : false
+          const reportReceivedDate = t.reportReceivedDate instanceof Date ? t.reportReceivedDate.toISOString().split('T')[0] : null
+          const reportOnProcore = t.reportProcore === 'YES'
+          const reportReviewedDate = t.reportReviewedDate instanceof Date ? t.reportReviewedDate.toISOString().split('T')[0] : null
+          const reviewedVal = t.reviewed === 'YES' ? true : (t.reviewed === 'N/A' || t.reviewed === 'NA') ? 'NA' : false
+          const outstandingObsVal = t.outstandingObs === 'YES' ? true : (t.outstandingObs === 'N/A' || t.outstandingObs === 'NA') ? 'NA' : false
+          const closed = t.reportClosed === 'YES'
+          const commentsVal = t.comments || ''
+          const criticalVal = t.critical === 'YES'
+
+          // Only store entries with at least one non-default value (keeps localStorage clean)
+          const hasValue = tested || witnessed || completedVal !== false || reportReceivedDate || reportOnProcore || reportReviewedDate || reviewedVal !== false || outstandingObsVal !== false || closed || commentsVal || criticalVal
+          if (hasValue) {
+            testProgress[key] = {
+              tested, witnessed, closed,
+              completed: completedVal,
+              reportDate: reportReceivedDate,
+              reportOnProcore,
+              reportReviewedDate,
+              reviewed: reviewedVal,
+              outstandingObs: outstandingObsVal,
+              comments: commentsVal,
+              critical: criticalVal,
+            }
           }
         })
       }

@@ -1,6 +1,9 @@
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
+const PROGRESS_KEY = 'test_progress'
+const SCHEDULE_KEY = 'test_schedule'
+
 // Equipment type → CxHV inspection template mapping
 const TEMPLATE_MAP = {
   // ── Transformers ──
@@ -246,6 +249,38 @@ const NAME_MAP = {
   'overhead conductor': 'CxHV-Over Head Conductor & Hardware',
 }
 
+
+/**
+ * Resolve inspection status from test_progress data.
+ * Reads test_progress from localStorage and determines the Procore inspection
+ * status and relevant dates for a given equipment item.
+ *
+ * Returns { status, inspectionDate, closedDate } where:
+ * - status: 'Open' | 'Ready for Review' | 'Complete'
+ * - inspectionDate: the reportReceivedDate if available
+ * - closedDate: the reportReviewedDate if available
+ */
+function resolveProgressStatus(item, progressData, scheduleData) {
+  if (!progressData || !item) return { status: 'Open', inspectionDate: '', closedDate: '' }
+  // Build the same progress key format as the dashboard uses
+  const feederRef = (item.feeder_ref || 'unknown').replace(/\s/g, '_')
+  const name = (item.displayName || item.name || item.type || '').replace(/\s/g, '_')
+  // Check test index 0 (primary test) — if any test is completed, treat the equipment as done
+  const baseKey = `${feederRef}_${name}`
+  let bestStatus = 'Open', inspectionDate = '', closedDate = ''
+  for (const [key, p] of Object.entries(progressData)) {
+    if (!key.startsWith(baseKey)) continue
+    if (!p) continue
+    const isClosed = p.tested && p.witnessed && p.closed
+    if (p.reportReceivedDate && !inspectionDate) inspectionDate = p.reportReceivedDate
+    if (p.reportReviewedDate && !closedDate) closedDate = p.reportReviewedDate
+    if ((p.completed || isClosed) && bestStatus !== 'Complete') bestStatus = 'Complete'
+    else if ((p.reviewed || p.reportReviewedDate) && bestStatus === 'Open') bestStatus = 'Ready for Review'
+    else if ((p.reportReceivedDate || p.witnessed) && bestStatus === 'Open') bestStatus = 'Ready for Review'
+  }
+  return { status: bestStatus, inspectionDate, closedDate }
+}
+
 // Resolve equipment type to Procore template — tries type ID first, then display name
 function resolveTemplate(item) {
   const equipType = item.type || item.equipmentType || ''
@@ -330,6 +365,10 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
   const { name, location, fbnBuildId, region = 'EMEA', mode = 'section' } = projectConfig
   const revision = '210906'
 
+  // Load progress data for status-aware upload (new fields: completed, reportOnProcore, etc.)
+  const progressData = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}')
+  const skipUploaded = projectConfig.skipUploaded || false
+
   // 1. Fetch and open the template as a ZIP
   const response = await fetch(import.meta.env.BASE_URL + 'upload_template.xlsm')
   const templateBuffer = await response.arrayBuffer()
@@ -343,6 +382,7 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
   const standalone = []
 
   const dataRows = []
+  let skippedUploaded = 0
 
   if (mode === 'retro') {
     // RETRO MODE: One row per equipment item, using individual CxHV templates
@@ -365,9 +405,17 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
       }
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
+      // Progress-aware status from test_progress localStorage
+      const { status, inspectionDate, closedDate } = resolveProgressStatus(item, progressData)
+
+      // Skip items already on Procore when skipUploaded is set
+      if (skipUploaded && status === 'Complete' && Object.entries(progressData).some(([k, p]) =>
+        k.startsWith(`${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type || '').replace(/\s/g, '_')}`) && p && p.reportOnProcore
+      )) { skippedUploaded++; continue }
+
       dataRows.push([
-        revision, 'Commissioning', templateName, 'Open', trade, location,
-        '', '', '', description, assetTag, '', fbnBuildId,
+        revision, 'Commissioning', templateName, status, trade, location,
+        '', inspectionDate, closedDate, description, assetTag, '', fbnBuildId,
         '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
       ])
     }
@@ -395,9 +443,17 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
       const assetTag = SECTION_LABEL[sectionType] || sectionInstance
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
+      // Section-level status: best status across all items in the section
+      let sectionStatus = 'Open', sectionInspDate = '', sectionCloseDate = ''
+      for (const sItem of items) {
+        const { status: s, inspectionDate: d, closedDate: c } = resolveProgressStatus(sItem, progressData)
+        if (s === 'Complete') { sectionStatus = 'Complete'; sectionInspDate = d || sectionInspDate; sectionCloseDate = c || sectionCloseDate }
+        else if (s === 'Ready for Review' && sectionStatus !== 'Complete') { sectionStatus = 'Ready for Review'; sectionInspDate = d || sectionInspDate }
+      }
+
       dataRows.push([
-        revision, 'Commissioning', templateName, 'Open', trade, location,
-        '', '', '', description, assetTag, '', fbnBuildId,
+        revision, 'Commissioning', templateName, sectionStatus, trade, location,
+        '', sectionInspDate, sectionCloseDate, description, assetTag, '', fbnBuildId,
         '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
       ])
     }
@@ -410,9 +466,12 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
       const assetTag = item.name || item.displayName || `${equipType}-${dataRows.length + 1}`
       const description = `${assetTag}-${templateName}-${fbnBuildId}`
 
+      // Progress-aware status
+      const { status, inspectionDate, closedDate } = resolveProgressStatus(item, progressData)
+
       dataRows.push([
-        revision, 'Commissioning', templateName, 'Open', trade, location,
-        '', '', '', description, assetTag, '', fbnBuildId,
+        revision, 'Commissioning', templateName, status, trade, location,
+        '', inspectionDate, closedDate, description, assetTag, '', fbnBuildId,
         '', '', region, '', '', '', '', '', '', '', '', '', '', '', '', ''
       ])
     }
@@ -475,5 +534,5 @@ export async function generateInspectionUpload(equipmentData, projectConfig) {
 
   saveAs(outBuffer, `Inspection Upload File - ${name}.xlsm`)
 
-  return { inspections: dataRows.length }
+  return { inspections: dataRows.length, skippedUploaded }
 }

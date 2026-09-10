@@ -36,15 +36,23 @@ const GREY = '#64748b'
 
 // ─── SUB-COMPONENTS ─────────────────────────────────────────────────────────────
 
-function DonutChart({ tested, witnessed, closed, total, t }) {
-  const pct = total > 0 ? ((closed / total) * 100).toFixed(1) : 0
+function DonutChart({ tested, witnessed, closed, total, reportReceived = 0, reviewed = 0, t }) {
+  // Weighted completion: 60% SAT + 15% Report Received + 15% Report Reviewed + 10% Closed
+  const pct = total > 0 ? ((tested * 0.60 + reportReceived * 0.15 + reviewed * 0.15 + closed * 0.10) / total * 100).toFixed(1) : 0
   const radius = 70, stroke = 16
   const circumference = 2 * Math.PI * radius
-  const segments = [
+  const hasDocFields = reportReceived > 0 || reviewed > 0
+  const segments = hasDocFields ? [
     { value: closed, color: GREEN, label: 'Closed' },
-    { value: witnessed - closed, color: BLUE, label: 'Witnessed' },
-    { value: tested - witnessed, color: AMBER, label: 'SAT Only' },
-    { value: total - tested, color: t.barBg, label: 'Not Started' },
+    { value: Math.max(0, reviewed - closed), color: PURPLE, label: 'Reviewed' },
+    { value: Math.max(0, reportReceived - reviewed), color: BLUE, label: 'Report In' },
+    { value: Math.max(0, tested - reportReceived), color: AMBER, label: 'SAT Only' },
+    { value: Math.max(0, total - tested), color: t.barBg, label: 'Not Started' },
+  ].filter(s => s.value > 0) : [
+    { value: closed, color: GREEN, label: 'Closed' },
+    { value: Math.max(0, witnessed - closed), color: BLUE, label: 'Witnessed' },
+    { value: Math.max(0, tested - witnessed), color: AMBER, label: 'SAT Only' },
+    { value: Math.max(0, total - tested), color: t.barBg, label: 'Not Started' },
   ].filter(s => s.value > 0)
   let offset = 0
   const arcs = segments.map(seg => {
@@ -212,12 +220,16 @@ export default function AnalyticsDashboard({ equipment = [] }) {
   // ── Stats ──
   const stats = useMemo(() => {
     let totalTests = 0, tested = 0, witnessed = 0, closed = 0
+    let reportReceived = 0, reviewed = 0, reportOnProcore = 0, outstandingObs = 0, completed = 0
+    const turnaroundDays = []
     const sectionData = {}, levelData = { L1: { total: 0, done: 0 }, L2: { total: 0, done: 0 }, L3: { total: 0, done: 0 }, L4: { total: 0, done: 0 }, L5: { total: 0, done: 0 } }
     equipment.forEach(item => {
       const tests = resolveTests(item)
       if (!tests.length) return
       const section = item.feeder_ref || item.section || 'Other'
       if (!sectionData[section]) sectionData[section] = { total: 0, tested: 0, witnessed: 0, closed: 0 }
+      const schedKey = makeScheduleKey(item)
+      const sched = schedule[schedKey]
       tests.forEach((test, idx) => {
         totalTests++; sectionData[section].total++
         const key = makeProgressKey(item, idx)
@@ -228,11 +240,29 @@ export default function AnalyticsDashboard({ equipment = [] }) {
           if (p.tested) { tested++; sectionData[section].tested++ }
           if (p.witnessed) { witnessed++; sectionData[section].witnessed++ }
           if (p.tested && p.witnessed && p.closed) { closed++; sectionData[section].closed++; if (levelData[lvl]) levelData[lvl].done++ }
+          // New progress fields — backwards-compatible: infer from closed if missing
+          const isClosed = p.tested && p.witnessed && p.closed
+          if (p.completed || isClosed) completed++
+          if (p.reportReceivedDate || isClosed) {
+            reportReceived++
+            if (p.reportReceivedDate && sched && sched.actualFinish) {
+              const satDate = new Date(sched.actualFinish)
+              const rptDate = new Date(p.reportReceivedDate)
+              if (!isNaN(satDate) && !isNaN(rptDate)) turnaroundDays.push(Math.round((rptDate - satDate) / 86400000))
+            }
+          }
+          if (p.reviewed || isClosed) reviewed++
+          if (p.reportOnProcore) reportOnProcore++
+          if (p.outstandingObs) outstandingObs++
         }
       })
     })
-    return { totalTests, tested, witnessed, closed, sectionData, levelData }
-  }, [equipment, progress])
+    const avgTurnaround = turnaroundDays.length > 0 ? Math.round(turnaroundDays.reduce((a, b) => a + b, 0) / turnaroundDays.length) : null
+    const awaitingReports = Math.max(0, tested - reportReceived)
+    return { totalTests, tested, witnessed, closed, sectionData, levelData,
+             reportReceived, reviewed, reportOnProcore, outstandingObs, completed,
+             avgTurnaround, awaitingReports }
+  }, [equipment, progress, schedule])
 
   // ── Gantt ──
   const ganttItems = useMemo(() => {
@@ -339,12 +369,65 @@ export default function AnalyticsDashboard({ equipment = [] }) {
           ))}
         </div>
 
+
+        {/* Row 1b: Documentation & Progress Metrics */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14 }}>
+          {/* Report Turnaround */}
+          <div style={{ ...card, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>📋 Report Turnaround</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: stats.avgTurnaround != null ? (stats.avgTurnaround > 14 ? RED : stats.avgTurnaround > 7 ? AMBER : GREEN) : theme.muted }}>
+                  {stats.avgTurnaround != null ? `${stats.avgTurnaround}d` : '—'}
+                </div>
+                <div style={{ fontSize: 10, color: theme.muted }}>Avg SAT → Report</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: stats.awaitingReports > 0 ? AMBER : GREEN }}>{stats.awaitingReports}</div>
+                <div style={{ fontSize: 10, color: theme.muted }}>Awaiting Reports</div>
+              </div>
+            </div>
+          </div>
+          {/* Procore Upload Status */}
+          <div style={{ ...card, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>☁️ Procore Upload</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: stats.reportOnProcore > 0 ? BLUE : theme.muted }}>
+              {stats.reportOnProcore}/{stats.totalTests}
+            </div>
+            <div style={{ fontSize: 10, color: theme.muted, marginBottom: 6 }}>Uploaded to Procore</div>
+            <div style={{ height: 6, background: theme.barBg, borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${stats.totalTests > 0 ? (stats.reportOnProcore / stats.totalTests * 100) : 0}%`, height: '100%', background: BLUE, borderRadius: 3, transition: 'width 0.4s' }} />
+            </div>
+          </div>
+          {/* Outstanding Observations */}
+          <div style={{ ...card, padding: 14, borderLeft: stats.outstandingObs > 0 ? `3px solid ${RED}` : undefined }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>🔴 Outstanding Obs</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: stats.outstandingObs > 0 ? RED : GREEN }}>
+              {stats.outstandingObs}
+            </div>
+            <div style={{ fontSize: 10, color: stats.outstandingObs > 0 ? RED : theme.muted }}>
+              {stats.outstandingObs > 0 ? 'Blockers — action required' : 'No outstanding observations'}
+            </div>
+          </div>
+          {/* Critical Equipment (L5) */}
+          <div style={{ ...card, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>⚡ Critical Equipment (L5)</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: stats.levelData.L5.total > 0 ? (stats.levelData.L5.done === stats.levelData.L5.total ? GREEN : AMBER) : theme.muted }}>
+              {stats.levelData.L5.done}/{stats.levelData.L5.total}
+            </div>
+            <div style={{ fontSize: 10, color: theme.muted, marginBottom: 6 }}>Energisation tests complete</div>
+            <div style={{ height: 6, background: theme.barBg, borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ width: `${stats.levelData.L5.total > 0 ? (stats.levelData.L5.done / stats.levelData.L5.total * 100) : 0}%`, height: '100%', background: `linear-gradient(90deg, ${AMBER}, ${RED})`, borderRadius: 3, transition: 'width 0.4s' }} />
+            </div>
+          </div>
+        </div>
+
         {/* Row 2: Donut + Section + Level */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div style={card}>
-            {title('Overall Completion')}
-            {desc('Tests that passed all stages (SAT → Witnessed → Closed).')}
-            <DonutChart tested={stats.tested} witnessed={stats.witnessed} closed={stats.closed} total={stats.totalTests} t={theme} />
+            {title('Weighted Completion')}
+            {desc('60% SAT + 15% Report Received + 15% Reviewed + 10% Closed.')}
+            <DonutChart tested={stats.tested} witnessed={stats.witnessed} closed={stats.closed} total={stats.totalTests} reportReceived={stats.reportReceived} reviewed={stats.reviewed} t={theme} />
           </div>
           <div style={card}>
             {title(`Progress by Section (${sectionBars.length})`)}
@@ -499,34 +582,41 @@ export default function AnalyticsDashboard({ equipment = [] }) {
             <VarianceChart data={scheduleVariance} t={theme} />
           </div>
           <div style={card}>
-            {title('Pipeline Bottlenecks')}
-            {desc('Tests stuck at each stage — where work is stalling.')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minHeight: 180 }}>
-              <div style={{ padding: '8px 10px', background: theme.barBg, borderRadius: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: theme.sec }}>Not started</span>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: theme.muted }}>{stats.totalTests - stats.tested}</span>
-                </div>
-              </div>
-              <div style={{ padding: '10px 12px', background: `${AMBER}08`, borderRadius: 6, borderLeft: `3px solid ${AMBER}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: theme.sec }}>Awaiting witness</span>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: AMBER }}>{stats.tested - stats.witnessed}</span>
-                </div>
-                <div style={{ fontSize: 10, color: theme.muted, marginTop: 3 }}>SAT done, CxA not witnessed</div>
-              </div>
-              <div style={{ padding: '10px 12px', background: `${BLUE}08`, borderRadius: 6, borderLeft: `3px solid ${BLUE}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: theme.sec }}>Awaiting close-out</span>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: BLUE }}>{stats.witnessed - stats.closed}</span>
-                </div>
-                <div style={{ fontSize: 10, color: theme.muted, marginTop: 3 }}>Witnessed, report not closed</div>
-              </div>
-              <div style={{ padding: '10px 12px', background: `${GREEN}08`, borderRadius: 6, borderLeft: `3px solid ${GREEN}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, color: theme.sec }}>Fully closed</span>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: GREEN }}>{stats.closed}</span>
-                </div>
+            {title('Documentation Pipeline')}
+            {desc('Test documentation flow — SAT → Report → Review → Close.')}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 180 }}>
+              {[
+                { label: 'SAT Completed', count: stats.tested, total: stats.totalTests, color: AMBER, icon: '🔧' },
+                { label: 'Reports Received', count: stats.reportReceived, total: stats.totalTests, color: BLUE, icon: '📄' },
+                { label: 'Reports Reviewed', count: stats.reviewed, total: stats.totalTests, color: PURPLE, icon: '✅' },
+                { label: 'Fully Closed', count: stats.closed, total: stats.totalTests, color: GREEN, icon: '🔒' },
+              ].map((stage, i) => {
+                const pct = stage.total > 0 ? Math.round((stage.count / stage.total) * 100) : 0
+                return (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+                      <span style={{ fontSize: 12, color: theme.sec }}>{stage.icon} {stage.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: stage.color }}>{stage.count}/{stage.total}</span>
+                    </div>
+                    <div style={{ height: 8, background: theme.barBg, borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', borderRadius: 4, background: stage.color, transition: 'width 0.4s' }} />
+                    </div>
+                  </div>
+                )
+              })}
+              <div style={{ marginTop: 4, padding: '8px 10px', background: theme.barBg, borderRadius: 6 }}>
+                <div style={{ fontSize: 10, color: theme.muted, marginBottom: 4 }}>Pipeline Bottleneck</div>
+                {(() => {
+                  const gaps = [
+                    { label: 'Awaiting Reports', value: Math.max(0, stats.tested - stats.reportReceived), color: AMBER },
+                    { label: 'Awaiting Review', value: Math.max(0, stats.reportReceived - stats.reviewed), color: BLUE },
+                    { label: 'Awaiting Close', value: Math.max(0, stats.reviewed - stats.closed), color: PURPLE },
+                  ].filter(g => g.value > 0).sort((a, b) => b.value - a.value)
+                  const biggest = gaps[0]
+                  return biggest
+                    ? <div style={{ fontSize: 12, fontWeight: 700, color: biggest.color }}>{biggest.value} tests {biggest.label.toLowerCase()}</div>
+                    : <div style={{ fontSize: 12, color: GREEN }}>✓ No bottlenecks</div>
+                })()}
               </div>
             </div>
           </div>
@@ -540,10 +630,16 @@ export default function AnalyticsDashboard({ equipment = [] }) {
                 const closeoutPct = stats.witnessed > 0 ? Math.round((stats.closed / stats.witnessed) * 100) : 0
                 const scheduledPct = equipment.length > 0 ? Math.round((ganttItems.length / equipment.length) * 100) : 0
                 const onTimePct = ganttItems.length > 0 ? Math.round((ganttItems.filter(i => i.actualFinish && !i.isLate).length / ganttItems.filter(i => i.actualFinish).length) * 100) || 0 : 0
+                const reportPct = stats.tested > 0 ? Math.round((stats.reportReceived / stats.tested) * 100) : 0
+                const reviewPct = stats.reportReceived > 0 ? Math.round((stats.reviewed / stats.reportReceived) * 100) : 0
+                const procorePct = stats.totalTests > 0 ? Math.round((stats.reportOnProcore / stats.totalTests) * 100) : 0
                 const metrics = [
                   { label: 'Completion Rate', value: completionPct, color: completionPct > 75 ? GREEN : completionPct > 40 ? AMBER : RED },
                   { label: 'Witness Rate', value: witnessPct, color: witnessPct > 80 ? GREEN : witnessPct > 50 ? AMBER : RED },
                   { label: 'Close-out Rate', value: closeoutPct, color: closeoutPct > 80 ? GREEN : closeoutPct > 50 ? AMBER : RED },
+                  { label: 'Report Received', value: reportPct, color: reportPct > 80 ? GREEN : reportPct > 50 ? AMBER : RED },
+                  { label: 'Review Rate', value: reviewPct, color: reviewPct > 80 ? GREEN : reviewPct > 50 ? AMBER : RED },
+                  { label: 'Procore Uploads', value: procorePct, color: procorePct > 70 ? GREEN : procorePct > 30 ? AMBER : RED },
                   { label: 'Schedule Coverage', value: scheduledPct, color: scheduledPct > 70 ? GREEN : scheduledPct > 40 ? AMBER : RED },
                   { label: 'On-time Delivery', value: onTimePct, color: onTimePct > 80 ? GREEN : onTimePct > 50 ? AMBER : RED },
                 ]
@@ -564,17 +660,21 @@ export default function AnalyticsDashboard({ equipment = [] }) {
                   <span style={{ fontSize: 10, color: theme.muted }}>Health Score</span>
                   <span style={{ fontSize: 18, fontWeight: 800, color: (() => {
                     const s = stats.totalTests > 0 ? Math.round(
-                      ((stats.closed / stats.totalTests) * 40) +
-                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 20) +
-                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 20) +
+                      ((stats.closed / stats.totalTests) * 25) +
+                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 15) +
+                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 10) +
+                      ((stats.tested > 0 ? stats.reportReceived / stats.tested : 0) * 15) +
+                      ((stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0) * 15) +
                       ((ganttItems.length > 0 ? ganttItems.filter(i => i.actualFinish && !i.isLate).length / Math.max(ganttItems.filter(i => i.actualFinish).length, 1) : 0) * 20)
                     ) : 0
                     return s > 70 ? GREEN : s > 40 ? AMBER : RED
                   })() }}>{(() => {
                     const s = stats.totalTests > 0 ? Math.round(
-                      ((stats.closed / stats.totalTests) * 40) +
-                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 20) +
-                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 20) +
+                      ((stats.closed / stats.totalTests) * 25) +
+                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 15) +
+                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 10) +
+                      ((stats.tested > 0 ? stats.reportReceived / stats.tested : 0) * 15) +
+                      ((stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0) * 15) +
                       ((ganttItems.length > 0 ? ganttItems.filter(i => i.actualFinish && !i.isLate).length / Math.max(ganttItems.filter(i => i.actualFinish).length, 1) : 0) * 20)
                     ) : 0
                     return s

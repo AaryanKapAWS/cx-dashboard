@@ -6,7 +6,11 @@ const STORAGE_KEY = 'cx_custom_templates'
 
 export function getCustomTemplates() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY))
+    if (!raw) return []
+    // Handle both array format and object format (from console paste scripts)
+    if (Array.isArray(raw)) return raw
+    return Object.values(raw)
   } catch {
     return []
   }
