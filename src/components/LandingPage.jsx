@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function LandingPage({ onNavigate }) {
   const [stats, setStats] = useState(null);
+  const [memoOpen, setMemoOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -93,15 +94,19 @@ export default function LandingPage({ onNavigate }) {
 
         {/* Project Memo */}
         <div style={{ marginTop: 32, textAlign: 'center' }}>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 4 }}>📄 Project Documentation</h3>
+          <div onClick={() => setMemoOpen(!memoOpen)} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 12, color: '#94a3b8', transition: 'transform 0.2s', transform: memoOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', margin: 0 }}>📄 Project Documentation</h3>
+          </div>
           <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>Read the full project memo — problem, solution, metrics, and FAQ.</p>
+          {memoOpen && (<>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
             <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: '#232F3E', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
               Open Full PDF ↗
             </a>
           </div>
-          <div style={{ maxWidth: 800, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+          <div style={{ maxWidth: 800, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.3s' }}>
             <iframe
               src={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`}
               style={{ width: '100%', height: 500, border: 'none' }}
@@ -111,6 +116,7 @@ export default function LandingPage({ onNavigate }) {
           <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>
             If the PDF doesn't load, <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>click here to open it directly</a>.
           </p>
+          </>)}
         </div>
 
 
