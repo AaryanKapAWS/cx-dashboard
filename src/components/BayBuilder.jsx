@@ -1173,7 +1173,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
             {/* Multi-column equipment grid */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px', display: 'flex', flexWrap: 'wrap', gap: 0, alignItems: 'flex-start', justifyContent: 'center' }}>
               {EQUIPMENT_GROUPS.map(group => {
-                const filtered = group.items.filter(i => i.label.toLowerCase().includes(paletteFilter.toLowerCase()) || i.type.toLowerCase().includes(paletteFilter.toLowerCase()))
+                const filtered = group.items.filter(i => (i.label || '').toLowerCase().includes(paletteFilter.toLowerCase()) || (i.type || '').toLowerCase().includes(paletteFilter.toLowerCase()))
                 if (!filtered.length) return null
                 return (
                   <div key={group.label} style={{ width: '23%', minWidth: 180, paddingRight: 16, marginBottom: 20 }}>
@@ -1205,8 +1205,8 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
               {(() => {
                 const customTemplates = getCustomTemplates()
                 const filteredCustom = customTemplates.filter(t =>
-                  t.label.toLowerCase().includes(paletteFilter.toLowerCase()) ||
-                  t.id.toLowerCase().includes(paletteFilter.toLowerCase())
+                  (t.label || '').toLowerCase().includes(paletteFilter.toLowerCase()) ||
+                  (t.id || '').toLowerCase().includes(paletteFilter.toLowerCase())
                 )
                 if (filteredCustom.length === 0 && !paletteFilter) {
                   return (
