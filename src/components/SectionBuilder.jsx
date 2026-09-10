@@ -66,17 +66,17 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
   }
 
   function updateQty(eqId, qty) {
-    const items = section.items.map(i => i.id === eqId ? { ...i, qty: parseInt(qty) || 1 } : i)
+    const items = (section.items || []).map(i => i.id === eqId ? { ...i, qty: parseInt(qty) || 1 } : i)
     onUpdate({ ...section, items })
   }
 
   function updateName(eqId, name) {
-    const items = section.items.map(i => i.id === eqId ? { ...i, name } : i)
+    const items = (section.items || []).map(i => i.id === eqId ? { ...i, name } : i)
     onUpdate({ ...section, items })
   }
 
   function updateNames(eqId, names) {
-    const items = section.items.map(i => i.id === eqId ? { ...i, names } : i)
+    const items = (section.items || []).map(i => i.id === eqId ? { ...i, names } : i)
     onUpdate({ ...section, items })
   }
 
@@ -86,7 +86,7 @@ function EquipmentSection({ section, onUpdate, onRemove }) {
       
       {/* Equipment checklist */}
       <div style={{ display: 'grid', gap: 6 }}>
-        {template.equipment.map(eq => {
+        {(template.equipment || []).map(eq => {
           const active = section.items.some(i => i.id === eq.id)
           const item = section.items.find(i => i.id === eq.id)
           return (

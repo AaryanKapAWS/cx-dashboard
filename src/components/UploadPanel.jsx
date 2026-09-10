@@ -128,7 +128,7 @@ export default function UploadPanel({ onAdd }) {
                 )}
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 12 }}>
-                  {result.equipment.map((e, i) => (
+                  {(result.equipment || []).map((e, i) => (
                     <span key={i} style={{
                       background: e.status === 'Complete' ? '#dcfce7' : e.status === 'In Progress' ? '#fff7ed' : '#f1f5f9',
                       color: e.status === 'Complete' ? '#166534' : e.status === 'In Progress' ? '#9a3412' : '#64748b',

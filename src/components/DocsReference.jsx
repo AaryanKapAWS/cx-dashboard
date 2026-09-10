@@ -957,7 +957,7 @@ export default function DocsReference() {
                       {expandedGroups[section.id] ? '▼' : '▶'}
                     </span>
                   </div>
-                  {expandedGroups[section.id] && section.children.map(child => (
+                  {expandedGroups[section.id] && (section.children || []).map(child => (
                     <div
                       key={child.id}
                       style={getChildNavStyle(child.id)}

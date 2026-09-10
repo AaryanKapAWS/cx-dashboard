@@ -626,6 +626,7 @@ export async function generateCOR(equipmentData, projectName) {
   })
 
   const ganttHdr = wsProg.addRow(['', '', 'Equipment', 'Tests', 'L3', 'L4', 'L5', 'Planned Start', 'Planned Finish', 'Duration', 'Status', '', ''])
+  wsProg.mergeCells(ganttHdr.number, 11, ganttHdr.number, 13)
   ganttHdr.height = 18
   ganttHdr.eachCell((cell, col) => {
     if (col >= 2) {
@@ -656,6 +657,7 @@ export async function generateCOR(equipmentData, projectName) {
         cell.border = { bottom: { style: 'thin', color: { argb: C.orange } } }
       }
     })
+    wsProg.mergeCells(sep.number, 11, sep.number, 13)
 
     let sectionMaxEnd = new Date(sectionStartDate)
 
@@ -693,6 +695,7 @@ export async function generateCOR(equipmentData, projectName) {
       // Status formula: based on whether dates have passed
       r.getCell(11).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
       r.getCell(11).font = { name: 'Times New Roman', size: 9, italic: true }
+      wsProg.mergeCells(r.number, 11, r.number, 13)
       r.eachCell((cell, col) => {
         if (col >= 3) {
           cell.font = { name: 'Times New Roman', size: 9 }
@@ -725,7 +728,30 @@ export async function generateCOR(equipmentData, projectName) {
     cellBot.border = { ...cellBot.border, bottom: PROG_BOX_BORDER }
   }
 
-  // Settings
+  // Conditional formatting on Status column (K) — muted fills for Complete/In Progress/Pending
+  const statusColLetter = 'K'
+  const cfStartRow = 6  // first data row in timeline section (after headers)
+  wsProg.addConditionalFormatting({
+    ref: `${statusColLetter}${cfStartRow}:${statusColLetter}${progLastRow}`,
+    rules: [{
+      type: 'cellIs', operator: 'equal', formulae: ['"Complete"'], priority: 1,
+      style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' }, bgColor: { argb: 'FFC6EFCE' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF006100' } } }
+    }]
+  })
+  wsProg.addConditionalFormatting({
+    ref: `${statusColLetter}${cfStartRow}:${statusColLetter}${progLastRow}`,
+    rules: [{
+      type: 'cellIs', operator: 'equal', formulae: ['"In Progress"'], priority: 2,
+      style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' }, bgColor: { argb: 'FFFFFFCC' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF9C6500' } } }
+    }]
+  })
+  wsProg.addConditionalFormatting({
+    ref: `${statusColLetter}${cfStartRow}:${statusColLetter}${progLastRow}`,
+    rules: [{
+      type: 'cellIs', operator: 'equal', formulae: ['"Pending"'], priority: 3,
+      style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' }, bgColor: { argb: 'FFFFC7CE' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF9C0006' } } }
+    }]
+  })
   
   
   wsProg.views = [{ showGridLines: false, state: 'frozen', ySplit: 3, topLeftCell: 'B4' }]

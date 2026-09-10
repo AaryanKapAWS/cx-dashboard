@@ -428,7 +428,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
           }
         }
         for (const feeder of (line.feeders || [])) {
-          for (const eq of feeder.equipment) {
+          for (const eq of (feeder.equipment || [])) {
             for (let q = 0; q < (eq.qty || 1); q++) {
               const suffix = (eq.qty || 1) > 1 ? ` ${q + 1}` : ''
               // Attach custom tests for custom equipment types in feeders
@@ -495,11 +495,11 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
         const existing = lines.filter(l => l.name.startsWith(baseName + ' (Copy')).length
         return existing === 0 ? baseName + ' (Copy)' : baseName + ` (Copy ${existing + 1})`
       })(),
-      equipment: source.equipment.map(e => ({ ...e, id: generateId() })),
+      equipment: (source.equipment || []).map(e => ({ ...e, id: generateId() })),
       feeders: (source.feeders || []).map(f => ({
         ...f,
         id: generateId(),
-        equipment: f.equipment.map(e => ({ ...e, id: generateId() })),
+        equipment: (f.equipment || []).map(e => ({ ...e, id: generateId() })),
       })),
       children: [],
     }
@@ -606,7 +606,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
     if (feederId) {
       setLines(updateInTree(lines, lineId, l => ({
         ...l, feeders: (l.feeders || []).map(f => f.id === feederId ? {
-          ...f, equipment: f.equipment.map(e => e.id === eqId ? { ...e, ...updates } : e)
+          ...f, equipment: (f.equipment || []).map(e => e.id === eqId ? { ...e, ...updates } : e)
         } : f)
       })))
     } else {
@@ -739,7 +739,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                 <span style={{
                   fontSize: 13, color: '#334155', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{feeder.name}</span>
-                <span style={{ fontSize: 10, color: '#94a3b8' }}>{feeder.equipment.length}eq</span>
+                <span style={{ fontSize: 10, color: '#94a3b8' }}>{(feeder.equipment || []).length}eq</span>
               </div>
             )
           })}
@@ -986,7 +986,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                         onClick={(e) => e.stopPropagation()}
                         style={{ flex: 1, fontSize: 13, border: 'none', outline: 'none', background: 'transparent', color: '#1e293b', fontWeight: 500 }}
                       />
-                      <span style={{ fontSize: 10, color: '#94a3b8' }}>{feeder.equipment.length} items</span>
+                      <span style={{ fontSize: 10, color: '#94a3b8' }}>{(feeder.equipment || []).length} items</span>
                       <button onClick={(e) => { e.stopPropagation(); removeFeeder(activeLine.id, feeder.id) }}
                         style={{ ...moveBtn, color: '#ef4444', borderColor: '#fecaca' }}>✕</button>
                     </div>
