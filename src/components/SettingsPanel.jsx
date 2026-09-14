@@ -273,10 +273,10 @@ export default function SettingsPanel() {
           // Date columns — store raw Date values for report dates (cols 13, 15)
           const reportReceivedRaw = row.getCell(13).value
           const reportReviewedRaw = row.getCell(15).value
-          if (reportReceivedRaw instanceof Date) rowData.reportReceivedDate = reportReceivedRaw
-          else if (typeof reportReceivedRaw === 'number') rowData.reportReceivedDate = new Date((reportReceivedRaw - 25569) * 86400 * 1000)
-          if (reportReviewedRaw instanceof Date) rowData.reportReviewedDate = reportReviewedRaw
-          else if (typeof reportReviewedRaw === 'number') rowData.reportReviewedDate = new Date((reportReviewedRaw - 25569) * 86400 * 1000)
+          if (reportReceivedRaw instanceof Date && !isNaN(reportReceivedRaw.getTime())) rowData.reportReceivedDate = reportReceivedRaw
+          else if (typeof reportReceivedRaw === 'number' && reportReceivedRaw > 1000) { const d = new Date((reportReceivedRaw - 25569) * 86400 * 1000); if (!isNaN(d.getTime())) rowData.reportReceivedDate = d }
+          if (reportReviewedRaw instanceof Date && !isNaN(reportReviewedRaw.getTime())) rowData.reportReviewedDate = reportReviewedRaw
+          else if (typeof reportReviewedRaw === 'number' && reportReviewedRaw > 1000) { const d = new Date((reportReviewedRaw - 25569) * 86400 * 1000); if (!isNaN(d.getTime())) rowData.reportReviewedDate = d }
 
           currentGroup.tests.push(rowData)
           totalTests++
@@ -320,13 +320,17 @@ export default function SettingsPanel() {
 
     function toISO(v) {
       if (!v) return ''
-      if (v instanceof Date) return v.toISOString().slice(0, 10)
-      if (typeof v === 'number') {
-        // Excel serial date number
-        const d = new Date((v - 25569) * 86400 * 1000)
-        return d.toISOString().slice(0, 10)
+      if (v instanceof Date) {
+        if (isNaN(v.getTime())) return ''
+        return v.toISOString().slice(0, 10)
       }
-      return String(v).slice(0, 10)
+      if (typeof v === 'number') {
+        const d = new Date((v - 25569) * 86400 * 1000)
+        return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10)
+      }
+      const s = String(v).slice(0, 10)
+      const test = new Date(s)
+      return isNaN(test.getTime()) ? '' : s
     }
 
     const projectName = corParsedData.__projectName || 'Imported Project'
@@ -406,14 +410,18 @@ export default function SettingsPanel() {
           const witnessed = t.witnessed === 'YES'
           const completedVal = t.completed === 'YES' ? true : (t.completed === 'N/A' || t.completed === 'NA') ? 'NA' : false
           let reportReceivedDate = null
-          if (t.reportReceivedDate instanceof Date) reportReceivedDate = t.reportReceivedDate.toISOString().split('T')[0]
-          else if (typeof t.reportReceivedDate === 'number') reportReceivedDate = new Date((t.reportReceivedDate - 25569) * 86400000).toISOString().split('T')[0]
-          else if (typeof t.reportReceivedDate === 'string' && t.reportReceivedDate) reportReceivedDate = t.reportReceivedDate.slice(0, 10)
+          try {
+            if (t.reportReceivedDate instanceof Date && !isNaN(t.reportReceivedDate.getTime())) reportReceivedDate = t.reportReceivedDate.toISOString().split('T')[0]
+            else if (typeof t.reportReceivedDate === 'number') { const d = new Date((t.reportReceivedDate - 25569) * 86400000); if (!isNaN(d.getTime())) reportReceivedDate = d.toISOString().split('T')[0] }
+            else if (typeof t.reportReceivedDate === 'string' && t.reportReceivedDate) reportReceivedDate = t.reportReceivedDate.slice(0, 10)
+          } catch { /* skip bad date */ }
           const reportOnProcore = t.reportProcore === 'YES'
           let reportReviewedDate = null
-          if (t.reportReviewedDate instanceof Date) reportReviewedDate = t.reportReviewedDate.toISOString().split('T')[0]
-          else if (typeof t.reportReviewedDate === 'number') reportReviewedDate = new Date((t.reportReviewedDate - 25569) * 86400000).toISOString().split('T')[0]
-          else if (typeof t.reportReviewedDate === 'string' && t.reportReviewedDate) reportReviewedDate = t.reportReviewedDate.slice(0, 10)
+          try {
+            if (t.reportReviewedDate instanceof Date && !isNaN(t.reportReviewedDate.getTime())) reportReviewedDate = t.reportReviewedDate.toISOString().split('T')[0]
+            else if (typeof t.reportReviewedDate === 'number') { const d = new Date((t.reportReviewedDate - 25569) * 86400000); if (!isNaN(d.getTime())) reportReviewedDate = d.toISOString().split('T')[0] }
+            else if (typeof t.reportReviewedDate === 'string' && t.reportReviewedDate) reportReviewedDate = t.reportReviewedDate.slice(0, 10)
+          } catch { /* skip bad date */ }
           const reviewedVal = t.reviewed === 'YES' ? true : (t.reviewed === 'N/A' || t.reviewed === 'NA') ? 'NA' : false
           const outstandingObsVal = t.outstandingObs === 'YES' ? true : (t.outstandingObs === 'N/A' || t.outstandingObs === 'NA') ? 'NA' : false
           const closed = t.reportClosed === 'YES'
