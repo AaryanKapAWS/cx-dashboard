@@ -300,9 +300,24 @@ export default function SettingsPanel() {
   function handleCorLoadNow() {
     if (!corParsedData) return
 
-    if (!confirm('This will replace your current project. Continue?')) return
+    // Check if there's existing data and warn
+    const existingTree = localStorage.getItem('bay_tree_v5')
+    const hasExistingData = existingTree && JSON.parse(existingTree).length > 0
+    const msg = hasExistingData
+      ? '⚠️ You have existing project data in Scope & Export.\n\nThis will DELETE all current sections, equipment, tests, progress, and schedule data and replace it with the COR file.\n\nContinue?'
+      : 'This will load the COR data as your current project. Continue?'
+    if (!confirm(msg)) return
 
-    // Helper: convert date values to ISO date string
+    try {
+    console.log('[COR Import] Loading project from parsed COR data...')
+
+    // Clear all existing project data first
+    localStorage.removeItem('bay_tree_v5')
+    localStorage.removeItem('bay_equipment')
+    localStorage.removeItem('test_schedule')
+    localStorage.removeItem('test_progress')
+    localStorage.removeItem('cx_custom_templates')
+
     function toISO(v) {
       if (!v) return ''
       if (v instanceof Date) return v.toISOString().slice(0, 10)
@@ -390,9 +405,15 @@ export default function SettingsPanel() {
           const tested = t.satCompleted === 'YES'
           const witnessed = t.witnessed === 'YES'
           const completedVal = t.completed === 'YES' ? true : (t.completed === 'N/A' || t.completed === 'NA') ? 'NA' : false
-          const reportReceivedDate = t.reportReceivedDate instanceof Date ? t.reportReceivedDate.toISOString().split('T')[0] : null
+          let reportReceivedDate = null
+          if (t.reportReceivedDate instanceof Date) reportReceivedDate = t.reportReceivedDate.toISOString().split('T')[0]
+          else if (typeof t.reportReceivedDate === 'number') reportReceivedDate = new Date((t.reportReceivedDate - 25569) * 86400000).toISOString().split('T')[0]
+          else if (typeof t.reportReceivedDate === 'string' && t.reportReceivedDate) reportReceivedDate = t.reportReceivedDate.slice(0, 10)
           const reportOnProcore = t.reportProcore === 'YES'
-          const reportReviewedDate = t.reportReviewedDate instanceof Date ? t.reportReviewedDate.toISOString().split('T')[0] : null
+          let reportReviewedDate = null
+          if (t.reportReviewedDate instanceof Date) reportReviewedDate = t.reportReviewedDate.toISOString().split('T')[0]
+          else if (typeof t.reportReviewedDate === 'number') reportReviewedDate = new Date((t.reportReviewedDate - 25569) * 86400000).toISOString().split('T')[0]
+          else if (typeof t.reportReviewedDate === 'string' && t.reportReviewedDate) reportReviewedDate = t.reportReviewedDate.slice(0, 10)
           const reviewedVal = t.reviewed === 'YES' ? true : (t.reviewed === 'N/A' || t.reviewed === 'NA') ? 'NA' : false
           const outstandingObsVal = t.outstandingObs === 'YES' ? true : (t.outstandingObs === 'N/A' || t.outstandingObs === 'NA') ? 'NA' : false
           const closed = t.reportClosed === 'YES'
@@ -435,8 +456,15 @@ export default function SettingsPanel() {
     localStorage.setItem('cx_custom_templates', JSON.stringify(customTemplates))
 
     const sections = Object.keys(corParsedData).filter(k => k !== '__projectName').length
+    console.log(`[COR Import] ✅ Saved: ${bayEquipment.length} equipment, ${totalTests} tests, ${sections} sections`)
     setCorImportStatus(`✓ Full project loaded! ${bayEquipment.length} equipment items, ${totalTests} tests across ${sections} sections.`)
     setTimeout(() => window.location.reload(), 1500)
+
+    } catch (err) {
+      console.error('[COR Import] Load failed:', err)
+      setCorImportStatus(`Error loading: ${err.message}`)
+      alert(`COR Load failed: ${err.message}\n\nCheck the browser console (F12) for details.`)
+    }
   }
 
   function handleCorSaveWithProject() {
