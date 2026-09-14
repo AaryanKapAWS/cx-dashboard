@@ -1,35 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import testTemplates from '../data/test_templates.json'
-import { getCustomTemplates } from '../utils/customTemplates'
-
-// Resolve tests for any equipment item (built-in, custom, or imported)
-function resolveTests(item) {
-  if (item.customTests && item.customTests.length > 0) {
-    return item.customTests.filter(t => t.enabled !== false).map(t => [t.level || 'L3', t.name, ''])
-  }
-  const builtin = testTemplates[item.type]
-  if (builtin && builtin.length > 0) return builtin
-  const ct = getCustomTemplates().find(t => t.id === item.type)
-  if (ct) return ct.tests.map(t => [t[0], t[1], ''])
-  return []
-}
-
-const STORAGE_KEY = 'test_progress'
-
-// ── Full default progress object for every test ──────────────────────────────
-const PROGRESS_DEFAULTS = {
-  tested: false,         // SAT Completed        – checkbox green
-  witnessed: false,      // CxA Witnessed         – checkbox blue
-  completed: false,      // Completed             – 3-state purple (false|true|'NA')
-  reportReceivedDate: null,  // Report Received   – date
-  reportOnProcore: false,    // On Procore        – checkbox orange
-  reportReviewedDate: null,  // Report Reviewed   – date
-  reviewed: false,       // Reviewed              – 3-state teal (false|true|'NA')
-  outstandingObs: false, // Obs                   – 3-state red  (false|true|'NA')
-  closed: false,         // Report Closed         – checkbox dark-green
-  comments: '',          // Comments              – free text
-  critical: false        // Critical              – auto for L5, manual edit
-}
+import {
+  resolveTests, makeProgressKey,
+  PROGRESS_DEFAULTS, weightedScore, isFullyDone, isNA,
+  loadProgress, saveProgress, computeStats,
+} from '../utils/progressMetrics'
 
 const SECTION_COLOURS = {
   transformer_bay: '#f59e0b', line_bay: '#3b82f6', bus_section: '#6366f1',
@@ -40,40 +14,6 @@ const SECTION_COLOURS = {
 
 const LEVEL_COLOURS = {
   L1: '#7c3aed', L2: '#d97706', L3: '#059669', L4: '#2563eb', L5: '#db2777'
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-// Stable key for progress tracking - uses feeder_ref + type + instance count
-function makeProgressKey(item, testIdx) {
-  return `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${testIdx}`
-}
-
-function loadProgress() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : {}
-  } catch { return {} }
-}
-
-function saveProgress(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-}
-
-/** The 4 core completion gates (administrative fields like dates/procore are NOT gates). */
-function isFullyDone(p) {
-  return p && p.tested && p.witnessed && (p.completed === true) && p.closed
-}
-
-/** Weighted COR score per-test: SAT 60 %, report-in 15 %, report-reviewed 15 %, closed 10 %. */
-function weightedScore(p) {
-  if (!p) return 0
-  let s = 0
-  if (p.tested) s += 0.6
-  if (p.reportReceivedDate) s += 0.15
-  if (p.reportReviewedDate) s += 0.15
-  if (p.closed) s += 0.1
-  return s
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────
@@ -268,74 +208,16 @@ export default function ProgressTracker({ equipment }) {
     return { sections, sectionList: Object.keys(sections).sort() }
   }, [equipment])
 
-  const stats = useMemo(() => {
-    let totalTests = 0, tested = 0, witnessed = 0, completed = 0,
-        reportsIn = 0, onProcore = 0, closed = 0, complete = 0,
-        wSum = 0
-    const sectionSet = new Set()
-    let eqCount = 0
-    if (equipment) {
-      equipment.forEach(item => {
-        const tests = resolveTests(item)
-        if (!tests.length) return
-        eqCount++
-        sectionSet.add(item.section || item.type)
-        tests.forEach((_, idx) => {
-          const key = makeProgressKey(item, idx)
-          const p = progress[key]
-          // Skip N/A tests from all counts
-          if (p && p.completed === 'NA') return
-          totalTests++
-          if (p) {
-            if (p.tested) tested++
-            if (p.witnessed) witnessed++
-            if (p.completed === true) completed++
-            if (p.reportReceivedDate) reportsIn++
-            if (p.reportOnProcore) onProcore++
-            if (p.closed) closed++
-            wSum += weightedScore(p)
-          }
-          if (isFullyDone(p)) complete++
-        })
-      })
-    }
-    const overallPct = totalTests > 0 ? (wSum / totalTests) * 100 : 0
-    return {
-      sections: sectionSet.size, equipment: eqCount, totalTests,
-      tested, witnessed, completed, reportsIn, onProcore, closed,
-      complete, overallPct
-    }
-  }, [equipment, progress])
-
-  const levelStats = useMemo(() => {
-    const levels = { L1: { total: 0, done: 0 }, L2: { total: 0, done: 0 }, L3: { total: 0, done: 0 },
-      L4: { total: 0, done: 0 }, L5: { total: 0, done: 0 } }
-    if (equipment) {
-      equipment.forEach(item => {
-        const tests = resolveTests(item)
-        tests.forEach((test, idx) => {
-          const lvl = test[0]
-          if (levels[lvl]) {
-            const key = makeProgressKey(item, idx)
-            const p = progress[key]
-            if (p && p.completed === 'NA') return  // Skip N/A
-            levels[lvl].total++
-            if (isFullyDone(p)) levels[lvl].done++
-          }
-        })
-      })
-    }
-    return levels
-  }, [equipment, progress])
+  // ── Single stats computation (shared with Analytics) ──
+  const stats = useMemo(() => computeStats(equipment, progress), [equipment, progress])
+  const levelStats = stats.levelData
 
   const getEquipmentProgress = useCallback((item) => {
     const tests = resolveTests(item)
-    let done = 0
-    let naCount = 0
+    let done = 0, naCount = 0
     tests.forEach((_, idx) => {
-      const k = makeProgressKey(item, idx)
-      const p = progress[k]
-      if (p && p.completed === 'NA') { naCount++; return }
+      const p = progress[makeProgressKey(item, idx)]
+      if (isNA(p)) { naCount++; return }
       if (p && p.tested) done++
     })
     return { done, total: tests.length - naCount }
@@ -346,9 +228,8 @@ export default function ProgressTracker({ equipment }) {
     items.forEach(item => {
       const tests = item._tests || resolveTests(item)
       tests.forEach((_, idx) => {
-        const k = makeProgressKey(item, idx)
-        const p = progress[k]
-        if (p && p.completed === 'NA') return  // Skip N/A
+        const p = progress[makeProgressKey(item, idx)]
+        if (isNA(p)) return
         total++
         if (p && p.tested) done++
       })
@@ -442,8 +323,8 @@ export default function ProgressTracker({ equipment }) {
           { label: 'SAT Tested', value: stats.tested, colour: '#22c55e' },
           { label: 'CxA Witnessed', value: stats.witnessed, colour: '#3b82f6' },
           { label: 'Completed', value: stats.completed, colour: '#7c3aed' },
-          { label: 'Reports In', value: stats.reportsIn, colour: '#f59e0b' },
-          { label: 'On Procore', value: stats.onProcore, colour: '#f97316' },
+          { label: 'Reports In', value: stats.reportReceived, colour: '#f59e0b' },
+          { label: 'On Procore', value: stats.reportOnProcore, colour: '#f97316' },
           { label: 'Closed', value: stats.closed, colour: '#065f46' },
         ].map(step => {
           const pct = stats.totalTests > 0 ? Math.round(step.value / stats.totalTests * 100) : 0

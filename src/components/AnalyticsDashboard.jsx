@@ -1,28 +1,10 @@
 import { useState, useMemo } from 'react'
-import testTemplates from '../data/test_templates.json'
-import { getCustomTemplates } from '../utils/customTemplates'
-
-const PROGRESS_KEY = 'test_progress'
-const SCHEDULE_KEY = 'test_schedule'
-
-function resolveTests(item) {
-  if (item.customTests && item.customTests.length > 0) {
-    return item.customTests.filter(t => t.enabled !== false).map(t => [t.level || 'L3', t.name, ''])
-  }
-  const builtin = testTemplates[item.type]
-  if (builtin && builtin.length > 0) return builtin
-  const ct = getCustomTemplates().find(t => t.id === item.type)
-  if (ct) return ct.tests.map(t => [t[0], t[1], ''])
-  return []
-}
-
-function makeProgressKey(item, testIdx) {
-  return `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${testIdx}`
-}
-
-function makeScheduleKey(item) {
-  return `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
-}
+import {
+  resolveTests, makeProgressKey, makeScheduleKey,
+  isNA, weightedScore, isFullyDone,
+  PROGRESS_KEY, SCHEDULE_KEY,
+  computeStats, capPct,
+} from '../utils/progressMetrics'
 
 // ─── COLOURS ────────────────────────────────────────────────────────────────────
 const AMBER = '#FF9900'
@@ -218,52 +200,7 @@ export default function AnalyticsDashboard({ equipment = [] }) {
   const desc = (text) => <p style={{ fontSize: 11, color: theme.muted, margin: '0 0 10px' }}>{text}</p>
 
   // ── Stats ──
-  const stats = useMemo(() => {
-    let totalTests = 0, tested = 0, witnessed = 0, closed = 0
-    let reportReceived = 0, reviewed = 0, reportOnProcore = 0, outstandingObs = 0, completed = 0
-    const turnaroundDays = []
-    const sectionData = {}, levelData = { L1: { total: 0, done: 0 }, L2: { total: 0, done: 0 }, L3: { total: 0, done: 0 }, L4: { total: 0, done: 0 }, L5: { total: 0, done: 0 } }
-    equipment.forEach(item => {
-      const tests = resolveTests(item)
-      if (!tests.length) return
-      const section = item.feeder_ref || item.section || 'Other'
-      if (!sectionData[section]) sectionData[section] = { total: 0, tested: 0, witnessed: 0, closed: 0 }
-      const schedKey = makeScheduleKey(item)
-      const sched = schedule[schedKey]
-      tests.forEach((test, idx) => {
-        totalTests++; sectionData[section].total++
-        const key = makeProgressKey(item, idx)
-        const p = progress[key]
-        const lvl = test[0]
-        if (levelData[lvl]) levelData[lvl].total++
-        if (p) {
-          if (p.tested) { tested++; sectionData[section].tested++ }
-          if (p.witnessed) { witnessed++; sectionData[section].witnessed++ }
-          if (p.tested && p.witnessed && p.closed) { closed++; sectionData[section].closed++; if (levelData[lvl]) levelData[lvl].done++ }
-          // New progress fields — backwards-compatible: infer from closed if missing
-          const isClosed = p.tested && p.witnessed && p.closed
-          if (p.completed === true || isClosed) completed++
-          if (p.reportReceivedDate || p.reportDate || isClosed) {
-            reportReceived++
-            const rptDateStr = p.reportReceivedDate || p.reportDate
-            if (rptDateStr && sched && sched.actualFinish) {
-              const satDate = new Date(sched.actualFinish)
-              const rptDate = new Date(rptDateStr)
-              if (!isNaN(satDate) && !isNaN(rptDate)) turnaroundDays.push(Math.round((rptDate - satDate) / 86400000))
-            }
-          }
-          if (p.reviewed === true || isClosed) reviewed++
-          if (p.reportOnProcore) reportOnProcore++
-          if (p.outstandingObs === true) outstandingObs++
-        }
-      })
-    })
-    const avgTurnaround = turnaroundDays.length > 0 ? Math.round(turnaroundDays.reduce((a, b) => a + b, 0) / turnaroundDays.length) : null
-    const awaitingReports = Math.max(0, tested - reportReceived)
-    return { totalTests, tested, witnessed, closed, sectionData, levelData,
-             reportReceived, reviewed, reportOnProcore, outstandingObs, completed,
-             avgTurnaround, awaitingReports }
-  }, [equipment, progress, schedule])
+  const stats = useMemo(() => computeStats(equipment, progress, schedule), [equipment, progress, schedule])
 
   // ── Gantt ──
   const ganttItems = useMemo(() => {
@@ -334,7 +271,7 @@ export default function AnalyticsDashboard({ equipment = [] }) {
   }, [equipment, schedule, progress])
 
   // ── Derived bar data ──
-  const sectionBars = useMemo(() => Object.entries(stats.sectionData).map(([name, d]) => ({ label: name.length > 28 ? name.substring(0, 28) + '…' : name, value: d.total > 0 ? Math.round((d.closed / d.total) * 100) : 0, color: BLUE, colorEnd: PURPLE })).sort((a, b) => b.value - a.value), [stats])
+  const sectionBars = useMemo(() => Object.entries(stats.sectionData).map(([name, d]) => ({ label: name.length > 28 ? name.substring(0, 28) + '…' : name, value: d.total > 0 ? Math.round((d.wSum / d.total) * 100) : 0, color: BLUE, colorEnd: PURPLE })).sort((a, b) => b.value - a.value), [stats])
   const levelBars = useMemo(() => Object.entries(stats.levelData).filter(([, d]) => d.total > 0).map(([lvl, d]) => ({ label: `${lvl} (${d.done}/${d.total})`, value: d.total > 0 ? Math.round((d.done / d.total) * 100) : 0, color: { L1: GREEN, L2: BLUE, L3: AMBER, L4: PURPLE, L5: RED }[lvl], colorEnd: { L1: TEAL, L2: PURPLE, L3: '#f97316', L4: PINK, L5: '#f97316' }[lvl] })), [stats])
 
   if (equipment.length === 0) {
@@ -626,14 +563,15 @@ export default function AnalyticsDashboard({ equipment = [] }) {
             {desc('Overall project readiness indicators.')}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 180 }}>
               {(() => {
-                const completionPct = stats.totalTests > 0 ? Math.round((stats.closed / stats.totalTests) * 100) : 0
-                const witnessPct = stats.tested > 0 ? Math.round((stats.witnessed / stats.tested) * 100) : 0
-                const closeoutPct = stats.witnessed > 0 ? Math.round((stats.closed / stats.witnessed) * 100) : 0
+                const cap = (v) => Math.min(Math.round(v), 100)
+                const completionPct = stats.totalTests > 0 ? cap((stats.tested / stats.totalTests) * 100) : 0
+                const witnessPct = stats.tested > 0 ? cap((stats.witnessed / stats.tested) * 100) : 0
+                const closeoutPct = stats.totalTests > 0 ? cap((stats.closed / stats.totalTests) * 100) : 0
                 const scheduledPct = equipment.length > 0 ? Math.round((ganttItems.length / equipment.length) * 100) : 0
                 const onTimePct = ganttItems.length > 0 ? Math.round((ganttItems.filter(i => i.actualFinish && !i.isLate).length / ganttItems.filter(i => i.actualFinish).length) * 100) || 0 : 0
-                const reportPct = stats.tested > 0 ? Math.round((stats.reportReceived / stats.tested) * 100) : 0
-                const reviewPct = stats.reportReceived > 0 ? Math.round((stats.reviewed / stats.reportReceived) * 100) : 0
-                const procorePct = stats.totalTests > 0 ? Math.round((stats.reportOnProcore / stats.totalTests) * 100) : 0
+                const reportPct = stats.tested > 0 ? cap((stats.reportReceived / stats.tested) * 100) : 0
+                const reviewPct = stats.reportReceived > 0 ? cap((stats.reviewed / stats.reportReceived) * 100) : 0
+                const procorePct = stats.totalTests > 0 ? cap((stats.reportOnProcore / stats.totalTests) * 100) : 0
                 const metrics = [
                   { label: 'Completion Rate', value: completionPct, color: completionPct > 75 ? GREEN : completionPct > 40 ? AMBER : RED },
                   { label: 'Witness Rate', value: witnessPct, color: witnessPct > 80 ? GREEN : witnessPct > 50 ? AMBER : RED },
@@ -661,21 +599,21 @@ export default function AnalyticsDashboard({ equipment = [] }) {
                   <span style={{ fontSize: 10, color: theme.muted }}>Health Score</span>
                   <span style={{ fontSize: 18, fontWeight: 800, color: (() => {
                     const s = stats.totalTests > 0 ? Math.round(
-                      ((stats.closed / stats.totalTests) * 25) +
-                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 15) +
-                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 10) +
-                      ((stats.tested > 0 ? stats.reportReceived / stats.tested : 0) * 15) +
-                      ((stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0) * 15) +
+                      (Math.min(stats.tested / stats.totalTests, 1) * 25) +
+                      (Math.min(stats.tested > 0 ? stats.witnessed / stats.tested : 0, 1) * 15) +
+                      (Math.min(stats.closed / stats.totalTests, 1) * 10) +
+                      (Math.min(stats.tested > 0 ? stats.reportReceived / stats.tested : 0, 1) * 15) +
+                      (Math.min(stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0, 1) * 15) +
                       ((ganttItems.length > 0 ? ganttItems.filter(i => i.actualFinish && !i.isLate).length / Math.max(ganttItems.filter(i => i.actualFinish).length, 1) : 0) * 20)
                     ) : 0
                     return s > 70 ? GREEN : s > 40 ? AMBER : RED
                   })() }}>{(() => {
                     const s = stats.totalTests > 0 ? Math.round(
-                      ((stats.closed / stats.totalTests) * 25) +
-                      ((stats.tested > 0 ? stats.witnessed / stats.tested : 0) * 15) +
-                      ((stats.witnessed > 0 ? stats.closed / stats.witnessed : 0) * 10) +
-                      ((stats.tested > 0 ? stats.reportReceived / stats.tested : 0) * 15) +
-                      ((stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0) * 15) +
+                      (Math.min(stats.tested / stats.totalTests, 1) * 25) +
+                      (Math.min(stats.tested > 0 ? stats.witnessed / stats.tested : 0, 1) * 15) +
+                      (Math.min(stats.closed / stats.totalTests, 1) * 10) +
+                      (Math.min(stats.tested > 0 ? stats.reportReceived / stats.tested : 0, 1) * 15) +
+                      (Math.min(stats.reportReceived > 0 ? stats.reviewed / stats.reportReceived : 0, 1) * 15) +
                       ((ganttItems.length > 0 ? ganttItems.filter(i => i.actualFinish && !i.isLate).length / Math.max(ganttItems.filter(i => i.actualFinish).length, 1) : 0) * 20)
                     ) : 0
                     return s
