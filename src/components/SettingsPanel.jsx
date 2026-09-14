@@ -405,7 +405,7 @@ export default function SettingsPanel() {
             testProgress[key] = {
               tested, witnessed, closed,
               completed: completedVal,
-              reportDate: reportReceivedDate,
+              reportReceivedDate: reportReceivedDate,
               reportOnProcore,
               reportReviewedDate,
               reviewed: reviewedVal,

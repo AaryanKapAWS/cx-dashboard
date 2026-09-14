@@ -242,18 +242,19 @@ export default function AnalyticsDashboard({ equipment = [] }) {
           if (p.tested && p.witnessed && p.closed) { closed++; sectionData[section].closed++; if (levelData[lvl]) levelData[lvl].done++ }
           // New progress fields — backwards-compatible: infer from closed if missing
           const isClosed = p.tested && p.witnessed && p.closed
-          if (p.completed || isClosed) completed++
-          if (p.reportReceivedDate || isClosed) {
+          if (p.completed === true || isClosed) completed++
+          if (p.reportReceivedDate || p.reportDate || isClosed) {
             reportReceived++
-            if (p.reportReceivedDate && sched && sched.actualFinish) {
+            const rptDateStr = p.reportReceivedDate || p.reportDate
+            if (rptDateStr && sched && sched.actualFinish) {
               const satDate = new Date(sched.actualFinish)
-              const rptDate = new Date(p.reportReceivedDate)
+              const rptDate = new Date(rptDateStr)
               if (!isNaN(satDate) && !isNaN(rptDate)) turnaroundDays.push(Math.round((rptDate - satDate) / 86400000))
             }
           }
-          if (p.reviewed || isClosed) reviewed++
+          if (p.reviewed === true || isClosed) reviewed++
           if (p.reportOnProcore) reportOnProcore++
-          if (p.outstandingObs) outstandingObs++
+          if (p.outstandingObs === true) outstandingObs++
         }
       })
     })
