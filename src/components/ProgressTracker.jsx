@@ -419,8 +419,8 @@ export default function ProgressTracker({ equipment }) {
               <circle cx={28} cy={28} r={23} fill="none"
                 stroke={stats.overallPct >= 60 ? '#22c55e' : stats.overallPct > 0 ? '#f59e0b' : '#ef4444'}
                 strokeWidth={6} strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 20}`}
-                strokeDashoffset={`${2 * Math.PI * 20 * (1 - stats.overallPct / 100)}`} />
+                strokeDasharray={`${2 * Math.PI * 23}`}
+                strokeDashoffset={`${2 * Math.PI * 23 * (1 - stats.overallPct / 100)}`} />
             </svg>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 11, fontWeight: 700, color: '#1f2937' }}>
@@ -428,10 +428,10 @@ export default function ProgressTracker({ equipment }) {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: 36, fontWeight: 700, color: stats.overallPct >= 60 ? '#059669' : stats.overallPct > 0 ? '#d97706' : '#dc2626' }}>
-              {stats.complete}/{stats.totalTests}
+            <div style={{ fontSize: 36, fontWeight: 700, color: stats.tested > 0 ? (stats.overallPct >= 60 ? '#059669' : '#d97706') : '#dc2626' }}>
+              {stats.tested}/{stats.totalTests}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginTop: 4 }}>Overall Complete</div>
+            <div style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, marginTop: 4 }}>SAT Completed</div>
           </div>
         </div>
       </div>
