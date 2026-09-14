@@ -336,7 +336,7 @@ export default function ProgressTracker({ equipment }) {
       const k = makeProgressKey(item, idx)
       const p = progress[k]
       if (p && p.completed === 'NA') { naCount++; return }
-      if (isFullyDone(p)) done++
+      if (p && p.tested) done++
     })
     return { done, total: tests.length - naCount }
   }, [progress])
@@ -350,7 +350,7 @@ export default function ProgressTracker({ equipment }) {
         const p = progress[k]
         if (p && p.completed === 'NA') return  // Skip N/A
         total++
-        if (isFullyDone(p)) done++
+        if (p && p.tested) done++
       })
     })
     return { done, total }
