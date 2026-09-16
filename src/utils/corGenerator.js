@@ -189,18 +189,18 @@ export async function generateCOR(equipmentData, projectName) {
   // Row 3: Logo + Title
   const logoRow1 = wsCover.addRow([])
   logoRow1.height = 33
-  logoRow1.getCell(5).value = 'Commissioning Outstanding Register (COR)'
-  logoRow1.getCell(5).font = { name: 'Times New Roman', bold: true, size: 16, color: { argb: C.navy.slice(2) } }
-  wsCover.mergeCells(logoRow1.number, 5, logoRow1.number, 9)
-  logoRow1.getCell(5).alignment = { horizontal: 'center', vertical: 'bottom' }
+  logoRow1.getCell(4).value = 'Commissioning Outstanding Register (COR)'
+  logoRow1.getCell(4).font = { name: 'Times New Roman', bold: true, size: 24, color: { argb: C.navy.slice(2) } }
+  wsCover.mergeCells(logoRow1.number, 4, logoRow1.number, 9)
+  logoRow1.getCell(4).alignment = { horizontal: 'center', vertical: 'bottom' }
 
   // Row 4: Logo continues + Subtitle
   const logoRow2 = wsCover.addRow([])
   logoRow2.height = 18
-  logoRow2.getCell(5).value = 'HV / MV Substation Commissioning'
-  logoRow2.getCell(5).font = { name: 'Times New Roman', size: 10, color: { argb: '999999' } }
-  wsCover.mergeCells(logoRow2.number, 5, logoRow2.number, 9)
-  logoRow2.getCell(5).alignment = { horizontal: 'center', vertical: 'top' }
+  logoRow2.getCell(4).value = 'HV / MV Substation Commissioning'
+  logoRow2.getCell(4).font = { name: 'Times New Roman', size: 10, color: { argb: '999999' } }
+  wsCover.mergeCells(logoRow2.number, 4, logoRow2.number, 9)
+  logoRow2.getCell(4).alignment = { horizontal: 'center', vertical: 'top' }
 
   // Row 5: Bottom padding in header area
   const padBot = wsCover.addRow([])
@@ -208,10 +208,10 @@ export async function generateCOR(equipmentData, projectName) {
 
   // Embed AWS logo (left side, base64 encoded)
   try {
-    const logoB64 = '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'
+    const logoB64 = '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'
     const logoBytes = Uint8Array.from(atob(logoB64), c => c.charCodeAt(0))
     const logoId = wb.addImage({ buffer: logoBytes.buffer, extension: 'png' })
-    wsCover.addImage(logoId, 'C3:D4')
+    wsCover.addImage(logoId, 'C3:C4')
   } catch (e) { console.error('Logo embed failed:', e) }
 
   // Spacer before PROJECT DETAILS
@@ -527,6 +527,7 @@ export async function generateCOR(equipmentData, projectName) {
   })
 
   // Spacer
+
   wsProg.addRow([]).height = 8
 
   // ────────────────────────────────────────────────────────────────
@@ -593,6 +594,8 @@ export async function generateCOR(equipmentData, projectName) {
   oldestRow.getCell(3).font = { name: 'Times New Roman', size: 9, italic: true, color: { argb: '555555' } }
   oldestRow.getCell(5).font = { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FFC0392B' } }
   oldestRow.getCell(5).alignment = { horizontal: 'left', vertical: 'middle' }
+
+
   // Spacer
   wsProg.addRow([]).height = 8
 
@@ -649,7 +652,8 @@ export async function generateCOR(equipmentData, projectName) {
     }
   })
 
-// Spacer
+
+  // Spacer
   wsProg.addRow([]).height = 8
 
 
@@ -795,6 +799,26 @@ export async function generateCOR(equipmentData, projectName) {
         }
 
         
+        // #11a N/A blackout: when Completed = N/A, grey out cols H(8) through R(18) per-cell
+        if (completed === 'N/A') {
+          const NA_GREY = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD5D8DC' }, bgColor: { argb: 'FFD5D8DC' } }
+          const NA_FONT = { name: 'Times New Roman', size: 9, color: { argb: 'FFD5D8DC' } }
+          for (let c = 8; c <= 18; c++) {
+            row.getCell(c).fill = NA_GREY
+            row.getCell(c).font = NA_FONT
+          }
+        }
+        // #10 Drop-down validation per individual cell (not range-based to avoid ExcelJS merge bug)
+        const ynValidation = { type: 'list', allowBlank: true, formulae: ['"YES,NO,N/A"'] }
+        const ynCols = [10, 11, 12, 14, 16, 17, 18]  // J,K,L,N,P,Q,R
+        for (const vc of ynCols) {
+          row.getCell(vc).dataValidation = ynValidation
+        }
+        // Critical for Energisation (col C=3) gets YES/blank validation
+        if (level === 'L5') {
+          row.getCell(3).dataValidation = { type: 'list', allowBlank: true, formulae: ['"YES"'] }
+        }
+
         // Black borders on % Complete column only
         const BLACK_BORDER = { top: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } }
         row.getCell(20).border = BLACK_BORDER
@@ -888,6 +912,7 @@ sNo++
       }]
     })
 
+
 // Freeze panes
     ws.views = [{ state: 'frozen', xSplit: 5, ySplit: 3 }]
 
@@ -917,12 +942,16 @@ sNo++
     // Done = SAT Completed (J) OR Completed (L) = YES
     wsProg.getCell(row, 5).value = { formula: `COUNTIF(${sn}!${jRange},"YES")+COUNTIFS(${sn}!${lRange2},"YES",${sn}!${jRange},"<>YES")` }
     // In Progress = has any progress (% > 0) but SAT not yet done
-    wsProg.getCell(row, 6).value = { formula: `COUNTIF(${sn}!${tRange},">0")-COUNTIF(${sn}!${jRange},"YES")` }
+    wsProg.getCell(row, 6).value = { formula: `MAX(0,COUNTIF(${sn}!${tRange},">0")-COUNTIF(${sn}!${jRange},"YES"))` }
     // Pending = Total - Done - InProgress
     wsProg.getCell(row, 7).value = { formula: `D${row}-E${row}-F${row}` }
     // % Complete = weighted 60/15/15/10 aggregate formula
     wsProg.getCell(row, 8).value = { formula: `IF(D${row}=0,0,(E${row}/D${row})*0.6+(COUNTIF(${sn}!${nRange2},"YES")/D${row})*0.15+(COUNTIF(${sn}!${pRange2},"YES")/D${row})*0.15+(COUNTIF(${sn}!${rRange2},"YES")/D${row})*0.1)` }
     wsProg.getCell(row, 8).numFmt = '0.0%'
+    // Formula explanation note on first data row
+    if (i === 0) {
+      wsProg.getCell(row, 8).note = 'Weighted completion: (SAT Done/Total)×60% + (Report on Procore/Total)×15% + (Reviewed/Total)×15% + (Report Closed/Total)×10%.\n% Complete + % Pending always = 100%.'
+    }
 
     // L1-L5 counts (cols 9-13) — LIVE FORMULAS excluding N/A
     const lvNames = ['L1', 'L2', 'L3', 'L4', 'L5']
@@ -971,21 +1000,21 @@ sNo++
     wsProg.getCell(dsRow, 5).value = { formula: `COUNTIF(${sn}!${jRange},"YES")+COUNTIFS(${sn}!L${si.dataStart}:L${si.dataEnd},"YES",${sn}!${jRange},"<>YES")` }
     // SAT Pending (col 6)
     wsProg.getCell(dsRow, 6).value = { formula: `D${dsRow}-E${dsRow}` }
-    // Report Received (col 7) — date column, count non-blank
-    wsProg.getCell(dsRow, 7).value = { formula: `COUNTIF(${sn}!${nRange},"YES")` }
+    // Report Received (col 7) — count non-blank dates in Report Received Date column (M)
+    wsProg.getCell(dsRow, 7).value = { formula: `SUMPRODUCT((${sn}!${mRange}<>"")*1*(${sn}!${mRange}>40000)*1)` }
     // Report Pending (col 8)
     wsProg.getCell(dsRow, 8).value = { formula: `E${dsRow}-G${dsRow}` }
-    // Report Reviewed (col 9) — date column, count non-blank
-    wsProg.getCell(dsRow, 9).value = { formula: `COUNTIF(${sn}!${pRange},"YES")` }
+    // Report Reviewed (col 9) — count non-blank dates in Report Reviewed Date column (O)
+    wsProg.getCell(dsRow, 9).value = { formula: `SUMPRODUCT((${sn}!${oRange}<>"")*1*(${sn}!${oRange}>40000)*1)` }
     // Review Pending (col 10)
     wsProg.getCell(dsRow, 10).value = { formula: `G${dsRow}-I${dsRow}` }
     // Report Closed (col 11)
     wsProg.getCell(dsRow, 11).value = { formula: `COUNTIF(${sn}!${rRange},"YES")` }
     // % Completed (col 12)
-    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,(E${dsRow}/D${dsRow})*0.6+(G${dsRow}/D${dsRow})*0.15+(I${dsRow}/D${dsRow})*0.15+(K${dsRow}/D${dsRow})*0.1)` }
+    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,(E${dsRow}/D${dsRow})*0.6+(COUNTIF(${sn}!${nRange},"YES")/D${dsRow})*0.15+(COUNTIF(${sn}!${pRange},"YES")/D${dsRow})*0.15+(K${dsRow}/D${dsRow})*0.1)` }
     wsProg.getCell(dsRow, 12).numFmt = '0.0%'
-    // % Pending (col 13)
-    wsProg.getCell(dsRow, 13).value = { formula: `IF(D${dsRow}=0,0,F${dsRow}/D${dsRow})` }
+    // % Pending (col 13) = complement of % Completed (always sums to 100%)
+    wsProg.getCell(dsRow, 13).value = { formula: `IF(D${dsRow}=0,0,1-L${dsRow})` }
     wsProg.getCell(dsRow, 13).numFmt = '0.0%'
   }
 
@@ -995,9 +1024,10 @@ sNo++
     const refs = docStatusRows.map(r => `${colLetter}${r}`)
     wsProg.getCell(docOverallRowNum, c).value = { formula: refs.join('+') }
   }
-  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,(E${docOverallRowNum}/D${docOverallRowNum})*0.6+(G${docOverallRowNum}/D${docOverallRowNum})*0.15+(I${docOverallRowNum}/D${docOverallRowNum})*0.15+(K${docOverallRowNum}/D${docOverallRowNum})*0.1)` }
+  // % Completed OVERALL = weighted average of section % Completed values (same approach as Section 1)
+  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,SUMPRODUCT(D${docStatusRows[0]}:D${docStatusRows[docStatusRows.length-1]},L${docStatusRows[0]}:L${docStatusRows[docStatusRows.length-1]})/D${docOverallRowNum})` }
   wsProg.getCell(docOverallRowNum, 12).numFmt = '0.0%'
-  wsProg.getCell(docOverallRowNum, 13).value = { formula: `IF(D${docOverallRowNum}=0,0,F${docOverallRowNum}/D${docOverallRowNum})` }
+  wsProg.getCell(docOverallRowNum, 13).value = { formula: `IF(D${docOverallRowNum}=0,0,1-L${docOverallRowNum})` }
   wsProg.getCell(docOverallRowNum, 13).numFmt = '0.0%'
   // ─── Level Completion "Done" formulas ───
   // For each section row in Level Completion, count tests at each level that are 100% complete
@@ -1018,9 +1048,9 @@ sNo++
       wsProg.getCell(lvRow, totalCols[lv]).value = {
         formula: `COUNTIF(${sn}!${dRange},"${levels[lv]}*")-COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${lRangeNA},"N/A")-COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${lRangeNA},"NA")`
       }
-      // Done = SAT Completed at this level
+      // Done = SAT Completed OR Completed=YES at this level (consistent with Section 1)
       wsProg.getCell(lvRow, doneCols[lv]).value = {
-        formula: `COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${jRange},"YES")`
+        formula: `COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${jRange},"YES")+COUNTIFS(${sn}!${dRange},"${levels[lv]}*",${sn}!${lRangeNA},"YES",${sn}!${jRange},"<>YES")`
       }
     }
   }
@@ -1142,6 +1172,7 @@ sNo++
   }
 
 
+
   // ── Pre-compute run rate data for Contractor Deliverables (B3) ──
   const runRateData = []
   const sectionEntriesArr = Object.entries(sections)
@@ -1255,9 +1286,9 @@ sNo++
     cr.getCell(4).value = { formula: `COUNTIF(${sn}!${dRange3},"L*")-COUNTIF(${sn}!L${si.dataStart}:L${si.dataEnd},"N/A")-COUNTIF(${sn}!L${si.dataStart}:L${si.dataEnd},"NA")` }
     cr.getCell(5).value = { formula: `COUNTIF(${sn}!${jRange},"YES")+COUNTIFS(${sn}!L${si.dataStart}:L${si.dataEnd},"YES",${sn}!${jRange},"<>YES")` }
     cr.getCell(6).value = { formula: `D${cr.number}-E${cr.number}` }
-    cr.getCell(7).value = { formula: `COUNTA(${sn}!${mRange})` }
+    cr.getCell(7).value = { formula: `SUMPRODUCT((${sn}!${mRange}<>"")*1*(${sn}!${mRange}>40000)*1)` }
     cr.getCell(8).value = { formula: `D${cr.number}-G${cr.number}` }
-    cr.getCell(9).value = { formula: `COUNTIF(${sn}!${jRange},"YES")-COUNTA(${sn}!${mRange})` }
+    cr.getCell(9).value = { formula: `MAX(0,E${cr.number}-G${cr.number})` }
     cr.getCell(10).value = { formula: `IF(D${cr.number}=0,0,E${cr.number}/D${cr.number})` }
     cr.getCell(10).numFmt = '0.0%'
 
@@ -1268,6 +1299,7 @@ sNo++
     // Weekly Rate = SAT Done / weeks elapsed since earliest actual start
     cr.getCell(11).value = { formula: `IF(E${rn}=0,0,ROUND(E${rn}/MAX(1,INT((TODAY()-MIN(${sn}!${hRange}))/7)),1))` }
     cr.getCell(11).numFmt = '0.0'
+    if (i === 0) cr.getCell(11).note = 'Weekly Rate = SAT Done ÷ weeks elapsed since earliest Actual Start date.\nProjected Completion = Today + (SAT Pending ÷ Weekly Rate) × 7 days.\nDays +/- = Projected Completion − latest Planned Finish (positive = behind schedule).'
     // Projected Completion = today + (SAT Pending / Weekly Rate) * 7
     cr.getCell(12).value = { formula: `IF(OR(K${rn}=0,K${rn}=""),"-",TODAY()+INT((F${rn}/K${rn})*7))` }
     cr.getCell(12).numFmt = 'DD-MMM-YY'
@@ -1352,6 +1384,7 @@ sNo++
     }
   })
 
+
   // ────────────────────────────────────────────────────────────────
   // SECTION 6: CRITICAL FOR ENERGISATION (B2)
   // ────────────────────────────────────────────────────────────────
@@ -1415,6 +1448,75 @@ sNo++
   }
   wsProg.getCell(critOverall.number, 7).value = { formula: `IF(D${critOverall.number}=0,0,E${critOverall.number}/D${critOverall.number})` }
   wsProg.getCell(critOverall.number, 7).numFmt = '0.0%'
+
+  // ────────────────────────────────────────────────────────────────
+  // FORMULA KEY — visible reference for all Cx Programme metrics
+  // ────────────────────────────────────────────────────────────────
+  wsProg.addRow([]).height = 8
+  const fkHeader = wsProg.addRow(['', '', 'FORMULA KEY', '', '', '', '', '', '', '', '', '', ''])
+  fkHeader.height = 28
+  fkHeader.eachCell((cell, col) => {
+    if (col >= 2) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
+  })
+
+  const fkSubHdr = wsProg.addRow(['', '', 'Section', 'Metric', '', '', '', 'How It Is Calculated', '', '', '', '', ''])
+  fkSubHdr.height = 24
+  wsProg.mergeCells(fkSubHdr.number, 4, fkSubHdr.number, 7)
+  wsProg.mergeCells(fkSubHdr.number, 8, fkSubHdr.number, 13)
+  fkSubHdr.eachCell((cell, col) => {
+    if (col >= 2) {
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
+      cell.alignment = { horizontal: 'left', vertical: 'middle' }
+      cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
+    }
+  })
+
+  const FK_FONT = { name: 'Times New Roman', size: 9 }
+  const FK_FONT_B = { name: 'Times New Roman', size: 9, bold: true }
+  const FK_THIN = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
+  const FK_SHADE = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9F9F9' } }
+
+  const fkRows = [
+    ['Commissioning Progress', '% Complete', '(SAT Done ÷ Total) × 60%  +  (Report on Procore ÷ Total) × 15%  +  (Reviewed ÷ Total) × 15%  +  (Report Closed ÷ Total) × 10%'],
+    ['', 'Done', 'SAT Completed (J = YES)  or  Completed (L = YES)'],
+    ['', 'In Progress', 'Has any test progress (% > 0) but SAT not yet marked YES'],
+    ['', 'Pending', 'Total − Done − In Progress'],
+    ['', 'Total', 'Count of test rows (L* levels) minus N/A items'],
+    ['Comm. & Reporting Status', '% Completed', 'Same weighted formula as above: (SAT ÷ Total) × 60% + (Procore ÷ Total) × 15% + (Reviewed ÷ Total) × 15% + (Closed ÷ Total) × 10%'],
+    ['', '% Pending', '1 − % Completed  (always sums to 100%).  100% requires all 4 milestones complete for every test'],
+    ['', 'Report Pending', 'SAT Completed − Report Received  (tests done but report not yet in)'],
+    ['Level Completion', 'Done', 'SAT Completed (J = YES)  or  Completed (L = YES) at that level.  N/A excluded from totals'],
+    ['SAT Level Tracking', 'Completed', 'Completed column (L) = YES at that level'],
+    ['', 'Pending', 'Total at level − Completed − N/A'],
+    ['Contractor Deliverables', 'Weekly Rate', 'SAT Done ÷ weeks elapsed since the earliest Actual Start date for that section'],
+    ['', 'Projected Completion', 'Today  +  (SAT Pending ÷ Weekly Rate) × 7 days'],
+    ['', 'Days +/−', 'Projected Completion − latest Planned Finish.  Positive = behind schedule, negative = ahead'],
+    ['', 'Doc Delay', 'Max(0, SAT Done − Reports In).  Reports In counts only valid date entries (>40000)'],
+    ['', '% SAT', 'SAT Done ÷ Total'],
+    ['Critical for Energisation', 'Critical Done', 'Tests marked Critical (C = YES) where SAT is also YES'],
+    ['', 'Critical % Complete', 'Critical Done ÷ Total Critical'],
+    ['N/A Handling', 'All sections', 'N/A items excluded from Total denominators.  On data sheets, N/A rows are greyed out (cols H–R).  Cx Schedule shows "N/A" status when all tests for an equipment are N/A'],
+  ]
+
+  for (let fki = 0; fki < fkRows.length; fki++) {
+    const [sec, metric, formula] = fkRows[fki]
+    const fkr = wsProg.addRow(['', '', sec, metric, '', '', '', formula, '', '', '', '', ''])
+    wsProg.mergeCells(fkr.number, 4, fkr.number, 7)
+    wsProg.mergeCells(fkr.number, 8, fkr.number, 13)
+    fkr.height = Math.max(sec ? 26 : 22, Math.ceil(formula.length / 80) * 16)
+    fkr.getCell(3).font = sec ? FK_FONT_B : FK_FONT
+    fkr.getCell(4).font = { name: 'Times New Roman', size: 9, bold: true, color: { argb: 'FF2C3E50' } }
+    fkr.getCell(8).font = FK_FONT
+    for (let c = 3; c <= 13; c++) {
+      fkr.getCell(c).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }
+      fkr.getCell(c).border = FK_THIN
+    }
+    // Shade section-start rows
+    if (sec) {
+      for (let c = 3; c <= 13; c++) fkr.getCell(c).fill = FK_SHADE
+    }
+  }
 
   // ── Border box around entire Cx Programme content ──
   const progLastRow = wsProg.lastRow.number
@@ -1533,8 +1635,14 @@ sNo++
       // Duration formula (col L=12): Planned Finish - Planned Start
       r.getCell(12).value = { formula: `IFERROR(INT(I${r.number}-H${r.number})&"d","")` }
 
-      // Status formula (col O=15)
-      r.getCell(15).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
+      // Status formula (col O=15) — #8 N/A check: if ALL tests for this equipment are N/A, show "N/A"
+      if (schSn && schEr.startRow && schEr.endRow) {
+        const naCheck = `COUNTIF(${schSn}!L${schEr.startRow}:L${schEr.endRow},"N/A")+COUNTIF(${schSn}!L${schEr.startRow}:L${schEr.endRow},"NA")`
+        const totalCheck = `COUNTIF(${schSn}!D${schEr.startRow}:D${schEr.endRow},"L*")`
+        r.getCell(15).value = { formula: `IF(AND(${totalCheck}>0,${naCheck}>=${totalCheck}),"N/A",IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending"))))` }
+      } else {
+        r.getCell(15).value = { formula: `IF(AND(H${r.number}="",I${r.number}=""),"Pending",IF(I${r.number}<=TODAY(),"Complete",IF(H${r.number}<=TODAY(),"In Progress","Pending")))` }
+      }
       r.getCell(15).font = { name: 'Times New Roman', size: 10, italic: true }
 
       // Variance (col M=13): Actual Finish - Planned Finish
@@ -1561,6 +1669,7 @@ sNo++
   wsSched.addConditionalFormatting({ ref: `O6:O${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Complete"'], priority: 1, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' }, bgColor: { argb: 'FFC6EFCE' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF006100' } } } }] })
   wsSched.addConditionalFormatting({ ref: `O6:O${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"In Progress"'], priority: 2, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' }, bgColor: { argb: 'FFFFFFCC' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF9C6500' } } } }] })
   wsSched.addConditionalFormatting({ ref: `O6:O${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Pending"'], priority: 3, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' }, bgColor: { argb: 'FFFFC7CE' } }, font: { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF9C0006' } } } }] })
+  wsSched.addConditionalFormatting({ ref: `O6:O${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"N/A"'], priority: 0, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD5D8DC' } }, font: { name: 'Times New Roman', size: 10, italic: true, color: { argb: 'FF888888' } } } }] })
   // Variance conditional formatting (col M)
   wsSched.addConditionalFormatting({ ref: `M6:M${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'lessThanOrEqual', formulae: ['0'], priority: 4, style: { font: { name: 'Times New Roman', size: 9, color: { argb: 'FF27AE60' } } } }] })
   wsSched.addConditionalFormatting({ ref: `M6:M${schedLastRow}`, rules: [{ type: 'cellIs', operator: 'greaterThan', formulae: ['0'], priority: 5, style: { font: { name: 'Times New Roman', size: 9, color: { argb: 'FFC0392B' } } } }] })
@@ -1735,7 +1844,129 @@ sNo++
   wsDetail.views = [{ showGridLines: false, state: 'frozen', ySplit: detHdr.number, topLeftCell: `B${detHdr.number + 1}` }]
   wsDetail.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
   // ═══════════════════════════════════════════════════════════════════
-  
+
+
+  // ═══════════════════════════════════════════════════════════════════
+  // #9 SAT vs REPORT TRACKING — new sheet
+  // Tracks SAT completion date vs report received date, flags gap and overdue days
+  // ═══════════════════════════════════════════════════════════════════
+  const wsTrack = wb.addWorksheet('SAT Report Tracking', { properties: { tabColor: { argb: 'FFE67E22' } } })
+
+  // Column widths
+  wsTrack.getColumn(1).width = 2       // gutter
+  wsTrack.getColumn(2).width = 2.43    // indent
+  wsTrack.getColumn(3).width = 22      // Section
+  wsTrack.getColumn(4).width = 28      // Equipment
+  wsTrack.getColumn(5).width = 22      // Test
+  wsTrack.getColumn(6).width = 14      // SAT Date
+  wsTrack.getColumn(7).width = 14      // Report Received
+  wsTrack.getColumn(8).width = 12      // Gap (days)
+  wsTrack.getColumn(9).width = 14      // Status
+  wsTrack.getColumn(10).width = 2.43   // right pad
+
+  wsTrack.addRow([]).height = 8
+  const trkTitle = wsTrack.addRow(['', '', `${projectName} — SAT vs Report Tracking`])
+  trkTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
+  wsTrack.mergeCells(trkTitle.number, 3, trkTitle.number, 9)
+  trkTitle.height = 22
+  wsTrack.addRow([]).height = 8
+
+  const trkHdr = wsTrack.addRow(['', '', 'Section', 'Equipment', 'Test', 'SAT Date', 'Report Received', 'Gap (Days)', 'Status'])
+  trkHdr.height = 26
+  trkHdr.eachCell((cell, col) => {
+    if (col >= 2 && col <= 9) {
+      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: '555555' } }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
+      cell.alignment = { horizontal: col <= 5 ? 'left' : 'center', vertical: 'middle', wrapText: true }
+      cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
+    }
+  })
+
+  // Iterate through all data sheets, find tests where SAT=YES and build tracking rows
+  let trkRowCount = 0
+  for (const [sectionName, items] of Object.entries(sections)) {
+    let sectionHasRows = false
+
+    for (const item of items) {
+      const tests = getTests(item)
+      for (const [level, testName] of tests) {
+        const progressKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${level}_${testName.replace(/\s/g, '_')}`
+        const prog = progressData[progressKey] || {}
+
+        // Only include rows where SAT is done
+        if (!prog.tested) continue
+
+        // Skip N/A
+        if (prog.completed === 'NA') continue
+
+        if (!sectionHasRows) {
+          // Section separator
+          const sep = wsTrack.addRow(['', '', sectionName])
+          sep.height = 24
+          sep.eachCell((cell, col) => {
+            if (col >= 2 && col <= 9) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
+          })
+          wsTrack.mergeCells(sep.number, 3, sep.number, 9)
+          sectionHasRows = true
+        }
+
+        const satDate = prog.satDate ? new Date(prog.satDate) : (prog.actualStart ? new Date(prog.actualStart) : '')
+        const reportDate = prog.reportReceivedDate ? new Date(prog.reportReceivedDate) : (prog.reportDate ? new Date(prog.reportDate) : '')
+        const equipName = item.displayName || item.name || item.type
+
+        const tr = wsTrack.addRow(['', '', sectionName, equipName, testName, satDate, reportDate, '', ''])
+        const trn = tr.number
+        trkRowCount++
+
+        // Gap formula: Report Date - SAT Date (blank if either missing)
+        tr.getCell(8).value = { formula: `IF(OR(F${trn}="",G${trn}=""),"",INT(G${trn}-F${trn}))` }
+
+        // Status formula: Received / Overdue / Awaiting
+        tr.getCell(9).value = { formula: `IF(G${trn}<>"","Received",IF(F${trn}<>"",IF(TODAY()-F${trn}>14,"Overdue","Awaiting"),""))` }
+
+        tr.height = 20
+        for (let c = 3; c <= 9; c++) {
+          const cell = tr.getCell(c)
+          cell.font = { name: 'Times New Roman', size: 10 }
+          cell.alignment = { horizontal: c <= 5 ? 'left' : 'center', vertical: 'middle' }
+          cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
+          if ([6, 7].includes(c)) cell.numFmt = 'DD-MMM-YY'
+        }
+
+        // Alternating shade
+        if (trkRowCount % 2 === 0) {
+          for (let c = 3; c <= 9; c++) {
+            tr.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.lightGrey } }
+          }
+        }
+      }
+    }
+  }
+
+  // Status CF for the tracking sheet
+  const trkLastRow = wsTrack.lastRow ? wsTrack.lastRow.number : trkHdr.number
+  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Received"'], priority: 1, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' } }, font: { name: 'Times New Roman', size: 10, color: { argb: 'FF006100' } } } }] })
+  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Overdue"'], priority: 2, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } }, font: { name: 'Times New Roman', size: 10, bold: true, color: { argb: 'FF9C0006' } } } }] })
+  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Awaiting"'], priority: 3, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' } }, font: { name: 'Times New Roman', size: 10, color: { argb: 'FF9C6500' } } } }] })
+  // Gap days > 14 = red font
+  wsTrack.addConditionalFormatting({ ref: `H${trkHdr.number + 1}:H${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'greaterThan', formulae: ['14'], priority: 1, style: { font: { name: 'Times New Roman', size: 10, bold: true, color: { argb: 'FFC0392B' } } } }] })
+
+  // Box border
+  for (let r = 2; r <= trkLastRow; r++) {
+    const row = wsTrack.getRow(r)
+    row.getCell(2).border = { ...row.getCell(2).border, left: PROG_BOX_BORDER }
+    row.getCell(9).border = { ...row.getCell(9).border, right: PROG_BOX_BORDER }
+  }
+  for (let c = 2; c <= 9; c++) {
+    const cellTop = wsTrack.getRow(2).getCell(c)
+    cellTop.border = { ...cellTop.border, top: PROG_BOX_BORDER }
+    const cellBot = wsTrack.getRow(trkLastRow).getCell(c)
+    cellBot.border = { ...cellBot.border, bottom: PROG_BOX_BORDER }
+  }
+
+  wsTrack.views = [{ showGridLines: false, state: 'frozen', ySplit: trkHdr.number, topLeftCell: `B${trkHdr.number + 1}` }]
+  wsTrack.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
+  // ═══════════════════════════════════════════════════════════════════
 
 
   // SHEET N: REVISION LOG
@@ -1836,7 +2067,8 @@ sNo++
   const milestoneDoneCols = [5, 7, 9, 11]  // E, G, I, K on Cx Programme OVERALL row
   for (let m = 0; m < 4; m++) {
     wsProg.getCell(satChartRow + m, 3).value = milestoneLabels[m]
-    wsProg.getCell(satChartRow + m, 4).value = { formula: `D${docOverallRowNum}` }
+    // Red bar = Remaining = Total - Completed (not Total itself)
+    wsProg.getCell(satChartRow + m, 4).value = { formula: `D${docOverallRowNum}-${wsProg.getColumn(milestoneDoneCols[m]).letter}${docOverallRowNum}` }
     wsProg.getCell(satChartRow + m, 5).value = { formula: `${wsProg.getColumn(milestoneDoneCols[m]).letter}${docOverallRowNum}` }
   }
 
@@ -1901,7 +2133,16 @@ const buffer = await wb.xlsx.writeBuffer()
     zip.file(s2r, s2v)
 
     var s2x = await zip.file('xl/worksheets/sheet2.xml').async('string')
-    if (s2x && !s2x.includes('drawing')) { s2x = s2x.replace('</worksheet>', '<drawing r:id="rId99"/></worksheet>'); zip.file('xl/worksheets/sheet2.xml', s2x) }
+    if (s2x && !s2x.includes('<drawing ')) {
+      // OOXML schema requires <drawing> BEFORE <legacyDrawing>. If cell notes exist,
+      // ExcelJS writes <legacyDrawing> near the end — insert <drawing> before it.
+      if (s2x.includes('<legacyDrawing')) {
+        s2x = s2x.replace('<legacyDrawing', '<drawing r:id="rId99"/><legacyDrawing')
+      } else {
+        s2x = s2x.replace('</worksheet>', '<drawing r:id="rId99"/></worksheet>')
+      }
+      zip.file('xl/worksheets/sheet2.xml', s2x)
+    }
 
     var ct = await zip.file('[Content_Types].xml').async('string')
     if (!ct.includes('chart1.xml')) { ct = ct.replace('</Types>', '<Override PartName="/xl/charts/chart1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/charts/chart2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/charts/chart3.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/><Override PartName="/xl/drawings/drawing2.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>') }
