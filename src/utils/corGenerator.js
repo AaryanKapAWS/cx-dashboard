@@ -1000,18 +1000,18 @@ sNo++
     wsProg.getCell(dsRow, 5).value = { formula: `COUNTIF(${sn}!${jRange},"YES")+COUNTIFS(${sn}!L${si.dataStart}:L${si.dataEnd},"YES",${sn}!${jRange},"<>YES")` }
     // SAT Pending (col 6)
     wsProg.getCell(dsRow, 6).value = { formula: `D${dsRow}-E${dsRow}` }
-    // Report Received (col 7) — count non-blank dates in Report Received Date column (M)
-    wsProg.getCell(dsRow, 7).value = { formula: `SUMPRODUCT((${sn}!${mRange}<>"")*1*(${sn}!${mRange}>40000)*1)` }
+    // Report Received (col 7) — count Report on Procore = YES (col N)
+    wsProg.getCell(dsRow, 7).value = { formula: `COUNTIF(${sn}!${nRange},"YES")` }
     // Report Pending (col 8)
-    wsProg.getCell(dsRow, 8).value = { formula: `E${dsRow}-G${dsRow}` }
-    // Report Reviewed (col 9) — count non-blank dates in Report Reviewed Date column (O)
-    wsProg.getCell(dsRow, 9).value = { formula: `SUMPRODUCT((${sn}!${oRange}<>"")*1*(${sn}!${oRange}>40000)*1)` }
+    wsProg.getCell(dsRow, 8).value = { formula: `MAX(0,E${dsRow}-G${dsRow})` }
+    // Report Reviewed (col 9) — count Reviewed = YES (col P)
+    wsProg.getCell(dsRow, 9).value = { formula: `COUNTIF(${sn}!${pRange},"YES")` }
     // Review Pending (col 10)
-    wsProg.getCell(dsRow, 10).value = { formula: `G${dsRow}-I${dsRow}` }
+    wsProg.getCell(dsRow, 10).value = { formula: `MAX(0,G${dsRow}-I${dsRow})` }
     // Report Closed (col 11)
     wsProg.getCell(dsRow, 11).value = { formula: `COUNTIF(${sn}!${rRange},"YES")` }
     // % Completed (col 12)
-    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,(E${dsRow}/D${dsRow})*0.6+(COUNTIF(${sn}!${nRange},"YES")/D${dsRow})*0.15+(COUNTIF(${sn}!${pRange},"YES")/D${dsRow})*0.15+(K${dsRow}/D${dsRow})*0.1)` }
+    wsProg.getCell(dsRow, 12).value = { formula: `IF(D${dsRow}=0,0,(E${dsRow}/D${dsRow})*0.6+(G${dsRow}/D${dsRow})*0.15+(I${dsRow}/D${dsRow})*0.15+(K${dsRow}/D${dsRow})*0.1)` }
     wsProg.getCell(dsRow, 12).numFmt = '0.0%'
     // % Pending (col 13) = complement of % Completed (always sums to 100%)
     wsProg.getCell(dsRow, 13).value = { formula: `IF(D${dsRow}=0,0,1-L${dsRow})` }
@@ -1024,8 +1024,7 @@ sNo++
     const refs = docStatusRows.map(r => `${colLetter}${r}`)
     wsProg.getCell(docOverallRowNum, c).value = { formula: refs.join('+') }
   }
-  // % Completed OVERALL = weighted average of section % Completed values (same approach as Section 1)
-  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,SUMPRODUCT(D${docStatusRows[0]}:D${docStatusRows[docStatusRows.length-1]},L${docStatusRows[0]}:L${docStatusRows[docStatusRows.length-1]})/D${docOverallRowNum})` }
+  wsProg.getCell(docOverallRowNum, 12).value = { formula: `IF(D${docOverallRowNum}=0,0,(E${docOverallRowNum}/D${docOverallRowNum})*0.6+(G${docOverallRowNum}/D${docOverallRowNum})*0.15+(I${docOverallRowNum}/D${docOverallRowNum})*0.15+(K${docOverallRowNum}/D${docOverallRowNum})*0.1)` }
   wsProg.getCell(docOverallRowNum, 12).numFmt = '0.0%'
   wsProg.getCell(docOverallRowNum, 13).value = { formula: `IF(D${docOverallRowNum}=0,0,1-L${docOverallRowNum})` }
   wsProg.getCell(docOverallRowNum, 13).numFmt = '0.0%'
