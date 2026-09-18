@@ -218,7 +218,7 @@ export default function ProgressTracker({ equipment }) {
     tests.forEach((_, idx) => {
       const p = progress[makeProgressKey(item, idx)]
       if (isNA(p)) { naCount++; return }
-      if (p && p.tested) done++
+      if (p && (p.tested || p.completed === true)) done++
     })
     return { done, total: tests.length - naCount }
   }, [progress])
@@ -231,7 +231,7 @@ export default function ProgressTracker({ equipment }) {
         const p = progress[makeProgressKey(item, idx)]
         if (isNA(p)) return
         total++
-        if (p && p.tested) done++
+        if (p && (p.tested || p.completed === true)) done++
       })
     })
     return { done, total }

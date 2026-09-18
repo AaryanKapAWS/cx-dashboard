@@ -4,6 +4,7 @@ import BayBuilder from './components/BayBuilder'
 import DocsReference from './components/DocsReference'
 import SLDViewer from './components/SLDViewer'
 import { generateCOR } from './utils/corGenerator'
+import { weightedScore, isNA } from './utils/progressMetrics'
 import { generateInspectionUpload } from './utils/inspectionUploadGenerator'
 import { generateAsanaCSV } from './utils/asanaExporter'
 import { buildAsanaProject } from './utils/asanaProjectBuilder'
@@ -95,8 +96,10 @@ export default function App() {
     const pd = JSON.parse(localStorage.getItem('test_progress') || '{}')
     const allKeys = Object.keys(pd)
     const relevantKeys = allKeys.filter(k => equipment.some(item => k.startsWith((item.feeder_ref || '').replace(/\s/g, '_'))))
-    const doneCount = relevantKeys.filter(k => { const p = pd[k]; return p && p.tested && p.witnessed && p.closed }).length
-    const progressPct = result.totalTests > 0 ? Math.round((doneCount / result.totalTests) * 100) : 0
+    // Weighted progress: average of per-test weighted scores (60% SAT + 15% Report + 15% Reviewed + 10% Closed), excluding N/A
+    const scorable = relevantKeys.filter(k => pd[k] && !isNA(pd[k]))
+    const totalWeighted = scorable.reduce((sum, k) => sum + weightedScore(pd[k]), 0)
+    const progressPct = scorable.length > 0 ? Math.round((totalWeighted / scorable.length) * 100) : 0
     history.unshift({ id: Date.now(), type: 'COR', timestamp: new Date().toISOString(), projectName: projectName || 'HV Substation', itemCount: equipment.length, testCount: result.totalTests, sections: result.sections, location: projectLocation || '-', region: projectRegion || 'EMEA', duration: `${duration}s`, progressPct, status: 'success' })
     localStorage.setItem('export_history', JSON.stringify(history.slice(0, 50)))
   }

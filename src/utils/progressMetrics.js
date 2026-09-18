@@ -68,7 +68,8 @@ export function isNA(p) {
 export function weightedScore(p) {
   if (!p) return 0
   let s = 0
-  if (p.tested) s += 0.6
+  // Done = SAT Completed OR Completed=YES (consistent with COR formula)
+  if (p.tested || p.completed === true) s += 0.6
   if (p.reportReceivedDate || p.reportDate) s += 0.15
   if (p.reviewed === true) s += 0.15
   if (p.closed) s += 0.1
@@ -161,7 +162,9 @@ export function computeStats(equipment, progress, schedule = {}) {
       if (levelData[lvl]) levelData[lvl].total++
 
       if (p) {
-        if (p.tested) { tested++; sectionData[section].tested++; if (levelData[lvl]) levelData[lvl].done++ }
+        // "Done" = SAT Completed OR Completed=YES (consistent with COR formula)
+        const isDone = p.tested || p.completed === true
+        if (isDone) { tested++; sectionData[section].tested++; if (levelData[lvl]) levelData[lvl].done++ }
         if (p.witnessed) witnessed++
         if (p.completed === true) completed++
         if (p.closed) { closed++; sectionData[section].closed++ }

@@ -445,7 +445,7 @@ export default function ScheduleTracker({ equipment }) {
                 <span style={{ fontSize: 10, color: '#6b7280' }}>
                   {filteredItems.length} items
                 </span>
-                <MiniProgressBar current={scheduledCount} total={items.length} colour={borderColour} />
+                <MiniProgressBar current={scheduledCount} total={items.length} colour={'#22c55e'} />
                 {earliest && latest && (
                   <span style={{ fontSize: 10, color: '#6b7280', whiteSpace: 'nowrap' }}>
                     {earliest} → {latest}

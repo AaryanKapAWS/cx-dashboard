@@ -309,22 +309,22 @@ export default function AnalyticsDashboard({ equipment = [] }) {
 
 
         {/* Row 1b: Documentation & Progress Metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 14 }}>
           {/* Report Turnaround */}
           <div style={{ ...card, padding: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>📋 Report Turnaround</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: stats.avgTurnaround != null ? (stats.avgTurnaround > 14 ? RED : stats.avgTurnaround > 7 ? AMBER : GREEN) : theme.muted }}>
-                  {stats.avgTurnaround != null ? `${stats.avgTurnaround}d` : '—'}
-                </div>
-                <div style={{ fontSize: 10, color: theme.muted }}>Avg SAT → Report</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 18, fontWeight: 800, color: stats.awaitingReports > 0 ? AMBER : GREEN }}>{stats.awaitingReports}</div>
-                <div style={{ fontSize: 10, color: theme.muted }}>Awaiting Reports</div>
-              </div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: stats.avgTurnaround != null ? (stats.avgTurnaround > 14 ? RED : stats.avgTurnaround > 7 ? AMBER : GREEN) : theme.muted }}>
+              {stats.avgTurnaround != null ? `${stats.avgTurnaround}d` : '—'}
             </div>
+            <div style={{ fontSize: 10, color: theme.muted }}>Avg SAT → Report</div>
+          </div>
+          {/* Awaiting Reports */}
+          <div style={{ ...card, padding: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, marginBottom: 6 }}>📨 Awaiting Reports</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: stats.awaitingReports > 0 ? AMBER : GREEN }}>
+              {stats.awaitingReports}
+            </div>
+            <div style={{ fontSize: 10, color: theme.muted }}>SAT done, report not yet received</div>
           </div>
           {/* Procore Upload Status */}
           <div style={{ ...card, padding: 14 }}>
@@ -389,7 +389,7 @@ export default function AnalyticsDashboard({ equipment = [] }) {
           <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
             {title('Schedule Summary')}
             {desc('Equipment by schedule status.')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
               {[
                 { label: 'On time', value: ganttItems.filter(i => i.actualFinish && !i.isLate).length, color: GREEN },
                 { label: 'Late', value: ganttItems.filter(i => i.isLate).length, color: RED },
@@ -513,20 +513,20 @@ export default function AnalyticsDashboard({ equipment = [] }) {
         </div>
 
         {/* Row 5: Variance + Pipeline + Health + Velocity */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
-          <div style={card}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14, marginBottom: 14, alignItems: 'stretch' }}>
+          <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
             {title('Schedule Variance')}
             {desc('Days ahead or behind plan. Red = late, green = early.')}
             <VarianceChart data={scheduleVariance} t={theme} />
           </div>
-          <div style={card}>
-            {title('Documentation Pipeline')}
-            {desc('Test documentation flow — SAT → Report → Review → Close.')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 180 }}>
+          <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
+            {title('Commissioning Milestones')}
+            {desc('Independent milestone counts across all tests.')}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
               {[
                 { label: 'SAT Completed', count: stats.tested, total: stats.totalTests, color: AMBER, icon: '🔧' },
-                { label: 'Reports Received', count: stats.reportReceived, total: stats.totalTests, color: BLUE, icon: '📄' },
-                { label: 'Reports Reviewed', count: stats.reviewed, total: stats.totalTests, color: PURPLE, icon: '✅' },
+                { label: 'Report on Procore', count: stats.reportOnProcore, total: stats.totalTests, color: BLUE, icon: '📄' },
+                { label: 'Reviewed', count: stats.reviewed, total: stats.totalTests, color: PURPLE, icon: '✅' },
                 { label: 'Fully Closed', count: stats.closed, total: stats.totalTests, color: GREEN, icon: '🔒' },
               ].map((stage, i) => {
                 const pct = stage.total > 0 ? Math.round((stage.count / stage.total) * 100) : 0
@@ -558,10 +558,10 @@ export default function AnalyticsDashboard({ equipment = [] }) {
               </div>
             </div>
           </div>
-          <div style={card}>
+          <div style={{ ...card, display: 'flex', flexDirection: 'column' }}>
             {title('Commissioning Health')}
             {desc('Overall project readiness indicators.')}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minHeight: 180 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1 }}>
               {(() => {
                 const cap = (v) => Math.min(Math.round(v), 100)
                 const completionPct = stats.totalTests > 0 ? cap((stats.tested / stats.totalTests) * 100) : 0
