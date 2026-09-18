@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function LandingPage({ onNavigate }) {
   const [stats, setStats] = useState(null);
-  const [memoOpen, setMemoOpen] = useState(false);
-
+  
   useEffect(() => {
     try {
       const data = JSON.parse(localStorage.getItem('bay_equipment') || '[]');
@@ -81,44 +80,58 @@ export default function LandingPage({ onNavigate }) {
           ))}
         </div>
 
+        {/* Video Walkthrough + Project Doc — side by side */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 1200, margin: '32px auto 0' }}>
+
+          {/* Left: Video */}
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '0 0 12px', textAlign: 'center' }}>🎬 Video Walkthrough</h3>
+            <div style={{
+              borderRadius: 12, overflow: 'hidden', border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)', background: '#000', height: 340
+            }}>
+              <video
+                controls
+                width="100%"
+                style={{ display: 'block', height: '100%', objectFit: 'contain' }}
+                src="https://github.com/AaryanKapAWS/cx-dashboard/releases/download/v1.0/Cx-Dashboard-VideoGuide.mp4"
+              />
+            </div>
+          </div>
+
+          {/* Right: Project Documentation */}
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1e293b', margin: '0 0 12px', textAlign: 'center' }}>📄 Project Documentation</h3>
+            <div style={{
+              borderRadius: 12, overflow: 'hidden', border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)', background: '#fff', height: 340
+            }}>
+              <iframe
+                src={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                title="Cx Dashboard Project Memo"
+              />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: 8 }}>
+              <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 12, color: '#64748b', textDecoration: 'underline' }}>
+                Open full PDF ↗
+              </a>
+            </div>
+          </div>
+
+        </div>
+
         {/* Quick Stats */}
         {stats && (
           <div style={{
-            marginTop: 32, textAlign: 'center', padding: '14px 24px',
-            background: '#e2e8f0', borderRadius: 8, maxWidth: 600, margin: '32px auto 0',
+            marginTop: 24, textAlign: 'center', padding: '14px 24px',
+            background: '#e2e8f0', borderRadius: 8, maxWidth: 600, margin: '24px auto 0',
             fontSize: 13, color: '#475569'
           }}>
             You have <strong>{stats.items}</strong> equipment items across <strong>{stats.sections}</strong> sections
           </div>
         )}
-
-        {/* Project Memo */}
-        <div style={{ marginTop: 32, textAlign: 'center' }}>
-          <div onClick={() => setMemoOpen(!memoOpen)} style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: '#94a3b8', transition: 'transform 0.2s', transform: memoOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}>▶</span>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', margin: 0 }}>📄 Project Documentation</h3>
-          </div>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>Read the full project memo — problem, solution, metrics, and FAQ.</p>
-          {memoOpen && (<>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
-            <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px', background: '#232F3E', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
-              Open Full PDF ↗
-            </a>
-          </div>
-          <div style={{ maxWidth: 800, margin: '0 auto', borderRadius: 10, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.3s' }}>
-            <iframe
-              src={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`}
-              style={{ width: '100%', height: 500, border: 'none' }}
-              title="Cx Dashboard Project Memo"
-            />
-          </div>
-          <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>
-            If the PDF doesn't load, <a href={`${import.meta.env.BASE_URL}cx_dashboard_memo.pdf`} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6' }}>click here to open it directly</a>.
-          </p>
-          </>)}
-        </div>
-
 
         {/* Footer CTA */}
         <div style={{ textAlign: 'center', marginTop: 48 }}>
