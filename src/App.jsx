@@ -21,7 +21,10 @@ export default function App() {
 
   // ── Equipment state ──
   const [equipment, setEquipment] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('bay_equipment')) || [] } catch { return [] }
+    try {
+      const raw = JSON.parse(localStorage.getItem('bay_equipment')) || []
+      return Array.isArray(raw) ? raw : Object.values(raw)
+    } catch { return [] }
   })
   const [selectedRow, setSelectedRow] = useState(null)
   const [uploadMode, setUploadMode] = useState('section') // 'section' or 'individual'

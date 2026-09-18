@@ -526,6 +526,7 @@ export default function ProgressTracker({ equipment }) {
                           <div style={{ width: 36, flexShrink: 0, textAlign: 'center', fontSize: 9, fontWeight: 'bold', color: '#3b82f6' }}>CxA</div>
                           <div style={{ width: 36, flexShrink: 0, textAlign: 'center', fontSize: 9, fontWeight: 'bold', color: '#7c3aed' }}>Done</div>
                           <div style={{ width: 36, flexShrink: 0, textAlign: 'center', fontSize: 9, fontWeight: 'bold', color: '#065f46' }}>Closed</div>
+                          <div style={{ width: 140, flexShrink: 0, textAlign: 'left', fontSize: 9, fontWeight: 600, color: '#9ca3af' }}>Comments</div>
                           <div style={{ width: 56, flexShrink: 0 }} />
                         </div>
 
@@ -608,6 +609,17 @@ export default function ProgressTracker({ equipment }) {
                                 <div style={{ width: 36, flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
                                   <Checkbox checked={p.closed} colour="#065f46"
                                     onChange={() => updateProgress(key, 'closed', !p.closed)} />
+                                </div>
+                                {/* Comments */}
+                                <div style={{ width: 140, flexShrink: 0 }}>
+                                  <input
+                                    type="text"
+                                    value={p.comments || ''}
+                                    onChange={e => updateProgress(key, 'comments', e.target.value)}
+                                    placeholder="..."
+                                    style={{ width: '100%', fontSize: 11, color: '#374151', border: '1px solid #e5e7eb',
+                                      borderRadius: 4, padding: '3px 6px', outline: 'none', background: '#fff' }}
+                                  />
                                 </div>
                                 {/* Quick actions */}
                                 <div style={{ width: 56, flexShrink: 0, display: 'flex', gap: 3, alignItems: 'center' }}>

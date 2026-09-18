@@ -158,6 +158,25 @@ export async function generateCOR(equipmentData, projectName) {
   const scheduleData = JSON.parse(localStorage.getItem('test_schedule') || '{}')
   const progressData = JSON.parse(localStorage.getItem('test_progress') || '{}')
 
+  // ─── UNIVERSAL EQUIPMENT-LEVEL N/A ────────────────────────────────
+  // If majority (>= half) of an equipment's tests are N/A, treat the
+  // ENTIRE equipment as N/A across ALL sections (data sheets, Cx Programme,
+  // Cx Schedule, Contractor Deliverables, SAT Report Tracking).
+  const equipNaSet = new Set()
+  for (const item of equipmentData) {
+    const tests = getTests(item)
+    if (tests.length === 0) continue
+    const eqKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+    let naCount = 0
+    for (let ti = 0; ti < tests.length; ti++) {
+      const pk = `${eqKey}_${ti}`
+      const pr = progressData[pk]
+      if (pr && (pr.completed === 'NA' || pr.completed === 'N/A')) naCount++
+    }
+    if (naCount > 0 && naCount >= tests.length / 2) equipNaSet.add(eqKey)
+  }
+  if (equipNaSet.size > 0) console.log('%c[COR] Equipment-level N/A:', 'color: orange', [...equipNaSet])
+
   // ═══════════════════════════════════════════════════════════════════
   // SHEET 1: COVER PAGE
   // ═══════════════════════════════════════════════════════════════════
@@ -659,11 +678,11 @@ export async function generateCOR(equipmentData, projectName) {
 
   // Track sheet ranges for formula references
   const sheetInfo = []
-  const equipRanges = [] // Track per-equipment row ranges for Detailed Breakdown formulas
+  const equipRanges = [] // Track per-equipment row ranges for Cx Schedule formulas
 
   // Pre-create tabs for correct tab order (content populated later after equipment data is available)
   const wsSched = wb.addWorksheet('Cx Schedule', { properties: { tabColor: { argb: 'FF3498DB' } } })
-  const wsDetail = wb.addWorksheet('Detailed Breakdown', { properties: { tabColor: { argb: 'FF2ECC71' } } })
+  const wsTrack = wb.addWorksheet('SAT Report Tracking', { properties: { tabColor: { argb: 'FFE67E22' } } })
 
   // ═══════════════════════════════════════════════════════════════════
   // SHEETS 4+: SECTION DATA SHEETS
@@ -725,17 +744,21 @@ export async function generateCOR(equipmentData, projectName) {
       }
       lastEquipName = equipName
 
+      const eqNaKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+      const isEquipNa = equipNaSet.has(eqNaKey)
+
       let testIdx = 0
       for (const [level, testName] of tests) {
         // Look up progress data for this test
         const progressKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${testIdx}`
         const prog = progressData[progressKey] || {}
-        const satCompleted = prog.tested ? 'YES' : ''
-        const cxaWitnessed = prog.witnessed ? 'YES' : ''
-        const reportClosed = prog.closed ? 'YES' : ''
-        const reportReceivedDate = prog.reportReceivedDate ? new Date(prog.reportReceivedDate) : (prog.reportDate ? new Date(prog.reportDate) : null)
-        const reportReviewedDate = prog.reportReviewedDate ? new Date(prog.reportReviewedDate) : null
-        const completed = prog.completed === true ? 'YES' : prog.completed === 'NA' ? 'N/A' : ''
+        // If equipment is universally N/A, force all test fields to N/A
+        const satCompleted = isEquipNa ? '' : (prog.tested ? 'YES' : '')
+        const cxaWitnessed = isEquipNa ? '' : (prog.witnessed ? 'YES' : '')
+        const reportClosed = isEquipNa ? '' : (prog.closed ? 'YES' : '')
+        const reportReceivedDate = isEquipNa ? null : (prog.reportReceivedDate ? new Date(prog.reportReceivedDate) : (prog.reportDate ? new Date(prog.reportDate) : null))
+        const reportReviewedDate = isEquipNa ? null : (prog.reportReviewedDate ? new Date(prog.reportReviewedDate) : null)
+        const completed = isEquipNa ? 'N/A' : (prog.completed === true ? 'YES' : prog.completed === 'NA' ? 'N/A' : '')
         const reportOnProcore = prog.reportOnProcore ? 'YES' : ''
         const reviewed = prog.reviewed === true ? 'YES' : prog.reviewed === 'NA' ? 'N/A' : ''
         const outstandingObs = prog.outstandingObs === true ? 'YES' : prog.outstandingObs === 'NA' ? 'N/A' : ''
@@ -746,10 +769,10 @@ export async function generateCOR(equipmentData, projectName) {
         // Look up schedule dates for this equipment
         const schedKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
         const sched = scheduleData[schedKey] || {}
-        const pStart = sched.plannedStart ? new Date(sched.plannedStart) : ''
-        const pFinish = sched.plannedFinish ? new Date(sched.plannedFinish) : ''
-        const aStart = sched.actualStart ? new Date(sched.actualStart) : ''
-        const aFinish = sched.actualFinish ? new Date(sched.actualFinish) : ''
+        const pStart = sched.plannedStart ? new Date(sched.plannedStart) : null
+        const pFinish = sched.plannedFinish ? new Date(sched.plannedFinish) : null
+        const aStart = sched.actualStart ? new Date(sched.actualStart) : null
+        const aFinish = sched.actualFinish ? new Date(sched.actualFinish) : null
 
         const isCritical = (level === 'L5' || prog.critical) ? 'YES' : ''
 
@@ -814,10 +837,8 @@ export async function generateCOR(equipmentData, projectName) {
         for (const vc of ynCols) {
           row.getCell(vc).dataValidation = ynValidation
         }
-        // Critical for Energisation (col C=3) gets YES/blank validation
-        if (level === 'L5') {
-          row.getCell(3).dataValidation = { type: 'list', allowBlank: true, formulae: ['"YES"'] }
-        }
+        // Critical for Energisation (col C=3) gets YES/NO dropdown on all rows
+        row.getCell(3).dataValidation = { type: 'list', allowBlank: true, formulae: ['"YES,NO"'] }
 
         // Black borders on % Complete column only
         const BLACK_BORDER = { top: { style: 'thin', color: { argb: 'FF000000' } }, bottom: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } } }
@@ -825,7 +846,7 @@ export async function generateCOR(equipmentData, projectName) {
 
 sNo++
       }
-      // Track equipment row range for Detailed Breakdown formulas
+      // Track equipment row range for Cx Schedule formulas
       const equipLastRow = ws.lastRow ? ws.lastRow.number : equipFirstRow
       const hasL5 = tests.some(([level]) => level === 'L5')
       equipRanges.push({ sheetName: truncate(sectionName), equipName, startRow: equipFirstRow, endRow: equipLastRow, hasL5, sectionName })
@@ -1189,14 +1210,23 @@ sNo++
 
     for (const rrItem of rrSecItems) {
       const rrTests = getTests(rrItem)
-      rrTotalTests += rrTests.length
+      // Count tests excluding N/A
+      for (let nai = 0; nai < rrTests.length; nai++) {
+        const naKey = `${(rrItem.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(rrItem.displayName || rrItem.name || rrItem.type).replace(/\s/g, '_')}_${nai}`
+        const naProg = progressData[naKey]
+        if (naProg && (naProg.completed === 'NA' || naProg.completed === 'N/A')) continue
+        rrTotalTests++
+      }
       const rrSchedKey = `${(rrItem.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(rrItem.displayName || rrItem.name || rrItem.type).replace(/\s/g, '_')}`
       const rrSched = scheduleData[rrSchedKey] || {}
 
-      for (let rrTIdx = 0; rrTIdx < rrTests.length; rrTIdx++) {
-        const rrProgKey = `${(rrItem.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(rrItem.displayName || rrItem.name || rrItem.type).replace(/\s/g, '_')}_${rrTIdx}`
-        const rrProg = progressData[rrProgKey] || {}
-        if (rrProg.tested) satDoneCount++
+      const rrEqKey = `${(rrItem.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(rrItem.displayName || rrItem.name || rrItem.type).replace(/\s/g, '_')}`
+      if (!equipNaSet.has(rrEqKey)) {
+        for (let rrTIdx = 0; rrTIdx < rrTests.length; rrTIdx++) {
+          const rrProgKey = `${rrEqKey}_${rrTIdx}`
+          const rrProg = progressData[rrProgKey] || {}
+          if (rrProg.tested || rrProg.completed === true) satDoneCount++
+        }
       }
 
       if (rrSched.actualStart) {
@@ -1291,19 +1321,19 @@ sNo++
     cr.getCell(10).value = { formula: `IF(D${cr.number}=0,0,E${cr.number}/D${cr.number})` }
     cr.getCell(10).numFmt = '0.0%'
 
-    // Weekly Rate, Projected Completion, Days +/- — ALL LIVE FORMULAS
+    // Weekly Rate, Projected Completion, Days +/- — LIVE FORMULAS
     const hRange = `H${si.dataStart}:H${si.dataEnd}`  // Actual Start dates
     const gRange = `G${si.dataStart}:G${si.dataEnd}`  // Planned Finish dates
     const rn = cr.number
-    // Weekly Rate = SAT Done / weeks elapsed since earliest actual start
-    cr.getCell(11).value = { formula: `IF(E${rn}=0,0,ROUND(E${rn}/MAX(1,INT((TODAY()-MIN(${sn}!${hRange}))/7)),1))` }
+    // Weekly Rate = SAT Done / weeks elapsed since earliest actual start (blank cells ignored by MIN)
+    cr.getCell(11).value = { formula: `IF(OR(E${rn}=0,COUNT(${sn}!${hRange})=0),0,ROUND(E${rn}/MAX(1,INT((TODAY()-MIN(${sn}!${hRange}))/7)),1))` }
     cr.getCell(11).numFmt = '0.0'
     if (i === 0) cr.getCell(11).note = 'Weekly Rate = SAT Done ÷ weeks elapsed since earliest Actual Start date.\nProjected Completion = Today + (SAT Pending ÷ Weekly Rate) × 7 days.\nDays +/- = Projected Completion − latest Planned Finish (positive = behind schedule).'
     // Projected Completion = today + (SAT Pending / Weekly Rate) * 7
     cr.getCell(12).value = { formula: `IF(OR(K${rn}=0,K${rn}=""),"-",TODAY()+INT((F${rn}/K${rn})*7))` }
     cr.getCell(12).numFmt = 'DD-MMM-YY'
     // Days +/- = Projected Completion - latest Planned Finish (positive = behind)
-    cr.getCell(13).value = { formula: `IF(OR(L${rn}="-",L${rn}=""),"-",INT(L${rn}-MAX(${sn}!${gRange})))` }
+    cr.getCell(13).value = { formula: `IF(OR(L${rn}="-",L${rn}="",COUNT(${sn}!${gRange})=0),"-",INT(L${rn}-MAX(${sn}!${gRange})))` }
     cr.getCell(13).numFmt = '0'
 
     cr.eachCell((cell, col) => {
@@ -1336,14 +1366,13 @@ sNo++
 
   // OVERALL rate columns — LIVE FORMULAS
   const orn = conOverallProg.number
-  // Overall Weekly Rate = Total SAT Done / MAX weeks elapsed across all sections
   const allMinParts = sheetInfo.map(si => {
     const sn2 = "'" + si.sheetName + "'"
-    return `MIN(${sn2}!H${si.dataStart}:H${si.dataEnd})`
+    return `IF(COUNT(${sn2}!H${si.dataStart}:H${si.dataEnd})=0,9999999,MIN(${sn2}!H${si.dataStart}:H${si.dataEnd}))`
   })
   const allMaxParts = sheetInfo.map(si => {
     const sn2 = "'" + si.sheetName + "'"
-    return `MAX(${sn2}!G${si.dataStart}:G${si.dataEnd})`
+    return `IF(COUNT(${sn2}!G${si.dataStart}:G${si.dataEnd})=0,0,MAX(${sn2}!G${si.dataStart}:G${si.dataEnd}))`
   })
   conOverallProg.getCell(11).value = { formula: `IF(E${orn}=0,0,ROUND(E${orn}/MAX(1,INT((TODAY()-MIN(${allMinParts.join(',')}))/7)),1))` }
   conOverallProg.getCell(11).numFmt = '0.0'
@@ -1598,37 +1627,48 @@ sNo++
 
     for (const item of items) {
       const tests = getTests(item)
+      // Count N/A tests to exclude from totals
+      let schedNaCount = 0
       const levels = { L3: 0, L4: 0, L5: 0 }
-      for (const [lv] of tests) { if (levels[lv] !== undefined) levels[lv]++ }
+      for (let ti = 0; ti < tests.length; ti++) {
+        const [lv] = tests[ti]
+        const pk = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${ti}`
+        const pr = progressData[pk]
+        if (pr && (pr.completed === 'NA' || pr.completed === 'N/A')) { schedNaCount++; continue }
+        if (levels[lv] !== undefined) levels[lv]++
+      }
+      const schedTestCount = tests.length - schedNaCount
+      // Skip equipment entirely if majority of tests are N/A (universal equipment-level N/A)
+      const schedEqKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+      if (schedTestCount === 0 || equipNaSet.has(schedEqKey)) { schedEquipIdx++; continue }
 
       const schedKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
       const sched = scheduleData[schedKey] || {}
 
-      const duration = Math.max(2, Math.ceil(tests.length / 3))
+      const duration = Math.max(2, Math.ceil(schedTestCount / 3))
       let itemStart, itemEnd
-      if (sched.plannedStart) { itemStart = new Date(sched.plannedStart) } else { itemStart = new Date(schedSectionStart) }
-      if (sched.plannedFinish) { itemEnd = new Date(sched.plannedFinish) } else { itemEnd = new Date(itemStart); itemEnd.setDate(itemEnd.getDate() + duration) }
+      if (sched.plannedStart) { itemStart = new Date(sched.plannedStart); itemStart.setHours(0,0,0,0) } else { itemStart = new Date(schedSectionStart) }
+      if (sched.plannedFinish) { itemEnd = new Date(sched.plannedFinish); itemEnd.setHours(0,0,0,0) } else { itemEnd = new Date(itemStart); itemEnd.setDate(itemEnd.getDate() + duration) }
       if (itemEnd > schedSecMaxEnd) schedSecMaxEnd = new Date(itemEnd)
 
       // Actual dates for schedule
-      const schAStart = sched.actualStart ? new Date(sched.actualStart) : ''
-      const schAFinish = sched.actualFinish ? new Date(sched.actualFinish) : ''
+      const schAStart = sched.actualStart ? new Date(sched.actualStart) : null
+      const schAFinish = sched.actualFinish ? new Date(sched.actualFinish) : null
       // Get matching data sheet row range for live formula
       const schEr = equipRanges[schedEquipIdx] || {}
       const schSn = schEr.sheetName ? (`'${schEr.sheetName}'`) : null
 
-      const r = wsSched.addRow(['', '', getEquipName(item), tests.length, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, schAStart, schAFinish, '', '', '', ''])
+      const r = wsSched.addRow(['', '', getEquipName(item), schedTestCount, levels.L3 || '', levels.L4 || '', levels.L5 || '', itemStart, itemEnd, schAStart, schAFinish, '', '', '', ''])
       r.height = 24
 
-      // eachCell FIRST — sets default styles and VISIBLE borders
-      r.eachCell((cell, col) => {
-        if (col >= 3 && col <= 15) {
-          cell.font = { name: 'Times New Roman', size: 10 }
-          cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
-          cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
-          if ([8, 9, 10, 11].includes(col)) cell.numFmt = 'DD-MMM-YY'
-        }
-      })
+      // Apply styles to ALL cells col 3-15 explicitly (eachCell skips null cells like empty Actual dates)
+      for (let col = 3; col <= 15; col++) {
+        const cell = r.getCell(col)
+        cell.font = { name: 'Times New Roman', size: 10 }
+        cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle' }
+        cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
+        if ([8, 9, 10, 11].includes(col)) cell.numFmt = 'DD-MMM-YY'
+      }
 
       // Individual cell overrides AFTER eachCell
       // Duration formula (col L=12): Planned Finish - Planned Start
@@ -1692,156 +1732,7 @@ sNo++
   // ═══════════════════════════════════════════════════════════════════
   // NEW TAB: DETAILED COMMISSIONING BREAKDOWN
   // ═══════════════════════════════════════════════════════════════════
-  // wsDetail already created above for tab ordering
-
-  // Column widths
-  wsDetail.getColumn(1).width = 2     // A: gutter
-  wsDetail.getColumn(2).width = 2.43  // B: indent
-  wsDetail.getColumn(3).width = 36    // C: Equipment
-  wsDetail.getColumn(4).width = 10    // D: Total
-  wsDetail.getColumn(5).width = 8     // E: L3
-  wsDetail.getColumn(6).width = 8     // F: L4
-  wsDetail.getColumn(7).width = 8     // G: L5
-  wsDetail.getColumn(8).width = 12    // H: SAT Done
-  wsDetail.getColumn(9).width = 10    // I: SAT %
-  wsDetail.getColumn(10).width = 12   // J: Reports In
-  wsDetail.getColumn(11).width = 10   // K: Reports %
-  wsDetail.getColumn(12).width = 10   // L: Closed
-  wsDetail.getColumn(13).width = 12   // M: Overall %
-  wsDetail.getColumn(14).width = 10   // N: Critical
-  wsDetail.getColumn(15).width = 14   // O: Status
-
-  wsDetail.addRow([]).height = 8
-  const detTitle = wsDetail.addRow(['', '', `${projectName} — Detailed Breakdown`])
-  detTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
-  wsDetail.mergeCells(detTitle.number, 3, detTitle.number, 15)
-  detTitle.height = 22
-  wsDetail.addRow([]).height = 8
-
-  // Header row
-  const detHdr = wsDetail.addRow(['', '', 'Equipment', 'Total', 'L3', 'L4', 'L5', 'SAT Done', 'SAT %', 'Reports In', 'Reports %', 'Closed', 'Overall %', 'Critical', 'Status'])
-  detHdr.height = 24
-  detHdr.eachCell((cell, col) => {
-    if (col >= 2) {
-      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: '555555' } }
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
-      cell.alignment = { horizontal: col === 3 ? 'left' : 'center', vertical: 'middle', wrapText: true }
-      cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
-    }
-  })
-
-  // Group equipRanges by section
-  const detSections = {}
-  for (const er of equipRanges) {
-    if (!detSections[er.sectionName]) detSections[er.sectionName] = []
-    detSections[er.sectionName].push(er)
-  }
-
-  for (const [sectionName, eqList] of Object.entries(detSections)) {
-    // Navy section separator
-    const sep = wsDetail.addRow(['', '', sectionName, '', '', '', '', '', '', '', '', '', '', '', ''])
-    sep.height = 24
-    sep.eachCell((cell, col) => {
-      if (col >= 2) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
-    })
-    wsDetail.mergeCells(sep.number, 3, sep.number, 15)
-
-    const sectionEquipRows = []
-
-    for (const eq of eqList) {
-      const sn = "'" + eq.sheetName + "'"
-      const dR = `D${eq.startRow}:D${eq.endRow}`   // Level column
-      const jR = `J${eq.startRow}:J${eq.endRow}`   // SAT Completed
-      const mR = `M${eq.startRow}:M${eq.endRow}`   // Report Received (date)
-      const oR = `O${eq.startRow}:O${eq.endRow}`   // Report Reviewed (date)
-      const rR = `R${eq.startRow}:R${eq.endRow}`   // Report Closed
-      const tR = `T${eq.startRow}:T${eq.endRow}`   // % Complete
-
-      const dr = wsDetail.addRow([
-        '', '', eq.equipName,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        eq.hasL5 ? 'YES' : '', ''
-      ])
-      const rn = dr.number
-      sectionEquipRows.push(rn)
-
-      // ALL LIVE FORMULAS referencing the data sheets
-      dr.getCell(4).value = { formula: `COUNTIF(${sn}!${dR},"L*")-COUNTIF(${sn}!L${eq.startRow}:L${eq.endRow},"N/A")-COUNTIF(${sn}!L${eq.startRow}:L${eq.endRow},"NA")` }  // Total (excl N/A)
-      dr.getCell(5).value = { formula: `COUNTIF(${sn}!${dR},"L3*")` }                       // L3
-      dr.getCell(6).value = { formula: `COUNTIF(${sn}!${dR},"L4*")` }                       // L4
-      dr.getCell(7).value = { formula: `COUNTIF(${sn}!${dR},"L5*")` }                       // L5
-      dr.getCell(8).value = { formula: `COUNTIF(${sn}!${jR},"YES")` }                       // SAT Done
-      dr.getCell(9).value = { formula: `IF(D${rn}=0,0,H${rn}/D${rn})` }                    // SAT %
-      dr.getCell(10).value = { formula: `COUNTA(${sn}!${mR})` }                             // Reports In
-      dr.getCell(11).value = { formula: `IF(D${rn}=0,0,J${rn}/D${rn})` }                   // Reports %
-      dr.getCell(12).value = { formula: `COUNTIF(${sn}!${rR},"YES")` }                      // Closed
-      dr.getCell(13).value = { formula: `IF(D${rn}=0,0,SUM(${sn}!${tR})/D${rn})` }        // Overall % (weighted avg)
-      dr.getCell(15).value = { formula: `IF(M${rn}>=1,"Complete",IF(H${rn}>0,"In Progress","Not Started"))` }  // Status
-
-      dr.height = 20
-
-      // Style all cells with explicit loop (not eachCell — handles null/formula cells)
-      for (let c = 3; c <= 15; c++) {
-        const cell = dr.getCell(c)
-        if (!cell.font) cell.font = { name: 'Times New Roman', size: 10 }
-        cell.alignment = { horizontal: c === 3 ? 'left' : 'center', vertical: 'middle' }
-        cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
-      }
-
-      // % formatting
-      dr.getCell(9).numFmt = '0%'
-      dr.getCell(11).numFmt = '0%'
-      dr.getCell(13).numFmt = '0%'
-
-      // Critical styling
-      if (eq.hasL5) dr.getCell(14).font = { name: 'Times New Roman', size: 10, bold: true, color: { argb: 'FFC0392B' } }
-    }
-
-    // Section summary row with SUM formulas
-    const sr = wsDetail.addRow(['', '', `${sectionName} Total`, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', ''])
-    const srn = sr.number
-    const sumCols = [4, 5, 6, 7, 8, 10, 12]  // D,E,F,G,H,J,L = summable columns
-    for (const sc of sumCols) {
-      const colL = wsDetail.getColumn(sc).letter
-      const refs = sectionEquipRows.map(r => `${colL}${r}`)
-      sr.getCell(sc).value = { formula: refs.join('+') }
-    }
-    sr.getCell(9).value = { formula: `IF(D${srn}=0,0,H${srn}/D${srn})` }    // SAT %
-    sr.getCell(9).numFmt = '0%'
-    sr.getCell(11).value = { formula: `IF(D${srn}=0,0,J${srn}/D${srn})` }   // Reports %
-    sr.getCell(11).numFmt = '0%'
-    sr.getCell(13).value = { formula: `IF(D${srn}=0,0,SUM(${sectionEquipRows.map(r => `M${r}`).join(',')})*D${srn}/(${sectionEquipRows.map(r => `D${r}`).join('+')})/D${srn})` }
-    sr.getCell(13).numFmt = '0%'
-    // Simpler overall %: average of equipment overall %s weighted by total
-    sr.getCell(13).value = { formula: `IF(D${srn}=0,0,(${sectionEquipRows.map(r => `M${r}*D${r}`).join('+')})/D${srn})` }
-    sr.getCell(15).value = { formula: `IF(M${srn}>=1,"Complete",IF(H${srn}>0,"In Progress","Not Started"))` }
-
-    sr.height = 22
-    for (let c = 3; c <= 15; c++) {
-      const cell = sr.getCell(c)
-      cell.font = { name: 'Times New Roman', bold: true, size: 10 }
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F3F4' } }
-      cell.alignment = { horizontal: c === 3 ? 'left' : 'center', vertical: 'middle' }
-      cell.border = { top: { style: 'thin', color: { argb: C.navy } }, bottom: { style: 'thin', color: { argb: C.navy } } }
-    }
-  }
-
-  // Box border
-  const detLastRow = wsDetail.lastRow.number
-  for (let r = 2; r <= detLastRow; r++) {
-    const row = wsDetail.getRow(r)
-    row.getCell(2).border = { ...row.getCell(2).border, left: PROG_BOX_BORDER }
-    row.getCell(15).border = { ...row.getCell(15).border, right: PROG_BOX_BORDER }
-  }
-  for (let c = 2; c <= 15; c++) {
-    const cellTop = wsDetail.getRow(2).getCell(c)
-    cellTop.border = { ...cellTop.border, top: PROG_BOX_BORDER }
-    const cellBot = wsDetail.getRow(detLastRow).getCell(c)
-    cellBot.border = { ...cellBot.border, bottom: PROG_BOX_BORDER }
-  }
-
-  wsDetail.views = [{ showGridLines: false, state: 'frozen', ySplit: detHdr.number, topLeftCell: `B${detHdr.number + 1}` }]
-  wsDetail.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
+  
   // ═══════════════════════════════════════════════════════════════════
 
 
@@ -1849,122 +1740,161 @@ sNo++
   // #9 SAT vs REPORT TRACKING — new sheet
   // Tracks SAT completion date vs report received date, flags gap and overdue days
   // ═══════════════════════════════════════════════════════════════════
-  const wsTrack = wb.addWorksheet('SAT Report Tracking', { properties: { tabColor: { argb: 'FFE67E22' } } })
+  // wsTrack already created above for tab ordering
 
-  // Column widths
-  wsTrack.getColumn(1).width = 2       // gutter
-  wsTrack.getColumn(2).width = 2.43    // indent
-  wsTrack.getColumn(3).width = 22      // Section
-  wsTrack.getColumn(4).width = 28      // Equipment
-  wsTrack.getColumn(5).width = 22      // Test
-  wsTrack.getColumn(6).width = 14      // SAT Date
-  wsTrack.getColumn(7).width = 14      // Report Received
-  wsTrack.getColumn(8).width = 12      // Gap (days)
-  wsTrack.getColumn(9).width = 14      // Status
-  wsTrack.getColumn(10).width = 2.43   // right pad
+  // ─── SAT REPORT TRACKING — sections side by side ───
+  const TRK_COLS = 6  // Equipment, Test, SAT Date, Report Received, Gap, Status
+  const TRK_GAP = 1   // spacer column between sections
+  const TRK_BLOCK = TRK_COLS + TRK_GAP  // 7 cols per section block
+  const TRK_START_COL = 2  // first data column (B)
 
+  // Collect all section data first
+  const trkSections = []
+  for (const [sectionName, items] of Object.entries(sections)) {
+    const rows = []
+    for (const item of items) {
+      const tests = getTests(item)
+      const trkEqKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}`
+      if (equipNaSet.has(trkEqKey)) continue  // Universal equipment-level N/A
+      const sched = scheduleData[trkEqKey] || {}
+      for (let trkIdx = 0; trkIdx < tests.length; trkIdx++) {
+        const [level, testName] = tests[trkIdx]
+        const progressKey = `${trkEqKey}_${trkIdx}`
+        const prog = progressData[progressKey] || {}
+        const isDone = prog.tested || prog.completed === true
+        if (!isDone) continue
+        if (prog.completed === 'NA') continue
+        const satDate = prog.satDate ? new Date(prog.satDate) : (sched.actualFinish ? new Date(sched.actualFinish) : (sched.actualStart ? new Date(sched.actualStart) : ''))
+        const reportDate = prog.reportReceivedDate ? new Date(prog.reportReceivedDate) : (prog.reportDate ? new Date(prog.reportDate) : '')
+        const equipName = item.displayName || item.name || item.type
+        rows.push({ equipName, testName, satDate, reportDate })
+      }
+    }
+    if (rows.length > 0) trkSections.push({ name: sectionName, rows })
+  }
+
+  const maxTrkRows = Math.max(...trkSections.map(s => s.rows.length), 0)
+
+  // Title row
   wsTrack.addRow([]).height = 8
-  const trkTitle = wsTrack.addRow(['', '', `${projectName} — SAT vs Report Tracking`])
-  trkTitle.getCell(3).font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
-  wsTrack.mergeCells(trkTitle.number, 3, trkTitle.number, 9)
+  const trkTitle = wsTrack.addRow([])
+  trkTitle.getCell(TRK_START_COL).value = `${projectName} — SAT vs Report Tracking`
+  trkTitle.getCell(TRK_START_COL).font = { name: 'Times New Roman', bold: true, size: 14, color: { argb: C.navy.slice(2) } }
+  const trkTitleEnd = TRK_START_COL + trkSections.length * TRK_BLOCK - 2
+  wsTrack.mergeCells(trkTitle.number, TRK_START_COL, trkTitle.number, Math.max(trkTitleEnd, TRK_START_COL + 6))
   trkTitle.height = 22
   wsTrack.addRow([]).height = 8
 
-  const trkHdr = wsTrack.addRow(['', '', 'Section', 'Equipment', 'Test', 'SAT Date', 'Report Received', 'Gap (Days)', 'Status'])
-  trkHdr.height = 26
-  trkHdr.eachCell((cell, col) => {
-    if (col >= 2 && col <= 9) {
-      cell.font = { name: 'Times New Roman', bold: true, size: 10, color: { argb: '555555' } }
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
-      cell.alignment = { horizontal: col <= 5 ? 'left' : 'center', vertical: 'middle', wrapText: true }
-      cell.border = { bottom: { style: 'thin', color: { argb: C.navy } } }
+  // Section name row (navy bar per block)
+  const trkSecRow = wsTrack.addRow([])
+  trkSecRow.height = 26
+  for (let si = 0; si < trkSections.length; si++) {
+    const col = TRK_START_COL + si * TRK_BLOCK
+    trkSecRow.getCell(col).value = trkSections[si].name
+    for (let c = col; c < col + TRK_COLS; c++) {
+      trkSecRow.getCell(c).fill = SECTION_BAR
+      trkSecRow.getCell(c).font = SECTION_FONT
+      trkSecRow.getCell(c).alignment = { vertical: 'middle' }
     }
-  })
+    wsTrack.mergeCells(trkSecRow.number, col, trkSecRow.number, col + TRK_COLS - 1)
+    trkSecRow.getCell(col).border = { ...trkSecRow.getCell(col).border, left: { style: 'medium', color: { argb: C.navy } } }
+    trkSecRow.getCell(col + TRK_COLS - 1).border = { ...trkSecRow.getCell(col + TRK_COLS - 1).border, right: { style: 'medium', color: { argb: C.navy } } }
+  }
 
-  // Iterate through all data sheets, find tests where SAT=YES and build tracking rows
-  let trkRowCount = 0
-  for (const [sectionName, items] of Object.entries(sections)) {
-    let sectionHasRows = false
+  // Header row (repeated per block)
+  const trkHdr = wsTrack.addRow([])
+  trkHdr.height = 24
+  const trkHdrLabels = ['Equipment', 'Test', 'SAT Date', 'Report Rcvd', 'Gap', 'Status']
+  for (let si = 0; si < trkSections.length; si++) {
+    const col = TRK_START_COL + si * TRK_BLOCK
+    for (let h = 0; h < trkHdrLabels.length; h++) {
+      const cell = trkHdr.getCell(col + h)
+      cell.value = trkHdrLabels[h]
+      cell.font = { name: 'Times New Roman', bold: true, size: 9, color: { argb: '555555' } }
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } }
+      cell.alignment = { horizontal: h <= 1 ? 'left' : 'center', vertical: 'middle', wrapText: true }
+      const isFirst = h === 0
+      const isLast = h === trkHdrLabels.length - 1
+      cell.border = { bottom: { style: 'thin', color: { argb: C.navy } }, ...(isFirst ? { left: { style: 'medium', color: { argb: C.navy } } } : {}), ...(isLast ? { right: { style: 'medium', color: { argb: C.navy } } } : {}) }
+    }
+  }
 
-    for (const item of items) {
-      const tests = getTests(item)
-      for (const [level, testName] of tests) {
-        const progressKey = `${(item.feeder_ref || 'unknown').replace(/\s/g, '_')}_${(item.displayName || item.name || item.type).replace(/\s/g, '_')}_${level}_${testName.replace(/\s/g, '_')}`
-        const prog = progressData[progressKey] || {}
+  // Set column widths for all blocks
+  for (let si = 0; si < trkSections.length; si++) {
+    const col = TRK_START_COL + si * TRK_BLOCK
+    wsTrack.getColumn(col).width = 26      // Equipment
+    wsTrack.getColumn(col + 1).width = 22  // Test
+    wsTrack.getColumn(col + 2).width = 13  // SAT Date
+    wsTrack.getColumn(col + 3).width = 13  // Report Received
+    wsTrack.getColumn(col + 4).width = 8   // Gap
+    wsTrack.getColumn(col + 5).width = 11  // Status
+    if (si < trkSections.length - 1) {
+      wsTrack.getColumn(col + 6).width = 2 // spacer
+    }
+  }
 
-        // Only include rows where SAT is done
-        if (!prog.tested) continue
+  // Data rows
+  for (let r = 0; r < maxTrkRows; r++) {
+    const dataRow = wsTrack.addRow([])
+    dataRow.height = 18
+    for (let si = 0; si < trkSections.length; si++) {
+      const col = TRK_START_COL + si * TRK_BLOCK
+      const sec = trkSections[si]
+      if (r >= sec.rows.length) continue
+      const d = sec.rows[r]
+      const rn = dataRow.number
 
-        // Skip N/A
-        if (prog.completed === 'NA') continue
+      dataRow.getCell(col).value = d.equipName
+      dataRow.getCell(col + 1).value = d.testName
+      dataRow.getCell(col + 2).value = d.satDate
+      dataRow.getCell(col + 3).value = d.reportDate
 
-        if (!sectionHasRows) {
-          // Section separator
-          const sep = wsTrack.addRow(['', '', sectionName])
-          sep.height = 24
-          sep.eachCell((cell, col) => {
-            if (col >= 2 && col <= 9) { cell.fill = SECTION_BAR; cell.font = SECTION_FONT; cell.alignment = { vertical: 'middle' } }
-          })
-          wsTrack.mergeCells(sep.number, 3, sep.number, 9)
-          sectionHasRows = true
-        }
+      // Gap formula
+      const satCol = wsTrack.getColumn(col + 2).letter
+      const rptCol = wsTrack.getColumn(col + 3).letter
+      const gapCol = wsTrack.getColumn(col + 4).letter
+      const statCol = wsTrack.getColumn(col + 5).letter
+      dataRow.getCell(col + 4).value = { formula: `IF(OR(${satCol}${rn}="",${rptCol}${rn}=""),"",INT(${rptCol}${rn}-${satCol}${rn}))` }
+      // Status formula
+      dataRow.getCell(col + 5).value = { formula: `IF(${rptCol}${rn}<>"","Received",IF(${satCol}${rn}<>"",IF(TODAY()-${satCol}${rn}>14,"Overdue","Awaiting"),""))` }
 
-        const satDate = prog.satDate ? new Date(prog.satDate) : (prog.actualStart ? new Date(prog.actualStart) : '')
-        const reportDate = prog.reportReceivedDate ? new Date(prog.reportReceivedDate) : (prog.reportDate ? new Date(prog.reportDate) : '')
-        const equipName = item.displayName || item.name || item.type
-
-        const tr = wsTrack.addRow(['', '', sectionName, equipName, testName, satDate, reportDate, '', ''])
-        const trn = tr.number
-        trkRowCount++
-
-        // Gap formula: Report Date - SAT Date (blank if either missing)
-        tr.getCell(8).value = { formula: `IF(OR(F${trn}="",G${trn}=""),"",INT(G${trn}-F${trn}))` }
-
-        // Status formula: Received / Overdue / Awaiting
-        tr.getCell(9).value = { formula: `IF(G${trn}<>"","Received",IF(F${trn}<>"",IF(TODAY()-F${trn}>14,"Overdue","Awaiting"),""))` }
-
-        tr.height = 20
-        for (let c = 3; c <= 9; c++) {
-          const cell = tr.getCell(c)
-          cell.font = { name: 'Times New Roman', size: 10 }
-          cell.alignment = { horizontal: c <= 5 ? 'left' : 'center', vertical: 'middle' }
-          cell.border = { bottom: { style: 'thin', color: { argb: 'FFDDDDDD' } } }
-          if ([6, 7].includes(c)) cell.numFmt = 'DD-MMM-YY'
-        }
-
-        // Alternating shade
-        if (trkRowCount % 2 === 0) {
-          for (let c = 3; c <= 9; c++) {
-            tr.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.lightGrey } }
-          }
+      // Styling
+      for (let c = col; c < col + TRK_COLS; c++) {
+        const cell = dataRow.getCell(c)
+        cell.font = { name: 'Times New Roman', size: 9 }
+        cell.alignment = { horizontal: (c - col) <= 1 ? 'left' : 'center', vertical: 'middle' }
+        const isFirstCol = (c - col) === 0
+        const isLastCol = (c - col) === TRK_COLS - 1
+        cell.border = { bottom: { style: 'thin', color: { argb: 'FFEEEEEE' } }, ...(isFirstCol ? { left: { style: 'medium', color: { argb: C.navy } } } : {}), ...(isLastCol ? { right: { style: 'medium', color: { argb: C.navy } } } : {}) }
+        if ((c - col) === 2 || (c - col) === 3) cell.numFmt = 'DD-MMM-YY'
+      }
+      // Alternating shade
+      if (r % 2 === 1) {
+        for (let c = col; c < col + TRK_COLS; c++) {
+          dataRow.getCell(c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: C.lightGrey } }
         }
       }
     }
   }
 
-  // Status CF for the tracking sheet
-  const trkLastRow = wsTrack.lastRow ? wsTrack.lastRow.number : trkHdr.number
-  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Received"'], priority: 1, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' } }, font: { name: 'Times New Roman', size: 10, color: { argb: 'FF006100' } } } }] })
-  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Overdue"'], priority: 2, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } }, font: { name: 'Times New Roman', size: 10, bold: true, color: { argb: 'FF9C0006' } } } }] })
-  wsTrack.addConditionalFormatting({ ref: `I${trkHdr.number + 1}:I${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Awaiting"'], priority: 3, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' } }, font: { name: 'Times New Roman', size: 10, color: { argb: 'FF9C6500' } } } }] })
-  // Gap days > 14 = red font
-  wsTrack.addConditionalFormatting({ ref: `H${trkHdr.number + 1}:H${trkLastRow}`, rules: [{ type: 'cellIs', operator: 'greaterThan', formulae: ['14'], priority: 1, style: { font: { name: 'Times New Roman', size: 10, bold: true, color: { argb: 'FFC0392B' } } } }] })
-
-  // Box border
-  for (let r = 2; r <= trkLastRow; r++) {
-    const row = wsTrack.getRow(r)
-    row.getCell(2).border = { ...row.getCell(2).border, left: PROG_BOX_BORDER }
-    row.getCell(9).border = { ...row.getCell(9).border, right: PROG_BOX_BORDER }
-  }
-  for (let c = 2; c <= 9; c++) {
-    const cellTop = wsTrack.getRow(2).getCell(c)
-    cellTop.border = { ...cellTop.border, top: PROG_BOX_BORDER }
-    const cellBot = wsTrack.getRow(trkLastRow).getCell(c)
-    cellBot.border = { ...cellBot.border, bottom: PROG_BOX_BORDER }
+  // Conditional formatting per block (Status + Gap)
+  const trkDataStart = trkHdr.number + 1
+  const trkDataEnd = trkHdr.number + maxTrkRows
+  for (let si = 0; si < trkSections.length; si++) {
+    const col = TRK_START_COL + si * TRK_BLOCK
+    const statLetter = wsTrack.getColumn(col + 5).letter
+    const gapLetter = wsTrack.getColumn(col + 4).letter
+    const ref = `${statLetter}${trkDataStart}:${statLetter}${trkDataEnd}`
+    const gapRef = `${gapLetter}${trkDataStart}:${gapLetter}${trkDataEnd}`
+    wsTrack.addConditionalFormatting({ ref, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Received"'], priority: 1, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC6EFCE' } }, font: { name: 'Times New Roman', size: 9, color: { argb: 'FF006100' } } } }] })
+    wsTrack.addConditionalFormatting({ ref, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Overdue"'], priority: 2, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } }, font: { name: 'Times New Roman', size: 9, bold: true, color: { argb: 'FF9C0006' } } } }] })
+    wsTrack.addConditionalFormatting({ ref, rules: [{ type: 'cellIs', operator: 'equal', formulae: ['"Awaiting"'], priority: 3, style: { fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFCC' } }, font: { name: 'Times New Roman', size: 9, color: { argb: 'FF9C6500' } } } }] })
+    wsTrack.addConditionalFormatting({ ref: gapRef, rules: [{ type: 'cellIs', operator: 'greaterThan', formulae: ['14'], priority: 1, style: { font: { name: 'Times New Roman', size: 9, bold: true, color: { argb: 'FFC0392B' } } } }] })
   }
 
-  wsTrack.views = [{ showGridLines: false, state: 'frozen', ySplit: trkHdr.number, topLeftCell: `B${trkHdr.number + 1}` }]
+  wsTrack.views = [{ showGridLines: false, state: 'frozen', xSplit: 1, ySplit: trkHdr.number, topLeftCell: `B${trkHdr.number + 1}` }]
   wsTrack.pageSetup = { orientation: 'landscape', fitToPage: true, fitToWidth: 1 }
+
   // ═══════════════════════════════════════════════════════════════════
 
 

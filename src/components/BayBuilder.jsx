@@ -181,10 +181,20 @@ const TYPE_COLOURS = {
 const DEFAULT_COLOUR = { bg: '#F5F5F5', text: '#424242', border: '#E0E0E0' }
 
 function getTypeColour(type) { return TYPE_COLOURS[type] || DEFAULT_COLOUR }
-function getTestCount(type) {
+function getTestCount(type, item) {
   const custom = getCustomTemplates()
   const ct = custom.find(t => t.id === type)
   if (ct) return ct.tests.length
+  if (item && item.customTests) return item.customTests.filter(t => t.enabled !== false).length
+  // Fallback: look up full equipment from bay_equipment by id
+  if (item && item.id) {
+    try {
+      const allEquip = JSON.parse(localStorage.getItem('bay_equipment') || '[]')
+      const arr = Array.isArray(allEquip) ? allEquip : Object.values(allEquip)
+      const full = arr.find(e => e.id === item.id)
+      if (full && full.customTests) return full.customTests.filter(t => t.enabled !== false).length
+    } catch {}
+  }
   return TEST_TEMPLATES[type]?.length || 0
 }
 function getLabel(type) {
@@ -639,7 +649,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
   const activeLabel = activeFeeder ? activeFeeder.name : activeLine?.name
   const allLines = flattenLines(lines)
   const totalItems = allLines.reduce((s, l) => s + (l.equipment || []).reduce((ss, e) => ss + (e.qty || 1), 0) + (l.feeders || []).reduce((ss, f) => ss + f.equipment.reduce((sss, e) => sss + (e.qty || 1), 0), 0), 0)
-  const totalTests = allLines.reduce((s, l) => s + (l.equipment || []).reduce((ss, e) => ss + getTestCount(e.type) * (e.qty || 1), 0) + (l.feeders || []).reduce((ss, f) => ss + f.equipment.reduce((sss, e) => sss + getTestCount(e.type) * (e.qty || 1), 0), 0), 0)
+  const totalTests = allLines.reduce((s, l) => s + (l.equipment || []).reduce((ss, e) => ss + getTestCount(e.type, e) * (e.qty || 1), 0) + (l.feeders || []).reduce((ss, f) => ss + f.equipment.reduce((sss, e) => sss + getTestCount(e.type, e) * (e.qty || 1), 0), 0), 0)
 
 
   // ── RECURSIVE TREE RENDERER ──
@@ -914,7 +924,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                   </>
                 )}
               </div>
-              <span style={{ fontSize: 10, color: '#64748b' }}>{activeEquipment.length} items · {activeEquipment.reduce((s, e) => s + getTestCount(e.type) * (e.qty || 1), 0)} tests</span>
+              <span style={{ fontSize: 10, color: '#64748b' }}>{activeEquipment.length} items · {activeEquipment.reduce((s, e) => s + getTestCount(e.type, e) * (e.qty || 1), 0)} tests</span>
               {activeFeeder && (
                 <>
                   <button onClick={() => moveFeeder(activeLine.id, activeFeeder.id, -1)} style={moveBtn}>▲</button>
@@ -1017,7 +1027,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                         <div key={eq.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 3, borderRadius: 4, border: '1px solid #f1f5f9' }}>
                           <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 3, background: tc.bg, color: tc.text, border: `1px solid ${tc.border}` }}>{getLabel(eq.type)}</span>
                           <span style={{ flex: 1, fontSize: 11, color: '#475569' }}>{eq.name || getLabel(eq.type)}</span>
-                          <span style={{ fontSize: 9, color: '#94a3b8' }}>{getTestCount(eq.type)} tests</span>
+                          <span style={{ fontSize: 9, color: '#94a3b8' }}>{getTestCount(eq.type, eq)} tests</span>
                           <button onClick={() => removeEquipment(activeLine.id, null, eq.id)}
                             style={{ fontSize: 11, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px' }}
                             onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
@@ -1118,7 +1128,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                           </div>
                         )}
                         {/* Test count */}
-                        <span style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap' }}>{getTestCount(eq.type)} tests</span>
+                        <span style={{ fontSize: 10, color: '#94a3b8', whiteSpace: 'nowrap' }}>{getTestCount(eq.type, eq)} tests</span>
                         {/* Qty */}
                         <span style={{ fontSize: 10, color: '#64748b', fontWeight: 500 }}>Qty</span>
                         <input type="number" min="1" max="20" value={qty}
@@ -1193,7 +1203,7 @@ export default function BayBuilder({ onSubmit, onSectionChange, onFeederChange }
                         >
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: tc.text, flexShrink: 0 }} />
                           <span style={{ flex: 1 }}>{item.label}</span>
-                          <span style={{ fontSize: 10, color: '#b0b0b0' }}>{getTestCount(item.type)}</span>
+                          <span style={{ fontSize: 10, color: '#b0b0b0' }}>{getTestCount(item.type, item)}</span>
                         </button>
                       )
                     })}
