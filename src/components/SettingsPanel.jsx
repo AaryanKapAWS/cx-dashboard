@@ -735,15 +735,15 @@ export default function SettingsPanel() {
 
         {/* COR Import Instructions */}
         <div style={{ marginTop: 14, padding: '12px 16px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-          <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 13, color: '#1e293b' }}>{'📖'} How to import your existing COR files</div>
-          <div>If you have COR Excel files from your project, you can convert them into the dashboard format using Amazon Quick:</div>
+          <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 13, color: '#1e293b' }}>{'📖'} Import an existing project</div>
+          <div>Have existing CORs, commissioning programmes, or other project documents? Amazon Quick can convert them into a dashboard project:</div>
           <ol style={{ margin: '8px 0 0 0', paddingLeft: 20 }}>
             <li><strong>Download the template</strong> above ({'📋'} Download Template)</li>
-            <li><strong>Open Amazon Quick</strong> and attach both the template + your COR Excel file(s)</li>
-            <li>Say: <em>"Parse my COR files using this template and give me the JSON"</em></li>
-            <li><strong>Upload the JSON</strong> that Quick gives you using {'📁'} Import JSON, then click Load</li>
+            <li><strong>Open Amazon Quick</strong> and attach the template + your project files (CORs, commissioning programmes, test sheets, etc.)</li>
+            <li>Say: <em>"Parse my project files using this template and give me the JSON"</em></li>
+            <li><strong>Upload the JSON</strong> Quick gives you using {'📁'} Import JSON, then click Load</li>
           </ol>
-          <div style={{ marginTop: 6, color: '#94a3b8', fontSize: 11 }}>The template contains full field descriptions and column mappings for standard COR formats.</div>
+          <div style={{ marginTop: 6, color: '#94a3b8', fontSize: 11 }}>Works with any Excel-based project data — CORs, commissioning programmes, test scripts, equipment lists.</div>
         </div>
       </div>
 
