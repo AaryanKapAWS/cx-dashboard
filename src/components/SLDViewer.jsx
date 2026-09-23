@@ -1,923 +1,560 @@
 import { useState, useMemo } from 'react'
 import testTemplates from '../data/test_templates.json'
 
-// ============================================================
-// SLDViewer v6 — Dual-View SLD Component
-// Flow View (Option A) + Drawing View (Option C)
-// ============================================================
+// ════════════════════════════════════════════════════════════
+// SLDViewer v8 — Redesigned with category detection + grid layout
+// ════════════════════════════════════════════════════════════
 
-// --- Constants ---
 const LEVEL_COLORS = {
-  L1: '#7c3aed', L2: '#d97706', L3: '#059669', L4: '#2563eb', L5: '#db2777'
+  L1: '#a78bfa', L2: '#fbbf24', L3: '#34d399', L4: '#60a5fa', L5: '#f472b6'
+}
+const LEVEL_NAMES = { L1: 'FWT', L2: 'IVF', L3: 'SAT', L4: 'FPT', L5: 'SEZ' }
+
+// ── Theme definitions ──
+const THEMES = {
+  dark: {
+    id: 'dark', label: '🌑', bg: 'linear-gradient(180deg, #070b14 0%, #0c1220 100%)',
+    card: '#0d1320', cardBorder: '#1a2234', chip: '#111827', chipHover: '#131b2e',
+    chipBorder: '#1e293b', badge: '#1a2234',
+    text: '#e2e8f0', textSub: '#94a3b8', textMuted: '#475569',
+    headerBg: '#070b14', headerBorder: '#1e293b',
+    toggleBg: '#1e293b', toggleActiveBg: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+    panelBg: '#0d1320', panelBorder: '#1a2234', panelShadow: '-8px 0 30px rgba(0,0,0,0.5)',
+  },
+  midnight: {
+    id: 'midnight', label: '🌊', bg: 'linear-gradient(180deg, #0c1631 0%, #111d42 100%)',
+    card: '#132044', cardBorder: '#1e3060', chip: '#162248', chipHover: '#1a2a58',
+    chipBorder: '#1e3060', badge: '#1e3060',
+    text: '#e2e8f0', textSub: '#8babd8', textMuted: '#5678a8',
+    headerBg: '#0c1631', headerBorder: '#1e3060',
+    toggleBg: '#1e3060', toggleActiveBg: 'linear-gradient(135deg, #2563eb, #4f46e5)',
+    panelBg: '#0f1a38', panelBorder: '#1e3060', panelShadow: '-8px 0 30px rgba(0,0,20,0.5)',
+  },
+  light: {
+    id: 'light', label: '☀️', bg: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+    card: '#ffffff', cardBorder: '#e2e8f0', chip: '#f8fafc', chipHover: '#f1f5f9',
+    chipBorder: '#e2e8f0', badge: '#f1f5f9',
+    text: '#0f172a', textSub: '#334155', textMuted: '#94a3b8',
+    headerBg: '#f8fafc', headerBorder: '#e2e8f0',
+    toggleBg: '#e2e8f0', toggleActiveBg: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+    panelBg: '#ffffff', panelBorder: '#e2e8f0', panelShadow: '-8px 0 30px rgba(0,0,0,0.08)',
+  },
+  charcoal: {
+    id: 'charcoal', label: '🪨', bg: 'linear-gradient(180deg, #1a1a1a 0%, #222222 100%)',
+    card: '#2a2a2a', cardBorder: '#3a3a3a', chip: '#262626', chipHover: '#303030',
+    chipBorder: '#3a3a3a', badge: '#333333',
+    text: '#e5e5e5', textSub: '#a0a0a0', textMuted: '#666666',
+    headerBg: '#1a1a1a', headerBorder: '#333333',
+    toggleBg: '#333333', toggleActiveBg: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+    panelBg: '#222222', panelBorder: '#3a3a3a', panelShadow: '-8px 0 30px rgba(0,0,0,0.6)',
+  },
 }
 
-const LEVEL_NAMES = {
-  L1: 'FWT', L2: 'IVF', L3: 'SAT', L4: 'FPT', L5: 'SEZ'
-}
-
-const SECTION_COLORS = {
-  transformer_bay: '#f59e0b', line_bay: '#3b82f6', bus_section: '#6366f1',
-  switchgear: '#22c55e', hv_switchgear_gis: '#22c55e', protection: '#a855f7',
-  cables: '#64748b', battery_dc: '#f97316', earthing: '#14b8a6',
-  substation: '#6b7280', aux_transformer: '#f97316', panel_board: '#8b5cf6'
-}
-
-const EQUIPMENT_ORDER = [
-  'SURGE_ARRESTER', 'SA_GIS', 'EARTH_SWITCH', 'DS_ES_GIS', 'ES_GIS',
-  'CT_HV', 'CT', 'CT_GIS', 'CT_METER', 'NCT', 'RING_CT_GIS',
-  'VT_HV', 'VT', 'VT_GIS', 'CIRCUIT_BREAKER', 'CB_GIS', 'BUSBAR', 'GIS_BAY',
-  'TRANSFORMER', 'DRY_TRANSFORMER', 'NER_CT', 'NER',
-  'MK_OLTC_PANEL', 'PROTECTION_PANEL', 'RELAY',
-  'HV_CABLE', 'MV_CABLE', 'HV_CABLE_GIS', 'ENERGIZATION', 'ENERGIZATION_GIS'
+// ── Category detection from display name ──
+const CAT_RULES = [
+  [/^HIS PASS/i, 'gis', '⬡', '#22c55e'],
+  [/^CB\b/i, 'breaker', '⊠', '#ef4444'],
+  [/^DS\/ES|^Earth Switch/i, 'switch', '⟋', '#818cf8'],
+  [/^Ring CT/i, 'ct', '◎', '#3b82f6'],
+  [/^CT\b|^NCT\b/i, 'ct', '◎', '#3b82f6'],
+  [/^VT\b/i, 'vt', '◉', '#a855f7'],
+  [/^SA\b|Surge Arrester/i, 'arrester', '⚡', '#f59e0b'],
+  [/Cable/i, 'cable', '┄', '#64748b'],
+  [/^LCC|^Cubicle$/i, 'cubicle', '▣', '#94a3b8'],
+  [/^IED/i, 'protection', '◈', '#c084fc'],
+  [/^EPMS|^PQM|SCADA/i, 'metering', '◇', '#06b6d4'],
+  [/Energization/i, 'energization', '⚡', '#eab308'],
+  [/Stability|^Busbar(?! )/i, 'test', '△', '#f97316'],
+  [/^P\d|DCDB|PANEL|^P\d\d/i, 'panel', '▦', '#fb923c'],
+  [/UPS/i, 'ups', '▤', '#10b981'],
+  [/AST|SSVT/i, 'aux_tx', '⊚', '#f59e0b'],
+  [/Generator|^DG\b/i, 'generator', '⊛', '#ef4444'],
+  [/^LV-AST/i, 'aux_tx', '⊚', '#f59e0b'],
 ]
 
-const SWITCHGEAR_TYPES = ['switchgear', 'hv_switchgear_gis', 'panel_board']
-const AUX_TYPES = ['battery_dc', 'earthing', 'substation', 'protection']
-
-// --- Helper Functions ---
-function getTestsForType(type) {
-  return testTemplates[type] || []
-}
-
-function getTestLevels(type) {
-  const tests = getTestsForType(type)
-  const levels = [...new Set(tests.map(t => t[0]))]
-  levels.sort((a, b) => {
-    const numA = parseInt(a.replace('L', ''))
-    const numB = parseInt(b.replace('L', ''))
-    return numA - numB
-  })
-  return levels
-}
-
-function getEquipmentOrder(type) {
-  const idx = EQUIPMENT_ORDER.indexOf(type)
-  return idx === -1 ? 999 : idx
-}
-
-function getShortName(type) {
-  const map = {
-    SURGE_ARRESTER: 'SA', SA_GIS: 'SA', EARTH_SWITCH: 'ES',
-    DS_ES_GIS: 'ES', ES_GIS: 'ES', CT_HV: 'CT', CT: 'CT',
-    CT_GIS: 'CT', CT_METER: 'CT', NCT: 'NCT', RING_CT_GIS: 'CT',
-    VT_HV: 'VT', VT: 'VT', VT_GIS: 'VT',
-    CIRCUIT_BREAKER: 'CB', CB_GIS: 'CB', BUSBAR: 'Bus',
-    GIS_BAY: 'GIS', TRANSFORMER: 'Tx', DRY_TRANSFORMER: 'Tx',
-    NER_CT: 'NER CT', NER: 'NER', MK_OLTC_PANEL: 'OLTC',
-    PROTECTION_PANEL: 'Prot', RELAY: 'Relay',
-    HV_CABLE: 'Cable', MV_CABLE: 'Cable', HV_CABLE_GIS: 'Cable',
-    ENERGIZATION: 'Enrg', ENERGIZATION_GIS: 'Enrg'
+function detectCategory(name) {
+  for (const [re, cat, icon, color] of CAT_RULES) {
+    if (re.test(name)) return { cat, icon, color }
   }
-  return map[type] || type
+  return { cat: 'other', icon: '○', color: '#6b7280' }
 }
 
-// --- IEC Symbol SVGs ---
-function IECSymbol({ type, color = '#22c55e', size = 28 }) {
-  const vb = '0 0 40 40'
-  const sw = 2
-  const props = { xmlns: 'http://www.w3.org/2000/svg', viewBox: vb, width: size, height: size, fill: 'none', stroke: color, strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round' }
+// ── Category groups for ordering within sections ──
+const CAT_ORDER = ['gis','switch','breaker','ct','vt','arrester','cable','cubicle','protection','metering','test','energization','panel','ups','aux_tx','generator','other']
 
-  switch (type) {
-    case 'SURGE_ARRESTER':
-    case 'SA_GIS':
-      return (<svg {...props}><polyline points="15,8 25,12 15,16 25,20 15,24 25,28 15,32" /><line x1="20" y1="4" x2="20" y2="8" /><line x1="12" y1="34" x2="28" y2="34" /></svg>)
-    case 'EARTH_SWITCH':
-    case 'DS_ES_GIS':
-    case 'ES_GIS':
-      return (<svg {...props}><line x1="8" y1="20" x2="16" y2="20" /><line x1="24" y1="20" x2="32" y2="20" /><line x1="16" y1="20" x2="24" y2="10" /><circle cx="16" cy="20" r="2" fill={color} /></svg>)
-    case 'CT_HV':
-    case 'CT':
-    case 'CT_GIS':
-    case 'CT_METER':
-    case 'NCT':
-    case 'RING_CT_GIS':
-      return (<svg {...props}><circle cx="20" cy="20" r="10" /><circle cx="20" cy="20" r="3" fill={color} stroke="none" /><line x1="6" y1="20" x2="10" y2="20" /><line x1="30" y1="20" x2="34" y2="20" /></svg>)
-    case 'VT_HV':
-    case 'VT':
-    case 'VT_GIS':
-      return (<svg {...props}><circle cx="20" cy="15" r="8" /><circle cx="20" cy="26" r="7" /></svg>)
-    case 'CIRCUIT_BREAKER':
-    case 'CB_GIS':
-      return (<svg {...props}><rect x="12" y="12" width="16" height="16" rx="1" /><line x1="12" y1="12" x2="28" y2="28" /><line x1="28" y1="12" x2="12" y2="28" /><line x1="20" y1="4" x2="20" y2="12" /><line x1="20" y1="28" x2="20" y2="36" /></svg>)
-    case 'BUSBAR':
-    case 'GIS_BAY':
-      return (<svg {...props}><line x1="4" y1="20" x2="36" y2="20" strokeWidth="4" /><line x1="4" y1="16" x2="4" y2="24" /><line x1="36" y1="16" x2="36" y2="24" /></svg>)
-    case 'TRANSFORMER':
-    case 'DRY_TRANSFORMER':
-      return (<svg {...props}><circle cx="15" cy="20" r="9" /><circle cx="25" cy="20" r="9" /></svg>)
-    case 'NER_CT':
-      return (<svg {...props}><circle cx="20" cy="20" r="10" /><circle cx="20" cy="20" r="3" fill={color} stroke="none" /><line x1="20" y1="4" x2="20" y2="10" /><line x1="20" y1="30" x2="20" y2="36" /></svg>)
-    case 'NER':
-      return (<svg {...props}><polyline points="15,8 25,11 15,14 25,17 15,20 25,23 15,26" /><line x1="20" y1="4" x2="20" y2="8" /><line x1="20" y1="26" x2="20" y2="30" /><line x1="13" y1="32" x2="27" y2="32" strokeWidth="2.5" /><line x1="15" y1="35" x2="25" y2="35" strokeWidth="1.5" /><line x1="17" y1="38" x2="23" y2="38" strokeWidth="1" /></svg>)
-    case 'MK_OLTC_PANEL':
-      return (<svg {...props}><rect x="10" y="6" width="20" height="28" rx="2" /><line x1="14" y1="14" x2="26" y2="14" /><line x1="14" y1="20" x2="26" y2="20" /><circle cx="20" cy="28" r="2.5" /></svg>)
-    case 'PROTECTION_PANEL':
-    case 'RELAY':
-      return (<svg {...props}><rect x="9" y="5" width="22" height="30" rx="2" /><circle cx="20" cy="15" r="4" /><line x1="13" y1="24" x2="27" y2="24" /><line x1="13" y1="29" x2="27" y2="29" /></svg>)
-    case 'HV_CABLE':
-    case 'MV_CABLE':
-    case 'HV_CABLE_GIS':
-      return (<svg {...props}><line x1="6" y1="20" x2="34" y2="20" strokeDasharray="4 3" /><rect x="6" y="14" width="8" height="12" rx="2" /><rect x="26" y="14" width="8" height="12" rx="2" /></svg>)
-    case 'ENERGIZATION':
-    case 'ENERGIZATION_GIS':
-      return (<svg {...props}><circle cx="20" cy="20" r="12" strokeDasharray="4 3" /><polygon points="22,8 14,22 20,22 18,32 26,18 20,18" fill={color} stroke="none" /></svg>)
+// ── Test resolution: customTests first, then testTemplates fallback ──
+function getTests(item) {
+  if (item.customTests && item.customTests.length > 0) {
+    return item.customTests.filter(t => t.enabled !== false).map(t => [t.level, t.name, t.notes || ''])
+  }
+  return testTemplates[item.type] || []
+}
+
+function getTestCount(item) { return getTests(item).length }
+
+function getLevels(item) {
+  const tests = getTests(item)
+  return [...new Set(tests.map(t => t[0] || t.level))].sort((a, b) => parseInt(a.slice(1)) - parseInt(b.slice(1)))
+}
+
+// ── Short name: extract the key identifier from the full display name ──
+function getShortLabel(item) {
+  const n = item.displayName || item.name || item.type
+  // Take everything before first '(' if present, trim
+  const base = n.includes('(') ? n.slice(0, n.indexOf('(')).trim() : n
+  return base.length > 28 ? base.slice(0, 26) + '…' : base
+}
+
+// ── IEC Symbols (compact, for chips) ──
+function IECIcon({ category, color, size = 18 }) {
+  const p = { xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: size, height: size, fill: 'none', stroke: color, strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  switch (category) {
+    case 'gis':
+      return <svg {...p}><polygon points="12,3 21,8 21,16 12,21 3,16 3,8" /><circle cx="12" cy="12" r="3" fill={color} stroke="none" /></svg>
+    case 'breaker':
+      return <svg {...p}><rect x="6" y="6" width="12" height="12" rx="1" /><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
+    case 'switch':
+      return <svg {...p}><line x1="4" y1="14" x2="10" y2="14" /><line x1="14" y1="14" x2="20" y2="14" /><line x1="10" y1="14" x2="16" y2="6" /><circle cx="10" cy="14" r="1.5" fill={color} stroke="none" /></svg>
+    case 'ct':
+      return <svg {...p}><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" fill={color} stroke="none" /></svg>
+    case 'vt':
+      return <svg {...p}><circle cx="12" cy="9" r="5" /><circle cx="12" cy="17" r="4.5" /></svg>
+    case 'arrester':
+      return <svg {...p}><polyline points="9,5 15,8 9,11 15,14 9,17 15,20" /><line x1="7" y1="22" x2="17" y2="22" /></svg>
+    case 'cable':
+      return <svg {...p}><line x1="4" y1="12" x2="20" y2="12" strokeDasharray="3 2" /><rect x="3" y="9" width="5" height="6" rx="1" /><rect x="16" y="9" width="5" height="6" rx="1" /></svg>
+    case 'cubicle':
+      return <svg {...p}><rect x="5" y="4" width="14" height="16" rx="2" /><line x1="8" y1="8" x2="16" y2="8" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+    case 'protection':
+      return <svg {...p}><rect x="5" y="3" width="14" height="18" rx="2" /><circle cx="12" cy="10" r="3" /><line x1="8" y1="16" x2="16" y2="16" /></svg>
+    case 'metering':
+      return <svg {...p}><rect x="5" y="5" width="14" height="14" rx="2" /><polyline points="8,14 11,10 14,13 17,8" /></svg>
+    case 'energization':
+      return <svg {...p}><polygon points="13,2 7,13 12,13 11,22 17,11 12,11" fill={color} stroke="none" /></svg>
+    case 'test':
+      return <svg {...p}><circle cx="12" cy="12" r="8" strokeDasharray="3 2" /><line x1="12" y1="8" x2="12" y2="13" /><circle cx="12" cy="16" r="0.5" fill={color} /></svg>
+    case 'panel':
+      return <svg {...p}><rect x="4" y="3" width="16" height="18" rx="1" /><line x1="7" y1="7" x2="17" y2="7" /><rect x="7" y="10" width="4" height="3" rx="0.5" /><rect x="13" y="10" width="4" height="3" rx="0.5" /></svg>
+    case 'ups':
+      return <svg {...p}><rect x="5" y="6" width="14" height="12" rx="2" /><line x1="9" y1="10" x2="9" y2="14" /><line x1="7" y1="12" x2="11" y2="12" /><line x1="14" y1="10" x2="16" y2="14" /><line x1="14" y1="14" x2="16" y2="10" /></svg>
+    case 'aux_tx':
+      return <svg {...p}><circle cx="12" cy="9" r="5" /><circle cx="12" cy="17" r="5" /></svg>
+    case 'generator':
+      return <svg {...p}><circle cx="12" cy="12" r="8" /><text x="12" y="15" textAnchor="middle" fontSize="9" fill={color} stroke="none" fontWeight="bold">G</text></svg>
     default:
-      return (<svg {...props}><circle cx="20" cy="20" r="12" /><text x="20" y="24" textAnchor="middle" fontSize="9" fill={color} stroke="none" fontFamily="monospace">{getShortName(type).slice(0, 3)}</text></svg>)
+      return <svg {...p}><circle cx="12" cy="12" r="8" /></svg>
   }
 }
 
-// --- Drawing View IEC Symbol (black, vertical orientation) ---
-function DrawingSymbol({ type, x, y }) {
-  const color = '#000'
-  const sw = 1.5
-
-  switch (type) {
-    case 'SURGE_ARRESTER':
-    case 'SA_GIS':
-      return (<g>
-        <polyline points={`${x-5},${y-12} ${x+5},${y-8} ${x-5},${y-4} ${x+5},${y} ${x-5},${y+4} ${x+5},${y+8}`} fill="none" stroke={color} strokeWidth={sw} />
-        <line x1={x} y1={y-16} x2={x} y2={y-12} stroke={color} strokeWidth={sw} />
-        <line x1={x-8} y1={y+10} x2={x+8} y2={y+10} stroke={color} strokeWidth={2} />
-      </g>)
-    case 'EARTH_SWITCH':
-    case 'DS_ES_GIS':
-    case 'ES_GIS':
-      return (<g>
-        <line x1={x-5} y1={y-8} x2={x+5} y2={y-8} stroke={color} strokeWidth={2} />
-        <line x1={x} y1={y-8} x2={x-6} y2={y+8} stroke={color} strokeWidth={2} />
-        <line x1={x-5} y1={y+8} x2={x+5} y2={y+8} stroke={color} strokeWidth={2} />
-      </g>)
-    case 'CT_HV':
-    case 'CT':
-    case 'CT_GIS':
-    case 'CT_METER':
-    case 'NCT':
-    case 'RING_CT_GIS':
-    case 'NER_CT':
-      return (<g>
-        <circle cx={x} cy={y} r="10" fill="#fff" stroke={color} strokeWidth={sw} />
-        <circle cx={x} cy={y} r="2" fill={color} />
-      </g>)
-    case 'VT_HV':
-    case 'VT':
-    case 'VT_GIS':
-      return (<g>
-        <circle cx={x} cy={y-4} r="8" fill="#fff" stroke={color} strokeWidth={sw} />
-        <circle cx={x} cy={y-4} r="2" fill={color} />
-        <line x1={x} y1={y+4} x2={x} y2={y+10} stroke={color} strokeWidth={sw} />
-        <line x1={x-6} y1={y+10} x2={x+6} y2={y+10} stroke={color} strokeWidth={sw} />
-        <line x1={x-4} y1={y+13} x2={x+4} y2={y+13} stroke={color} strokeWidth={1} />
-      </g>)
-    case 'CIRCUIT_BREAKER':
-    case 'CB_GIS':
-      return (<g>
-        <rect x={x-12} y={y-12} width="24" height="24" fill="#fff" stroke={color} strokeWidth={2} />
-        <line x1={x-12} y1={y-12} x2={x+12} y2={y+12} stroke={color} strokeWidth={sw} />
-        <line x1={x+12} y1={y-12} x2={x-12} y2={y+12} stroke={color} strokeWidth={sw} />
-      </g>)
-    case 'TRANSFORMER':
-    case 'DRY_TRANSFORMER':
-      return (<g>
-        <circle cx={x} cy={y-12} r="18" fill="#fff" stroke={color} strokeWidth={2} />
-        <circle cx={x} cy={y+18} r="18" fill="#fff" stroke={color} strokeWidth={2} />
-        <circle cx={x} cy={y-20} r="2.5" fill={color} />
-        <circle cx={x} cy={y+26} r="2.5" fill={color} />
-      </g>)
-    case 'NER':
-      return (<g>
-        <polyline points={`${x-5},${y-12} ${x+5},${y-8} ${x-5},${y-4} ${x+5},${y} ${x-5},${y+4} ${x+5},${y+8} ${x-5},${y+12}`} fill="none" stroke={color} strokeWidth={sw} />
-        <line x1={x} y1={y+12} x2={x} y2={y+18} stroke={color} strokeWidth={sw} />
-        <line x1={x-8} y1={y+18} x2={x+8} y2={y+18} stroke={color} strokeWidth={2} />
-        <line x1={x-5} y1={y+21} x2={x+5} y2={y+21} stroke={color} strokeWidth={1.5} />
-        <line x1={x-3} y1={y+24} x2={x+3} y2={y+24} stroke={color} strokeWidth={1} />
-      </g>)
-    case 'MK_OLTC_PANEL':
-    case 'PROTECTION_PANEL':
-    case 'RELAY':
-      return (<g>
-        <rect x={x-10} y={y-12} width="20" height="24" rx="2" fill="#fff" stroke={color} strokeWidth={sw} />
-        <text x={x} y={y+2} textAnchor="middle" fontSize="10" fontFamily="Consolas, monospace" fill={color}>R</text>
-      </g>)
-    case 'HV_CABLE':
-    case 'MV_CABLE':
-    case 'HV_CABLE_GIS':
-      return (<g>
-        <line x1={x} y1={y-12} x2={x} y2={y+12} stroke={color} strokeWidth={sw} strokeDasharray="4 3" />
-        <rect x={x-6} y={y-14} width="12" height="6" rx="1" fill="#fff" stroke={color} strokeWidth={sw} />
-        <rect x={x-6} y={y+8} width="12" height="6" rx="1" fill="#fff" stroke={color} strokeWidth={sw} />
-      </g>)
-    case 'ENERGIZATION':
-    case 'ENERGIZATION_GIS':
-      return (<g>
-        <circle cx={x} cy={y} r="12" fill="none" stroke={color} strokeWidth={sw} strokeDasharray="4 3" />
-        <polygon points={`${x+2},${y-8} ${x-4},${y+2} ${x},${y+2} ${x-2},${y+8} ${x+4},${y-2} ${x},${y-2}`} fill={color} />
-      </g>)
-    case 'BUSBAR':
-    case 'GIS_BAY':
-      return (<g>
-        <line x1={x-10} y1={y} x2={x+10} y2={y} stroke={color} strokeWidth={4} />
-      </g>)
-    default:
-      return (<g>
-        <circle cx={x} cy={y} r="10" fill="#fff" stroke={color} strokeWidth={sw} />
-        <text x={x} y={y+3} textAnchor="middle" fontSize="8" fontFamily="Consolas, monospace" fill={color}>{getShortName(type).slice(0, 3)}</text>
-      </g>)
-  }
-}
-
-// ============================================================
+// ════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// ============================================================
+// ════════════════════════════════════════════════════════════
 export default function SLDViewer({ equipment }) {
-  const [viewMode, setViewMode] = useState('flow') // 'flow' or 'drawing'
+  const [viewMode, setViewMode] = useState('flow')
   const [selectedEquipment, setSelectedEquipment] = useState(null)
+  const [collapsedSections, setCollapsedSections] = useState({})
+  const [themeId, setThemeId] = useState('light')
 
-  // --- Parse topology ---
+  const toggleSection = (name) => setCollapsedSections(p => ({ ...p, [name]: !p[name] }))
+  const theme = THEMES[themeId] || THEMES.dark
+
   const topology = useMemo(() => {
-    if (!equipment || equipment.length === 0) return { hvSections: [], swSections: [], auxSections: [] }
-
-    const sectionMap = {}
-
+    if (!equipment || equipment.length === 0) return { sections: [] }
+    const sMap = {}
     equipment.forEach(item => {
       const parts = (item.feeder_ref || '').split(' \u2014 ')
       const sectionName = parts[0] || item.section || 'Unknown'
-      const feederName = parts[1] || 'Overall'
-
-      if (!sectionMap[sectionName]) {
-        sectionMap[sectionName] = {
-          name: sectionName,
-          sectionType: item.section || 'unknown',
-          color: SECTION_COLORS[item.section] || '#6b7280',
-          feeders: {}
-        }
-      }
-      if (!sectionMap[sectionName].feeders[feederName]) {
-        sectionMap[sectionName].feeders[feederName] = []
-      }
-      sectionMap[sectionName].feeders[feederName].push(item)
+      if (!sMap[sectionName]) sMap[sectionName] = { name: sectionName, items: [] }
+      sMap[sectionName].items.push(item)
     })
-
-    // Sort items within each feeder by equipment order
-    Object.values(sectionMap).forEach(section => {
-      Object.keys(section.feeders).forEach(feeder => {
-        section.feeders[feeder].sort((a, b) => getEquipmentOrder(a.type) - getEquipmentOrder(b.type))
+    // Sort items by category order within each section
+    Object.values(sMap).forEach(s => {
+      s.items.sort((a, b) => {
+        const ca = detectCategory(a.displayName || a.name || '').cat
+        const cb = detectCategory(b.displayName || b.name || '').cat
+        return CAT_ORDER.indexOf(ca) - CAT_ORDER.indexOf(cb)
       })
+      s.totalTests = s.items.reduce((sum, i) => sum + getTestCount(i), 0)
+      // Detect section type from name
+      if (/^H\d/.test(s.name)) s.type = 'hv'
+      else if (/C&P|SW Yard|SSVT/i.test(s.name)) s.type = 'aux'
+      else s.type = 'other'
     })
-
-    const hvSections = []
-    const swSections = []
-    const auxSections = []
-
-    Object.values(sectionMap).forEach(section => {
-      if (SWITCHGEAR_TYPES.includes(section.sectionType)) {
-        swSections.push(section)
-      } else if (AUX_TYPES.includes(section.sectionType)) {
-        auxSections.push(section)
-      } else {
-        hvSections.push(section)
-      }
+    // Sort sections: H1-H8 first (numerically), then aux
+    const sections = Object.values(sMap).sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'hv' ? -1 : 1
+      const na = parseInt((a.name.match(/H(\d+)/) || [])[1] || '99')
+      const nb = parseInt((b.name.match(/H(\d+)/) || [])[1] || '99')
+      return na - nb
     })
-
-    return { hvSections, swSections, auxSections }
+    return { sections }
   }, [equipment])
 
-  // --- Empty state ---
   if (!equipment || equipment.length === 0) {
     return (
-      <div style={{ background: '#0a0f1a', color: '#64748b', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', border: '1px solid #1e293b', fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ background: 'linear-gradient(135deg, #0a0f1a 0%, #111827 100%)', color: '#475569', minHeight: '500px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
         <div style={{ textAlign: 'center' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
-          <p style={{ marginTop: '12px', fontSize: '14px' }}>No equipment data available</p>
-          <p style={{ fontSize: '12px', marginTop: '4px', color: '#475569' }}>Add equipment to see the SLD diagram</p>
+          <div style={{ width: 64, height: 64, margin: '0 auto 16px', background: '#1e293b', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r="0.5" fill="#334155" /></svg>
+          </div>
+          <p style={{ fontSize: '15px', fontWeight: 500, color: '#64748b' }}>No equipment data</p>
+          <p style={{ fontSize: '12px', marginTop: '6px', color: '#334155' }}>Add equipment in Scope & Export to generate the SLD</p>
         </div>
       </div>
     )
   }
 
+  const totalItems = equipment.length
+  const totalTests = equipment.reduce((s, e) => s + getTestCount(e), 0)
+  const totalLevels = [...new Set(equipment.flatMap(e => getLevels(e)))]
+
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", width: '100%' }}>
-      {/* Toggle Switch */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 0', background: viewMode === 'flow' ? '#0a0f1a' : '#e8e8e8', borderBottom: viewMode === 'flow' ? '1px solid #1e293b' : '1px solid #d1d5db' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0', background: viewMode === 'flow' ? '#1e293b' : '#fff', borderRadius: '8px', padding: '3px', border: viewMode === 'flow' ? '1px solid #334155' : '1px solid #d1d5db' }}>
-          <button
-            onClick={() => setViewMode('flow')}
-            style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s', background: viewMode === 'flow' ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'transparent', color: viewMode === 'flow' ? '#fff' : '#64748b' }}
-          >
-            Flow View
-          </button>
-          <button
-            onClick={() => setViewMode('drawing')}
-            style={{ padding: '6px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600, transition: 'all 0.2s', background: viewMode === 'drawing' ? '#000' : 'transparent', color: viewMode === 'drawing' ? '#fff' : '#64748b' }}
-          >
-            Drawing View (Beta)
-          </button>
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", width: '100%', position: 'relative' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px', background: viewMode === 'flow' ? theme.headerBg : '#f1f5f9', borderBottom: viewMode === 'flow' ? '1px solid ' + theme.headerBorder : '1px solid #d1d5db', transition: 'all 0.3s' }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+          {[['Equipment', totalItems], ['Tests', totalTests], ['Sections', topology.sections.length]].map(([label, val]) => (
+            <span key={label} style={{ fontSize: 11, color: viewMode === 'flow' ? theme.textMuted : '#94a3b8' }}>
+              <span style={{ fontWeight: 700, color: viewMode === 'flow' ? theme.text : '#111827', fontSize: 13 }}>{val}</span> {label.toLowerCase()}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Theme picker (flow view only) */}
+          {viewMode === 'flow' && (
+            <div style={{ display: 'flex', gap: 2, background: theme.toggleBg, borderRadius: 8, padding: 2 }}>
+              {Object.values(THEMES).map(t => (
+                <button key={t.id} onClick={() => setThemeId(t.id)} title={t.id} style={{
+                  width: 26, height: 26, borderRadius: 6, border: 'none', cursor: 'pointer',
+                  background: themeId === t.id ? theme.toggleActiveBg : 'transparent',
+                  fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: themeId === t.id ? '0 1px 4px rgba(0,0,0,0.3)' : 'none',
+                  transition: 'all 0.15s', opacity: themeId === t.id ? 1 : 0.5,
+                }}>{t.label}</button>
+              ))}
+            </div>
+          )}
+          <div style={{ display: 'flex', background: viewMode === 'flow' ? theme.toggleBg : '#e2e8f0', borderRadius: 10, padding: 3, gap: 2 }}>
+          {['flow', 'drawing'].map(mode => (
+            <button key={mode} onClick={() => setViewMode(mode)} style={{
+              padding: '6px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 600,
+              background: viewMode === mode ? (mode === 'flow' ? theme.toggleActiveBg : '#000') : 'transparent',
+              color: viewMode === mode ? '#fff' : '#64748b',
+              boxShadow: viewMode === mode ? '0 2px 8px rgba(99,102,241,0.25)' : 'none',
+              transition: 'all 0.2s'
+            }}>
+              {mode === 'flow' ? '⚡ Flow View' : '📐 Drawing View'}
+            </button>
+          ))}
+        </div>
         </div>
       </div>
 
-      {/* View Container */}
-      {viewMode === 'flow' ? (
-        <FlowView topology={topology} onSelect={setSelectedEquipment} selectedId={selectedEquipment?.id} />
-      ) : (
-        <DrawingView topology={topology} onSelect={setSelectedEquipment} selectedId={selectedEquipment?.id} />
-      )}
+      {/* Main content + side panel wrapper */}
+      <div style={{ display: 'flex', position: 'relative' }}>
+        <div style={{ flex: 1, minWidth: 0, transition: 'margin-right 0.3s', marginRight: selectedEquipment ? 380 : 0 }}>
+          {viewMode === 'flow' ? (
+            <FlowView topology={topology} onSelect={setSelectedEquipment} selectedId={selectedEquipment?.id} collapsed={collapsedSections} onToggle={toggleSection} theme={theme} />
+          ) : (
+            <DrawingView topology={topology} onSelect={setSelectedEquipment} selectedId={selectedEquipment?.id} />
+          )}
+        </div>
 
-      {/* Detail Panel */}
-      {selectedEquipment && (
-        <DetailPanel item={selectedEquipment} onClose={() => setSelectedEquipment(null)} darkMode={viewMode === 'flow'} />
-      )}
-    </div>
-  )
-}
-
-// ============================================================
-// FLOW VIEW (Option A)
-// ============================================================
-function FlowView({ topology, onSelect, selectedId }) {
-  const { hvSections, swSections, auxSections } = topology
-
-  return (
-    <div style={{ background: '#0a0f1a', minHeight: 'calc(100vh - 120px)', padding: '0' }}>
-      <div style={{ background: '#111827', margin: '24px', borderRadius: '12px', border: '1px solid #1e293b', padding: '32px' }}>
-        {/* HV Primary Sections */}
-        {hvSections.map((section, idx) => (
-          <FlowSection key={`hv-${idx}`} section={section} onSelect={onSelect} selectedId={selectedId} />
-        ))}
-
-        {/* Switchgear Sections */}
-        {swSections.map((section, idx) => (
-          <SwitchgearSection key={`sw-${idx}`} section={section} onSelect={onSelect} selectedId={selectedId} />
-        ))}
-
-        {/* Auxiliary Sections */}
-        {auxSections.length > 0 && (
-          <div style={{ marginBottom: '48px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #1e293b' }}>
-              <div style={{ width: '32px', height: '32px', background: 'linear-gradient(135deg, #14b8a620, #14b8a610)', border: '1px solid #14b8a640', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14b8a6" strokeWidth="2"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="7" y1="10" x2="7" y2="14"/><line x1="17" y1="10" x2="17" y2="14"/></svg>
-              </div>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#f1f5f9' }}>Auxiliary Systems</span>
-            </div>
-            {auxSections.map((section, idx) => (
-              <AuxSection key={`aux-${idx}`} section={section} onSelect={onSelect} selectedId={selectedId} />
-            ))}
-          </div>
+        {selectedEquipment && (
+          <DetailPanel item={selectedEquipment} onClose={() => setSelectedEquipment(null)} theme={theme} />
         )}
-
-        {/* Legend */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '32px', paddingTop: '20px', borderTop: '1px solid #1e293b', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Legend:</span>
-          {Object.entries(LEVEL_COLORS).map(([level, color]) => (
-            <div key={level} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: color }} />
-              {level} {LEVEL_NAMES[level]}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )
 }
 
-// --- Flow Section (HV Primary) ---
-function FlowSection({ section, onSelect, selectedId }) {
-  const allItems = Object.values(section.feeders).flat()
-  const totalTests = allItems.reduce((sum, item) => sum + getTestsForType(item.type).length, 0)
-
+// ════════════════════════════════════════════════════════════
+// FLOW VIEW — Grid of categorized equipment chips
+// ════════════════════════════════════════════════════════════
+function FlowView({ topology, onSelect, selectedId, collapsed, onToggle, theme }) {
+  const T = theme
   return (
-    <div style={{ marginBottom: '48px' }}>
-      {/* Section Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #1e293b', flexWrap: 'wrap' }}>
-        <div style={{ width: '32px', height: '32px', background: `linear-gradient(135deg, ${section.color}20, ${section.color}10)`, border: `1px solid ${section.color}40`, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={section.color} strokeWidth="2"><circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/></svg>
-        </div>
-        <span style={{ fontSize: '16px', fontWeight: 600, color: '#f1f5f9' }}>{section.name}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
-          <div style={{ width: '120px', height: '6px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', borderRadius: '3px', background: 'linear-gradient(90deg, #22c55e, #16a34a)', width: '50%' }} />
-          </div>
-          <span style={{ fontSize: '11px', color: '#64748b' }}>{allItems.length} items</span>
-        </div>
-        <span style={{ fontSize: '12px', color: '#64748b', marginLeft: 'auto' }}>{totalTests} tests total</span>
-      </div>
-
-      {/* Horizontal Power Flow */}
-      <div style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '20px 0', overflowX: 'auto' }}>
-        {allItems.map((item, idx) => (
-          <FlowNodeWithConnector key={item.id || idx} item={item} isLast={idx === allItems.length - 1} onSelect={onSelect} isSelected={selectedId === item.id} sectionColor={section.color} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// --- Flow Node + Connector ---
-function FlowNodeWithConnector({ item, isLast, onSelect, isSelected, sectionColor }) {
-  const levels = getTestLevels(item.type)
-  const testCount = getTestsForType(item.type).length
-
-  return (
-    <>
-      <div
-        onClick={() => onSelect(item)}
-        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '90px', flex: 1, cursor: 'pointer', position: 'relative' }}
-      >
-        <div style={{
-          width: '56px', height: '56px', background: '#1e293b',
-          border: `1.5px solid ${isSelected ? '#f59e0b' : sectionColor + '60'}`,
-          borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: isSelected ? `0 0 12px ${sectionColor}40` : 'none',
-          transition: 'all 0.2s'
-        }}>
-          <IECSymbol type={item.type} color={sectionColor} size={28} />
-        </div>
-        <span style={{ fontSize: '10px', fontWeight: 500, color: '#cbd5e1', marginTop: '8px', textAlign: 'center', whiteSpace: 'nowrap', maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {item.displayName || item.name || getShortName(item.type)}
-        </span>
-        <div style={{ display: 'flex', gap: '2px', marginTop: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {levels.map(level => (
-            <span key={level} style={{ fontSize: '8px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px', letterSpacing: '0.3px', background: LEVEL_COLORS[level] + '30', color: LEVEL_COLORS[level], border: `1px solid ${LEVEL_COLORS[level]}50` }}>
-              {level}
-            </span>
-          ))}
-        </div>
-        <span style={{ fontSize: '9px', color: '#64748b', marginTop: '4px' }}>
-          <span style={{ color: '#94a3b8', fontWeight: 600 }}>{testCount}</span> tests
-        </span>
-      </div>
-      {!isLast && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', flex: 0.3 }}>
-          <div style={{ height: '2px', width: '100%', background: `linear-gradient(90deg, ${sectionColor}40, ${sectionColor}80, ${sectionColor}40)`, position: 'relative' }}>
-            <div style={{ position: 'absolute', right: '-1px', top: '-4px', width: 0, height: 0, borderTop: '5px solid transparent', borderBottom: '5px solid transparent', borderLeft: `7px solid ${sectionColor}80` }} />
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
-// --- Switchgear Section ---
-function SwitchgearSection({ section, onSelect, selectedId }) {
-  const feederEntries = Object.entries(section.feeders)
-
-  return (
-    <div style={{ marginBottom: '48px' }}>
-      {/* Section Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '12px', borderBottom: '1px solid #1e293b', flexWrap: 'wrap' }}>
-        <div style={{ width: '32px', height: '32px', background: `linear-gradient(135deg, ${section.color}20, ${section.color}10)`, border: `1px solid ${section.color}40`, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={section.color} strokeWidth="2"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="9" y1="6" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="18"/></svg>
-        </div>
-        <span style={{ fontSize: '16px', fontWeight: 600, color: '#f1f5f9' }}>{section.name}</span>
-        <span style={{ fontSize: '12px', color: '#64748b', marginLeft: 'auto' }}>{feederEntries.length} Feeders</span>
-      </div>
-
-      {/* Feeder Rows */}
-      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-        {feederEntries.map(([feederName, items], idx) => (
-          <div key={feederName} style={{ flex: '1 1 300px', background: '#0f172a', border: '1px solid #1e293b', borderRadius: '10px', padding: '20px', minWidth: '280px' }}>
-            {/* Feeder Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: section.color, boxShadow: `0 0 6px ${section.color}60` }} />
-              <span style={{ fontSize: '12px', fontWeight: 600, color: '#e2e8f0' }}>{feederName}</span>
-            </div>
-            {/* Feeder Flow — BUG FIX #5: added flexWrap: 'wrap' */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexWrap: 'wrap' }}>
-              {items.map((item, i) => (
-                <FeederNodeWithConnector key={item.id || i} item={item} isLast={i === items.length - 1} onSelect={onSelect} isSelected={selectedId === item.id} color={section.color} />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// --- Feeder Node + Connector ---
-function FeederNodeWithConnector({ item, isLast, onSelect, isSelected, color }) {
-  const levels = getTestLevels(item.type)
-  const testCount = getTestsForType(item.type).length
-
-  return (
-    <>
-      <div onClick={() => onSelect(item)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, cursor: 'pointer' }}>
-        <div style={{ width: '42px', height: '42px', background: '#1e293b', border: `1px solid ${isSelected ? '#f59e0b' : '#334155'}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-          <IECSymbol type={item.type} color={color} size={22} />
-        </div>
-        <span style={{ fontSize: '9px', color: '#94a3b8', marginTop: '5px', textAlign: 'center' }}>
-          {item.displayName || item.name || getShortName(item.type)}
-        </span>
-        <div style={{ display: 'flex', gap: '2px', marginTop: '3px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {levels.map(level => (
-            <span key={level} style={{ fontSize: '7px', fontWeight: 700, padding: '1px 4px', borderRadius: '3px', background: LEVEL_COLORS[level] + '30', color: LEVEL_COLORS[level], border: `1px solid ${LEVEL_COLORS[level]}50` }}>
-              {level}
-            </span>
-          ))}
-        </div>
-        <span style={{ fontSize: '8px', color: '#64748b', marginTop: '2px' }}>
-          <span style={{ color: '#94a3b8', fontWeight: 600 }}>{testCount}</span>t
-        </span>
-      </div>
-      {!isLast && (
-        <div style={{ minWidth: '24px', flex: 0.4, display: 'flex', alignItems: 'center' }}>
-          <div style={{ height: '1.5px', width: '100%', background: `linear-gradient(90deg, #334155, #475569, #334155)` }} />
-        </div>
-      )}
-    </>
-  )
-}
-
-// --- Aux Section ---
-function AuxSection({ section, onSelect, selectedId }) {
-  const allItems = Object.values(section.feeders).flat()
-
-  return (
-    <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px', padding: '16px', marginBottom: '12px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: section.color }} />
-        <span style={{ fontSize: '12px', fontWeight: 600, color: '#e2e8f0' }}>{section.name}</span>
-        <span style={{ fontSize: '10px', color: '#64748b', marginLeft: 'auto' }}>{allItems.length} items</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0', flexWrap: 'wrap' }}>
-        {allItems.map((item, idx) => (
-          <FeederNodeWithConnector key={item.id || idx} item={item} isLast={idx === allItems.length - 1} onSelect={onSelect} isSelected={selectedId === item.id} color={section.color} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ============================================================
-// DRAWING VIEW (Option C)
-// ============================================================
-function DrawingView({ topology, onSelect, selectedId }) {
-  const { hvSections, swSections, auxSections } = topology
-
-  if (hvSections.length === 0 && swSections.length === 0) {
-    return <div style={{ padding: 60, textAlign: 'center', color: '#64748b' }}>Add equipment to see the Drawing View</div>
-  }
-
-  // BUG FIX #7: allBays is ONLY hvSections (switchgear gets its own zone)
-  const allBays = hvSections
-
-  const bayCount = Math.max(allBays.length, 1)
-  const svgWidth = 1360
-
-  // BUG FIX #1 & #6: Calculate maxItemsInBay correctly using feeders object
-  const maxItemsInBay = Math.max(...allBays.map(b => Object.values(b.feeders).flat().length), 1)
-
-  // BUG FIX #6: SVG height accounts for bay content + switchgear zone + aux zone + legend
-  const bayContentHeight = maxItemsInBay * 48
-  const switchgearZoneHeight = swSections.length > 0 ? 100 : 0
-  const auxZoneHeight = auxSections.length > 0 ? 80 : 0
-  const legendAndTitleHeight = 150
-  const calculatedHeight = 120 + bayContentHeight + switchgearZoneHeight + auxZoneHeight + legendAndTitleHeight
-  const svgHeight = Math.max(1100, calculatedHeight)
-
-  const baySpacing = Math.min(350, (svgWidth - 200) / bayCount)
-
-  // BUG FIX #3: Calculate content bottom for legend positioning
-  const bayBottomY = 120 + maxItemsInBay * 65 + 50 // startY + items + ground symbol
-  const swZoneY = bayBottomY + 40
-  const swZoneBottomY = swSections.length > 0 ? swZoneY + 90 : bayBottomY
-  const auxZoneY = swZoneBottomY + 30
-  const auxZoneBottomY = auxSections.length > 0 ? auxZoneY + 60 : swZoneBottomY
-  const legendY = auxZoneBottomY + 40
-
-  return (
-    <div style={{ background: '#e8e8e8', padding: '30px', minHeight: 'calc(100vh - 120px)', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ background: '#ffffff', width: '100%', maxWidth: '1400px', position: 'relative', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', minHeight: '700px' }}>
-        {/* Grid background */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
-
-        {/* Drawing border */}
-        <div style={{ position: 'absolute', top: '12px', left: '12px', right: '12px', bottom: '12px', border: '1.5px solid #000' }}>
-          <div style={{ position: 'absolute', top: '4px', left: '4px', right: '4px', bottom: '4px', border: '0.5px solid #000' }} />
-        </div>
-
-        {/* Drawing reference */}
-        <div style={{ position: 'absolute', top: '24px', left: '28px', fontSize: '9px', color: '#999', fontFamily: "Consolas, 'Courier New', monospace", letterSpacing: '0.5px' }}>
-          ZONE: A1 &nbsp;&nbsp; SHEET 1 OF 1
-        </div>
-
-        {/* SVG Canvas */}
-        <div style={{ position: 'absolute', top: '20px', left: '20px', right: '20px', bottom: '20px' }}>
-          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: '100%' }} xmlns="http://www.w3.org/2000/svg">
-            {/* HV Busbar */}
-            <line x1="100" y1="100" x2={100 + bayCount * baySpacing} y2="100" stroke="#000" strokeWidth="4" strokeLinecap="square" />
-            <text x={(100 + bayCount * baySpacing) / 2 + 50} y="80" style={{ fontFamily: "Consolas, monospace", fontSize: '12px', fontWeight: 'bold', textAnchor: 'middle' }} fill="#000">BUSBAR</text>
-
-            {/* Bay Columns — ONLY hvSections */}
-            {allBays.map((section, bayIdx) => {
-              const bayX = 200 + bayIdx * baySpacing
-              const items = Object.values(section.feeders).flat()
-              return (
-                <BayColumn key={`bay-${bayIdx}`} x={bayX} section={section} items={items} onSelect={onSelect} selectedId={selectedId} />
-              )
-            })}
-
-            {/* BUG FIX #2: Switchgear rendered as separate MV zone below HV bays */}
-            {swSections.length > 0 && (
-              <g>
-                {/* MV Busbar label */}
-                <text x="100" y={swZoneY - 10} style={{ fontFamily: "Consolas, monospace", fontSize: '11px', fontWeight: 'bold' }} fill="#16a34a">MV SWITCHGEAR</text>
-                {/* Green MV busbar line */}
-                <line x1="100" y1={swZoneY} x2={svgWidth - 400} y2={swZoneY} stroke="#22c55e" strokeWidth="3" strokeLinecap="square" />
-
-                {/* Feeder boxes underneath */}
-                {swSections.map((section, sIdx) => {
-                  const feederEntries = Object.entries(section.feeders)
-                  let feederOffset = 0
-                  return feederEntries.map(([feederName, items], fIdx) => {
-                    const fX = 150 + (sIdx * feederEntries.length + fIdx) * 160 + feederOffset
-                    feederOffset += 0
-                    const boxY = swZoneY + 10
-                    return (
-                      <g key={`sw-${sIdx}-${fIdx}`}>
-                        {/* Vertical drop from MV busbar */}
-                        <line x1={fX + 40} y1={swZoneY} x2={fX + 40} y2={boxY} stroke="#22c55e" strokeWidth="1.5" />
-                        {/* Feeder box */}
-                        <rect x={fX} y={boxY} width="120" height="65" rx="3" fill="#f0fdf4" stroke="#22c55e" strokeWidth="1.5" />
-                        {/* Feeder name */}
-                        <text x={fX + 60} y={boxY + 14} style={{ fontFamily: "Consolas, monospace", fontSize: '9px', fontWeight: 'bold', textAnchor: 'middle' }} fill="#166534">
-                          {feederName.length > 16 ? feederName.slice(0, 16) + '\u2026' : feederName}
-                        </text>
-                        {/* Equipment items inside the feeder box */}
-                        {items.map((item, iIdx) => {
-                          const itemX = fX + 8 + (iIdx % 4) * 28
-                          const itemY = boxY + 24 + Math.floor(iIdx / 4) * 22
-                          const levels = getTestLevels(item.type)
-                          return (
-                            <g key={item.id || `swi-${iIdx}`} onClick={() => onSelect(item)} style={{ cursor: 'pointer' }}>
-                              <rect x={itemX} y={itemY} width="24" height="18" rx="3" fill="#fff" stroke={selectedId === item.id ? '#f59e0b' : '#86efac'} strokeWidth={selectedId === item.id ? 1.5 : 0.75} />
-                              <text x={itemX + 12} y={itemY + 11} style={{ fontFamily: "Consolas, monospace", fontSize: '7px', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#166534">
-                                {getShortName(item.type)}
-                              </text>
-                            </g>
-                          )
-                        })}
-                      </g>
-                    )
-                  })
-                })}
-              </g>
-            )}
-
-            {/* Aux items (below switchgear zone if present) */}
-            {auxSections.length > 0 && (
-              <g>
-                <text x="100" y={auxZoneY - 10} style={{ fontFamily: "Consolas, monospace", fontSize: '11px', fontWeight: 'bold' }} fill="#000">AUXILIARY SYSTEMS</text>
-                <line x1="100" y1={auxZoneY} x2={svgWidth - 400} y2={auxZoneY} stroke="#000" strokeWidth="0.5" />
-                {auxSections.map((section, idx) => {
-                  const auxItems = Object.values(section.feeders).flat()
-                  return auxItems.map((item, itemIdx) => {
-                    const auxX = 150 + (idx * 4 + itemIdx) * 100
-                    const auxY = auxZoneY + 30
-                    const levels = getTestLevels(item.type)
-                    const testCount = getTestsForType(item.type).length
-                    return (
-                      <g key={`aux-${idx}-${itemIdx}`} onClick={() => onSelect(item)} style={{ cursor: 'pointer' }}>
-                        <DrawingSymbol type={item.type} x={auxX} y={auxY} />
-                        <text x={auxX + 18} y={auxY - 4} style={{ fontFamily: "Consolas, monospace", fontSize: '9px' }} fill="#000">
-                          {item.displayName || item.name || getShortName(item.type)}
-                        </text>
-                        {levels.map((level, li) => (
-                          <g key={level}>
-                            <rect x={auxX + 18 + li * 22} y={auxY + 4} width="18" height="10" rx="5" ry="5" fill={LEVEL_COLORS[level]} />
-                            <text x={auxX + 27 + li * 22} y={auxY + 9} style={{ fontFamily: "Consolas, monospace", fontSize: '7px', fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#fff">{level}</text>
-                          </g>
-                        ))}
-                        <text x={auxX + 18 + levels.length * 22 + 4} y={auxY + 11} style={{ fontFamily: "Consolas, monospace", fontSize: '8px' }} fill="#888">{testCount}t</text>
-                      </g>
-                    )
-                  })
-                })}
-              </g>
-            )}
-
-            {/* BUG FIX #3: Legend positioned AFTER all content */}
-            <g transform={`translate(50, ${legendY})`}>
-              <text x="0" y="0" style={{ fontFamily: "Consolas, monospace", fontSize: '10px', fontWeight: 'bold' }} fill="#000">COMMISSIONING LEVELS:</text>
-              {Object.entries(LEVEL_COLORS).map(([level, color], idx) => (
-                <g key={level}>
-                  <rect x={idx * 80} y="10" width="18" height="10" rx="5" ry="5" fill={color} />
-                  <text x={idx * 80 + 9} y="15" style={{ fontFamily: "Consolas, monospace", fontSize: '7px', fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#fff">{level}</text>
-                  <text x={idx * 80 + 24} y="17" style={{ fontFamily: "Consolas, monospace", fontSize: '8px', dominantBaseline: 'middle' }} fill="#444">{LEVEL_NAMES[level]}</text>
-                </g>
-              ))}
-            </g>
-          </svg>
-        </div>
-
-        {/* Title Block */}
-        <div style={{ position: 'absolute', bottom: '16px', right: '16px', width: '340px', border: '1.5px solid #000', fontSize: '10px', lineHeight: 1.4, fontFamily: "Consolas, 'Courier New', monospace", background: '#fff' }}>
-          <div style={{ background: '#000', color: '#fff', padding: '6px 8px', fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px' }}>
-            SINGLE LINE DIAGRAM
-          </div>
-          <div style={{ display: 'flex', borderBottom: '0.5px solid #000' }}>
-            <div style={{ flex: 1, padding: '4px 8px' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666', letterSpacing: '0.5px' }}>Project</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>HV SUBSTATION</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', borderBottom: '0.5px solid #000' }}>
-            <div style={{ flex: 1, padding: '4px 8px' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Title</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>COMMISSIONING SLD</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', borderBottom: '0.5px solid #000' }}>
-            <div style={{ flex: 1, padding: '4px 8px', borderRight: '0.5px solid #000' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Drawing No.</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>SLD-CX-001</div>
-            </div>
-            <div style={{ width: '80px', padding: '4px 8px' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Revision</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>A</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex' }}>
-            <div style={{ flex: 1, padding: '4px 8px', borderRight: '0.5px solid #000' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Date</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</div>
-            </div>
-            <div style={{ width: '80px', padding: '4px 8px', borderRight: '0.5px solid #000' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Scale</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>NTS</div>
-            </div>
-            <div style={{ width: '80px', padding: '4px 8px' }}>
-              <div style={{ fontSize: '7px', textTransform: 'uppercase', color: '#666' }}>Size</div>
-              <div style={{ fontSize: '10px', fontWeight: 'bold' }}>A3</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// --- Bay Column for Drawing View ---
-function BayColumn({ x, section, items, onSelect, selectedId }) {
-  const symbolSpacing = 65
-  const startY = 120
-
-  return (
-    <g>
-      {/* Bay label */}
-      <text x={x} y="50" style={{ fontFamily: "Consolas, monospace", fontSize: '12px', fontWeight: 'bold', textAnchor: 'middle' }} fill="#000">
-        {section.name.toUpperCase().slice(0, 20)}
-      </text>
-      <text x={x} y="65" style={{ fontFamily: "Consolas, monospace", fontSize: '9px', textAnchor: 'middle' }} fill="#666">
-        {section.sectionType.replace(/_/g, ' ')}
-      </text>
-
-      {/* Vertical conductor from busbar */}
-      <line x1={x} y1="100" x2={x} y2={startY} stroke="#000" strokeWidth="1.5" fill="none" />
-
-      {/* Equipment along the conductor */}
-      {items.map((item, idx) => {
-        const itemY = startY + idx * symbolSpacing + 30
-        const levels = getTestLevels(item.type)
-        const testCount = getTestsForType(item.type).length
-        const isSelected = selectedId === item.id
-
+    <div style={{ background: T.bg, minHeight: 'calc(100vh - 160px)', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {topology.sections.map(section => {
+        const isCollapsed = collapsed[section.name]
+        const sectionColor = section.type === 'hv' ? '#f59e0b' : '#14b8a6'
         return (
-          <g key={item.id || idx} onClick={() => onSelect(item)} style={{ cursor: 'pointer' }}>
-            {/* Conductor segment */}
-            {idx > 0 && (
-              <line x1={x} y1={itemY - symbolSpacing + 20} x2={x} y2={itemY - 16} stroke="#000" strokeWidth="1.5" fill="none" />
+          <div key={section.name} style={{ background: T.card, border: '1px solid ' + T.cardBorder, borderRadius: 12, overflow: 'hidden', transition: 'all 0.2s' }}>
+            {/* Section header */}
+            <div
+              onClick={() => onToggle(section.name)}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px', cursor: 'pointer', borderBottom: isCollapsed ? 'none' : '1px solid ' + T.cardBorder, userSelect: 'none' }}
+            >
+              <div style={{ width: 4, height: 24, background: sectionColor, borderRadius: 2, flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: T.text, letterSpacing: '0.01em' }}>{section.name}</span>
+              <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', alignItems: 'center' }}>
+                <span style={{ fontSize: 10, color: T.textMuted, background: T.badge, padding: '3px 8px', borderRadius: 6 }}>
+                  <span style={{ fontWeight: 700, color: T.textSub }}>{section.items.length}</span> equip
+                </span>
+                <span style={{ fontSize: 10, color: T.textMuted, background: T.badge, padding: '3px 8px', borderRadius: 6 }}>
+                  <span style={{ fontWeight: 700, color: T.textSub }}>{section.totalTests}</span> tests
+                </span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.textMuted} strokeWidth="2" style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9" /></svg>
+              </div>
+            </div>
+            {/* Equipment grid */}
+            {!isCollapsed && (
+              <div style={{ padding: '14px 18px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {section.items.map((item, idx) => (
+                  <EquipmentChip key={item.id || idx} item={item} onSelect={onSelect} isSelected={selectedId === item.id} theme={T} />
+                ))}
+              </div>
             )}
-            {idx === 0 && (
-              <line x1={x} y1={startY} x2={x} y2={itemY - 16} stroke="#000" strokeWidth="1.5" fill="none" />
-            )}
-
-            {/* Selection highlight */}
-            {isSelected && (
-              <rect x={x - 18} y={itemY - 18} width="36" height="36" rx="4" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4 2" />
-            )}
-
-            {/* Symbol */}
-            <DrawingSymbol type={item.type} x={x} y={itemY} />
-
-            {/* Label to the right */}
-            <text x={x + 25} y={itemY - 2} style={{ fontFamily: "Consolas, monospace", fontSize: '10px' }} fill="#000">
-              {item.displayName || item.name || getShortName(item.type)}
-            </text>
-
-            {/* Level badges */}
-            {levels.map((level, li) => (
-              <g key={level}>
-                <rect x={x + 25 + li * 22} y={itemY + 5} width="18" height="10" rx="5" ry="5" fill={LEVEL_COLORS[level]} />
-                <text x={x + 34 + li * 22} y={itemY + 10} style={{ fontFamily: "Consolas, monospace", fontSize: '7px', fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#fff">{level}</text>
-              </g>
-            ))}
-
-            {/* Test count */}
-            <text x={x + 25 + levels.length * 22 + 6} y={itemY + 12} style={{ fontFamily: "Consolas, monospace", fontSize: '8px' }} fill="#888">{testCount}t</text>
-
-            {/* Conductor after symbol */}
-            {idx < items.length - 1 && (
-              <line x1={x} y1={itemY + 16} x2={x} y2={itemY + 20} stroke="#000" strokeWidth="1.5" fill="none" />
-            )}
-          </g>
+          </div>
         )
       })}
 
-      {/* Ground termination at bottom */}
-      {items.length > 0 && (() => {
-        const lastY = startY + (items.length - 1) * symbolSpacing + 30 + 20
-        return (
-          <g>
-            <line x1={x} y1={lastY} x2={x} y2={lastY + 10} stroke="#000" strokeWidth="1.5" />
-            <line x1={x - 8} y1={lastY + 12} x2={x + 8} y2={lastY + 12} stroke="#000" strokeWidth="2" />
-            <line x1={x - 5} y1={lastY + 15} x2={x + 5} y2={lastY + 15} stroke="#000" strokeWidth="1.5" />
-            <line x1={x - 3} y1={lastY + 18} x2={x + 3} y2={lastY + 18} stroke="#000" strokeWidth="1" />
-          </g>
-        )
-      })()}
-    </g>
-  )
-}
-
-// ============================================================
-// DETAIL PANEL
-// ============================================================
-function DetailPanel({ item, onClose, darkMode }) {
-  const tests = getTestsForType(item.type)
-  const levels = getTestLevels(item.type)
-
-  const bg = darkMode ? '#0f172a' : '#ffffff'
-  const border = darkMode ? '#1e293b' : '#e5e7eb'
-  const textPrimary = darkMode ? '#f1f5f9' : '#111827'
-  const textSecondary = darkMode ? '#94a3b8' : '#6b7280'
-  const cardBg = darkMode ? '#1e293b' : '#f9fafb'
-
-  return (
-    <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: '12px', margin: '0 24px 24px', padding: '24px', position: 'relative', boxShadow: darkMode ? '0 -4px 20px rgba(0,0,0,0.3)' : '0 -4px 20px rgba(0,0,0,0.08)' }}>
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        style={{ position: 'absolute', top: '12px', right: '12px', width: '28px', height: '28px', borderRadius: '6px', border: 'none', background: darkMode ? '#334155' : '#e5e7eb', color: textPrimary, cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
-        \u2715
-      </button>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-        <div style={{ width: '48px', height: '48px', background: cardBg, border: `1px solid ${border}`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <IECSymbol type={item.type} color={darkMode ? '#60a5fa' : '#3b82f6'} size={24} />
-        </div>
-        <div>
-          <h3 style={{ fontSize: '16px', fontWeight: 600, color: textPrimary, margin: 0 }}>
-            {item.displayName || item.name || getShortName(item.type)}
-          </h3>
-          <p style={{ fontSize: '12px', color: textSecondary, margin: '2px 0 0' }}>
-            Type: {item.type} &nbsp;|&nbsp; Section: {item.section || 'N/A'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto' }}>
-          {levels.map(level => (
-            <span key={level} style={{ fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', background: LEVEL_COLORS[level] + (darkMode ? '30' : '20'), color: LEVEL_COLORS[level], border: `1px solid ${LEVEL_COLORS[level]}50` }}>
-              {level}
-            </span>
+      {/* Legend */}
+      <div style={{ background: T.card, border: '1px solid ' + T.cardBorder, borderRadius: 10, padding: '12px 18px' }}>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>Levels</span>
+          {Object.entries(LEVEL_COLORS).map(([lv, col]) => (
+            <div key={lv} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, boxShadow: '0 0 6px ' + col + '50' }} />
+              <span style={{ fontWeight: 700, color: col }}>{lv}</span>
+              <span style={{ color: T.textMuted }}>{LEVEL_NAMES[lv]}</span>
+            </div>
+          ))}
+          <span style={{ fontSize: 9, fontWeight: 700, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginLeft: 16 }}>Types</span>
+          {[['gis','GIS','#22c55e'],['breaker','CB','#ef4444'],['switch','DS/ES','#818cf8'],['ct','CT','#3b82f6'],['vt','VT','#a855f7'],['protection','IED','#c084fc'],['cable','Cable','#64748b']].map(([cat, label, col]) => (
+            <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <IECIcon category={cat} color={col} size={12} />
+              <span style={{ fontSize: 10, color: T.textMuted }}>{label}</span>
+            </div>
           ))}
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* Test List */}
-      {tests.length === 0 ? (
-        <div style={{ padding: '20px', textAlign: 'center', color: textSecondary, fontSize: '13px', background: cardBg, borderRadius: '8px' }}>
-          No tests configured for this type
+// ── Equipment Chip ──
+function EquipmentChip({ item, onSelect, isSelected, theme }) {
+  const T = theme
+  const name = item.displayName || item.name || item.type
+  const { cat, color } = detectCategory(name)
+  const label = getShortLabel(item)
+  const tc = getTestCount(item)
+  const levels = getLevels(item)
+
+  return (
+    <div
+      onClick={() => onSelect(item)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+        background: isSelected ? color + '15' : T.chip,
+        border: '1px solid ' + (isSelected ? color : T.chipBorder),
+        borderRadius: 10, cursor: 'pointer', transition: 'all 0.15s',
+        minWidth: 180, maxWidth: 320, flex: '1 1 auto',
+        boxShadow: isSelected ? '0 0 12px ' + color + '20' : 'none',
+      }}
+      onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = color + '60'; e.currentTarget.style.background = T.chipHover } }}
+      onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = T.chipBorder; e.currentTarget.style.background = T.chip } }}
+    >
+      {/* Icon */}
+      <div style={{ width: 28, height: 28, background: color + '15', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <IECIcon category={cat} color={color} size={16} />
+      </div>
+      {/* Name + meta */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {label}
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+          {levels.map(lv => (
+            <div key={lv} style={{ width: 6, height: 6, borderRadius: '50%', background: LEVEL_COLORS[lv], boxShadow: '0 0 4px ' + LEVEL_COLORS[lv] + '60' }} />
+          ))}
+          {tc > 0 && <span style={{ fontSize: 9, color: T.textMuted, marginLeft: 2 }}>{tc}t</span>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════
+// DRAWING VIEW — Engineering SLD
+// ════════════════════════════════════════════════════════════
+function DrawingSymbol({ type, x, y, category }) {
+  const c = '#000', sw = 1.5
+  const cat = category || 'other'
+  switch (cat) {
+    case 'gis':
+      return <g><polygon points={[x,y-10,x+8,y-5,x+8,y+5,x,y+10,x-8,y+5,x-8,y-5].join(',')} fill="#fff" stroke={c} strokeWidth={sw} /><circle cx={x} cy={y} r="2" fill={c} /></g>
+    case 'breaker':
+      return <g><rect x={x-10} y={y-10} width="20" height="20" fill="#fff" stroke={c} strokeWidth={2} /><line x1={x-10} y1={y-10} x2={x+10} y2={y+10} stroke={c} strokeWidth={sw} /><line x1={x+10} y1={y-10} x2={x-10} y2={y+10} stroke={c} strokeWidth={sw} /></g>
+    case 'switch':
+      return <g><line x1={x-5} y1={y-6} x2={x+5} y2={y-6} stroke={c} strokeWidth={2} /><line x1={x} y1={y-6} x2={x-5} y2={y+6} stroke={c} strokeWidth={2} /><line x1={x-5} y1={y+6} x2={x+5} y2={y+6} stroke={c} strokeWidth={2} /></g>
+    case 'ct':
+      return <g><circle cx={x} cy={y} r="8" fill="#fff" stroke={c} strokeWidth={sw} /><circle cx={x} cy={y} r="2" fill={c} /></g>
+    case 'vt':
+      return <g><circle cx={x} cy={y-4} r="6" fill="#fff" stroke={c} strokeWidth={sw} /><circle cx={x} cy={y+5} r="5.5" fill="#fff" stroke={c} strokeWidth={sw} /></g>
+    case 'arrester':
+      return <g><polyline points={`${x-4},${y-10} ${x+4},${y-6} ${x-4},${y-2} ${x+4},${y+2} ${x-4},${y+6}`} fill="none" stroke={c} strokeWidth={sw} /><line x1={x-6} y1={y+9} x2={x+6} y2={y+9} stroke={c} strokeWidth={2} /></g>
+    case 'cable':
+      return <g><line x1={x} y1={y-10} x2={x} y2={y+10} stroke={c} strokeWidth={sw} strokeDasharray="3 2" /><rect x={x-5} y={y-12} width="10" height="5" rx="1" fill="#fff" stroke={c} strokeWidth={sw} /><rect x={x-5} y={y+7} width="10" height="5" rx="1" fill="#fff" stroke={c} strokeWidth={sw} /></g>
+    case 'protection': case 'cubicle': case 'panel': case 'metering':
+      return <g><rect x={x-8} y={y-10} width="16" height="20" rx="2" fill="#fff" stroke={c} strokeWidth={sw} /><text x={x} y={y+2} textAnchor="middle" fontSize="8" fontFamily="Consolas, monospace" fill={c}>{cat === 'protection' ? 'R' : cat === 'metering' ? 'M' : 'P'}</text></g>
+    case 'energization':
+      return <g><circle cx={x} cy={y} r="10" fill="none" stroke={c} strokeWidth={sw} strokeDasharray="3 2" /><polygon points={`${x+2},${y-6} ${x-3},${y+1} ${x},${y+1} ${x-2},${y+6} ${x+3},${y-1} ${x},${y-1}`} fill={c} /></g>
+    case 'aux_tx': case 'generator':
+      return <g><circle cx={x} cy={y-8} r="12" fill="#fff" stroke={c} strokeWidth={2} /><circle cx={x} cy={y+12} r="12" fill="#fff" stroke={c} strokeWidth={2} /></g>
+    default:
+      return <g><circle cx={x} cy={y} r="8" fill="#fff" stroke={c} strokeWidth={sw} /><text x={x} y={y+3} textAnchor="middle" fontSize="7" fontFamily="Consolas, monospace" fill={c}>?</text></g>
+  }
+}
+
+function DrawingView({ topology, onSelect, selectedId }) {
+  const hvSections = topology.sections.filter(s => s.type === 'hv')
+  const auxSections = topology.sections.filter(s => s.type !== 'hv')
+  if (hvSections.length === 0) return <div style={{ padding: 60, textAlign: 'center', color: '#64748b' }}>Add equipment to see the Drawing View</div>
+
+  const bayCount = Math.max(hvSections.length, 1)
+  const svgWidth = 1360
+  const maxItems = Math.max(...hvSections.map(s => s.items.length), 1)
+  const baySpacing = Math.min(350, (svgWidth - 200) / bayCount)
+  const bayContentH = maxItems * 50
+  const auxH = auxSections.length > 0 ? 80 : 0
+  const svgHeight = Math.max(900, 200 + bayContentH + auxH + 100)
+  const bayBottomY = 120 + maxItems * 50 + 40
+  const auxZoneY = bayBottomY + 40
+  const legendY = auxSections.length > 0 ? auxZoneY + 60 + 30 : bayBottomY + 30
+
+  return (
+    <div style={{ background: '#e8e8e8', padding: 30, minHeight: 'calc(100vh - 160px)', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ background: '#fff', width: '100%', maxWidth: 1400, position: 'relative', boxShadow: '0 4px 24px rgba(0,0,0,0.12)' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 12, left: 12, right: 12, bottom: 12, border: '1.5px solid #000' }}>
+          <div style={{ position: 'absolute', top: 4, left: 4, right: 4, bottom: 4, border: '0.5px solid #000' }} />
+        </div>
+        <div style={{ position: 'absolute', top: 20, left: 20, right: 20, bottom: 20 }}>
+          <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: '100%' }} xmlns="http://www.w3.org/2000/svg">
+            {/* HV Busbar */}
+            <line x1="100" y1="100" x2={100 + bayCount * baySpacing} y2="100" stroke="#000" strokeWidth="4" strokeLinecap="square" />
+            <text x={(100 + bayCount * baySpacing) / 2 + 50} y="80" style={{ fontFamily: 'Consolas, monospace', fontSize: 12, fontWeight: 'bold', textAnchor: 'middle' }} fill="#000">220kV BUSBAR</text>
+            {/* Bay columns */}
+            {hvSections.map((section, i) => {
+              const bx = 200 + i * baySpacing
+              return <g key={'bay-' + i}>
+                <text x={bx} y="50" style={{ fontFamily: 'Consolas, monospace', fontSize: 10, fontWeight: 'bold', textAnchor: 'middle' }} fill="#000">{section.name.toUpperCase().slice(0, 24)}</text>
+                <line x1={bx} y1="100" x2={bx} y2="120" stroke="#000" strokeWidth="1.5" />
+                {section.items.map((item, idx) => {
+                  const iy = 120 + idx * 50 + 25
+                  const { cat, color } = detectCategory(item.displayName || item.name || '')
+                  const isSel = selectedId === item.id
+                  const levels = getLevels(item)
+                  return <g key={item.id || idx} onClick={() => onSelect(item)} style={{ cursor: 'pointer' }}>
+                    {idx > 0 && <line x1={bx} y1={iy - 50 + 14} x2={bx} y2={iy - 14} stroke="#000" strokeWidth="1.5" />}
+                    {idx === 0 && <line x1={bx} y1="120" x2={bx} y2={iy - 14} stroke="#000" strokeWidth="1.5" />}
+                    {isSel && <rect x={bx - 14} y={iy - 14} width="28" height="28" rx="3" fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="3 2" />}
+                    <DrawingSymbol type={item.type} x={bx} y={iy} category={cat} />
+                    <text x={bx + 20} y={iy - 2} style={{ fontFamily: 'Consolas, monospace', fontSize: 8 }} fill="#000">{getShortLabel(item).slice(0, 18)}</text>
+                    {levels.slice(0, 4).map((lv, li) => <g key={lv}><rect x={bx + 20 + li * 16} y={iy + 4} width="14" height="8" rx="4" fill={LEVEL_COLORS[lv]} /><text x={bx + 27 + li * 16} y={iy + 8} style={{ fontFamily: 'Consolas, monospace', fontSize: 6, fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#fff">{lv}</text></g>)}
+                  </g>
+                })}
+                {/* Ground symbol */}
+                {section.items.length > 0 && (() => { const gy = 120 + (section.items.length - 1) * 50 + 40; return <g><line x1={bx} y1={gy} x2={bx} y2={gy + 8} stroke="#000" strokeWidth="1.5" /><line x1={bx - 6} y1={gy + 10} x2={bx + 6} y2={gy + 10} stroke="#000" strokeWidth="2" /><line x1={bx - 4} y1={gy + 13} x2={bx + 4} y2={gy + 13} stroke="#000" strokeWidth="1.5" /><line x1={bx - 2} y1={gy + 16} x2={bx + 2} y2={gy + 16} stroke="#000" strokeWidth="1" /></g> })()}
+              </g>
+            })}
+            {/* Aux zone */}
+            {auxSections.length > 0 && <g>
+              <text x="100" y={auxZoneY - 10} style={{ fontFamily: 'Consolas, monospace', fontSize: 10, fontWeight: 'bold' }} fill="#000">AUXILIARY SYSTEMS</text>
+              <line x1="100" y1={auxZoneY} x2={svgWidth - 400} y2={auxZoneY} stroke="#000" strokeWidth="0.5" />
+              {auxSections.map((s, si) => s.items.map((item, ii) => {
+                const ax = 150 + (si * 5 + ii) * 80, ay = auxZoneY + 30
+                const { cat } = detectCategory(item.displayName || item.name || '')
+                return <g key={'ax-' + si + '-' + ii} onClick={() => onSelect(item)} style={{ cursor: 'pointer' }}>
+                  <DrawingSymbol type={item.type} x={ax} y={ay} category={cat} />
+                  <text x={ax + 14} y={ay - 2} style={{ fontFamily: 'Consolas, monospace', fontSize: 7 }} fill="#000">{getShortLabel(item).slice(0, 14)}</text>
+                </g>
+              }))}
+            </g>}
+            {/* Legend */}
+            <text x="50" y={legendY} style={{ fontFamily: 'Consolas, monospace', fontSize: 9, fontWeight: 'bold' }} fill="#000">COMMISSIONING LEVELS:</text>
+            {Object.entries(LEVEL_COLORS).map(([lv, col], i) => <g key={lv}><rect x={50 + i * 70} y={legendY + 8} width="14" height="8" rx="4" fill={col} /><text x={50 + i * 70 + 7} y={legendY + 12} style={{ fontFamily: 'Consolas, monospace', fontSize: 6, fontWeight: 'bold', textAnchor: 'middle', dominantBaseline: 'middle' }} fill="#fff">{lv}</text><text x={50 + i * 70 + 20} y={legendY + 14} style={{ fontFamily: 'Consolas, monospace', fontSize: 7 }} fill="#444">{LEVEL_NAMES[lv]}</text></g>)}
+          </svg>
+        </div>
+        {/* Title block */}
+        <div style={{ position: 'absolute', bottom: 16, right: 16, width: 320, border: '1.5px solid #000', fontSize: 10, fontFamily: 'Consolas, monospace', background: '#fff' }}>
+          <div style={{ background: '#000', color: '#fff', padding: '5px 8px', fontSize: 10, fontWeight: 'bold', letterSpacing: 1 }}>SINGLE LINE DIAGRAM</div>
+          <div style={{ padding: '3px 8px', borderBottom: '0.5px solid #000' }}><div style={{ fontSize: 7, color: '#666' }}>TITLE</div><div style={{ fontWeight: 'bold' }}>COMMISSIONING SLD</div></div>
+          <div style={{ display: 'flex', borderBottom: '0.5px solid #000' }}><div style={{ flex: 1, padding: '3px 8px', borderRight: '0.5px solid #000' }}><div style={{ fontSize: 7, color: '#666' }}>DWG NO.</div><div style={{ fontWeight: 'bold' }}>SLD-CX-001</div></div><div style={{ width: 80, padding: '3px 8px' }}><div style={{ fontSize: 7, color: '#666' }}>REV</div><div style={{ fontWeight: 'bold' }}>A</div></div></div>
+          <div style={{ display: 'flex' }}><div style={{ flex: 1, padding: '3px 8px', borderRight: '0.5px solid #000' }}><div style={{ fontSize: 7, color: '#666' }}>DATE</div><div style={{ fontWeight: 'bold' }}>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</div></div><div style={{ width: 80, padding: '3px 8px' }}><div style={{ fontSize: 7, color: '#666' }}>SCALE</div><div style={{ fontWeight: 'bold' }}>NTS</div></div></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════
+// DETAIL PANEL
+// ════════════════════════════════════════════════════════════
+function DetailPanel({ item, onClose, theme }) {
+  const tests = getTests(item)
+  const levels = getLevels(item)
+  const name = item.displayName || item.name || item.type
+  const { cat, color } = detectCategory(name)
+
+  const bg = theme.panelBg
+  const bdr = theme.panelBorder
+  const tp = theme.text
+  const ts = theme.textMuted
+  const cbg = theme.chip
+
+  // Group tests by level
+  const byLevel = {}
+  tests.forEach(t => {
+    const lv = t[0] || t.level || 'L3'
+    if (!byLevel[lv]) byLevel[lv] = []
+    byLevel[lv].push(t)
+  })
+
+  return (
+    <div style={{ position: 'absolute', top: 0, right: 0, width: 370, height: '100%', minHeight: '100vh', background: bg, borderLeft: '1px solid ' + bdr, padding: '16px 18px', overflowY: 'auto', zIndex: 50, boxShadow: theme.panelShadow }}>
+      <button onClick={onClose} style={{ position: 'sticky', top: 0, float: 'right', width: 26, height: 26, borderRadius: 6, border: 'none', background: theme.badge, color: tp, cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>✕</button>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{ width: 38, height: 38, background: color + '18', border: '1px solid ' + color + '30', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <IECIcon category={cat} color={color} size={20} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: tp, margin: 0 }}>{name}</h3>
+          <p style={{ fontSize: 10, color: ts, margin: '2px 0 0' }}>{item.feeder_ref || 'N/A'}</p>
+        </div>
+      </div>
+        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 14 }}>
+          {levels.map(lv => (
+            <span key={lv} style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 5, background: LEVEL_COLORS[lv] + '20', color: LEVEL_COLORS[lv], border: '1px solid ' + LEVEL_COLORS[lv] + '35' }}>{lv} {LEVEL_NAMES[lv]}</span>
+          ))}
+        </div>
+
+      {/* Test list grouped by level */}
+      {tests.length === 0 ? (
+        <div style={{ padding: 16, textAlign: 'center', color: ts, fontSize: 12, background: cbg, borderRadius: 8 }}>No tests configured</div>
       ) : (
-        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${border}` }}>
-                <th style={{ textAlign: 'left', padding: '8px', color: textSecondary, fontWeight: 600, fontSize: '11px', textTransform: 'uppercase' }}>Level</th>
-                <th style={{ textAlign: 'left', padding: '8px', color: textSecondary, fontWeight: 600, fontSize: '11px', textTransform: 'uppercase' }}>Test Name</th>
-                <th style={{ textAlign: 'left', padding: '8px', color: textSecondary, fontWeight: 600, fontSize: '11px', textTransform: 'uppercase' }}>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tests.map((test, idx) => (
-                <tr key={idx} style={{ borderBottom: `1px solid ${darkMode ? '#1e293b' : '#f3f4f6'}` }}>
-                  <td style={{ padding: '6px 8px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: LEVEL_COLORS[test[0]] + (darkMode ? '30' : '20'), color: LEVEL_COLORS[test[0]] }}>
-                      {test[0]}
-                    </span>
-                  </td>
-                  <td style={{ padding: '6px 8px', color: textPrimary }}>{test[1]}</td>
-                  <td style={{ padding: '6px 8px', color: textSecondary, fontSize: '11px' }}>{test[2] || '\u2014'}</td>
-                </tr>
+        <div>
+          {Object.entries(byLevel).sort(([a],[b]) => parseInt(a.slice(1)) - parseInt(b.slice(1))).map(([lv, lvTests]) => (
+            <div key={lv} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: LEVEL_COLORS[lv] }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: LEVEL_COLORS[lv] }}>{lv} — {LEVEL_NAMES[lv]}</span>
+                <span style={{ fontSize: 9, color: ts }}>{lvTests.length} tests</span>
+              </div>
+              {lvTests.map((t, i) => (
+                <div key={i} style={{ padding: '4px 0 4px 18px', fontSize: 11, color: tp, borderLeft: '2px solid ' + LEVEL_COLORS[lv] + '30', marginLeft: 2 }}>
+                  {t[1] || t.name || 'Test ' + (i + 1)}
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          ))}
         </div>
       )}
-
-      <div style={{ marginTop: '12px', fontSize: '11px', color: textSecondary }}>
-        Total: {tests.length} test{tests.length !== 1 ? 's' : ''} across {levels.length} level{levels.length !== 1 ? 's' : ''}
-      </div>
+      <div style={{ marginTop: 8, fontSize: 10, color: ts }}>{tests.length} test{tests.length !== 1 ? 's' : ''} · {levels.length} level{levels.length !== 1 ? 's' : ''}</div>
     </div>
   )
 }
